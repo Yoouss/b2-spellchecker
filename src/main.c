@@ -5,6 +5,8 @@
 #include <io.h>
 #include <getopt.h>
 
+// Test commit
+
 void free_args(CommandLineArgs_t* args) {
     if (args) {
         if (args->output_path != NULL)
