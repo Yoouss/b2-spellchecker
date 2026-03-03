@@ -7,7 +7,7 @@ CC=clang
 
 CPPFLAGS=-Iinclude -Iheaders
 CFLAGS=-Wall -Werror # Ajoutez -g pour Valgrind :)
-LDLIBS=-lm # ⚠️ Supprimez libs/io.o à partir de la S7 ⚠️
+LDLIBS=-lm 
 
 TARGET=spellchecker
 TEST=test

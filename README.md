@@ -43,13 +43,24 @@ Au fil des semaines, vous implémenterez les différents aspects du correcteur o
 Le sujet des correcteurs orthographique a été très actif  dès les premières années de l'informatique moderne. Aujourd'hui englobé dans le traitement du langage naturel ([Natural Language Processing (NLP)](https://en.wikipedia.org/wiki/Natural_language_processing)), il reste encore un sujet majeur.
 De nombreux algorithmes ont été développés afin de réaliser cette tâche. Les implémentations les plus judicieuses combinent plusieurs de ces techniques afin d'obtenir le résultat voulu en un temps optimal. Vous pouvez commencer par vous renseigner sur la notion de [distance entre 2 mots](https://en.wikipedia.org/wiki/String_metric)...
 
-Durant cette semaine, l'argument `--dicts <dict_path>` n'a pas besoin d'être utilisé. Par défaut, le dictionnaire utilisé sera le dictionnaire wallon présent dans le fichier `wallon.dict` à la racine du projet.
-Consacrez-vous à la détection des mots erronés dans chaque ligne.
+Durant cette semaine, les arguments `--dicts <dict_path>` et `--input <input_path>` n'ont pas besoin d'être utilisés. Par défaut, les fonctions `load_dictionaries` et `read_input_file` du fichier io.h chargent des fichiers prédéfinis.
 
-Les fonctions de lecture et d'écriture (I/O) ne vous étant pas encore connues, vous pouvez utiliser la librairie `io.o` fournie. Celle-ci vous donne toutes les fonctions nécessaires à la réalisation de votre tâche. Lisez le fichier en-tête `io.h` pour comprendre le fonctionnement et l'utilisation de la librairie 😉. 
+Consacrez-vous à la détection des mots erronés dans chaque ligne. Les positions des mots à détecter pour chaque ligne se trouvent dans le fichier `input.pos`.
+
+<!-- Les fonctions de lecture et d'écriture (I/O) ne vous étant pas encore connues, vous pouvez utiliser la librairie `io.o` fournie. Celle-ci vous donne toutes les fonctions nécessaires à la réalisation de votre tâche.-->
+
+Lisez le fichier en-tête `io.h` pour comprendre le fonctionnement et l'utilisation de la librairie 😉.  
 
 > [!TIP]
-> Si vous lisez attentivement ce fameux fichier en-tête `io.h`, vous remarquerez la présence des fonctions `pretty_print_detection` et `pretty_print_correction`. Ces fonctions, déjà implémentées, vous permettent de visualiser le résultat de votre programme dans le terminal avec de jolies couleurs.
+> **Problème d'affichage dans le terminal ?**
+> Vos terminaux modernes utilisent par défaut l'encodage UTF-8. Puisque le projet (et donc la sortie de votre programme) utilise le Latin-1, les accents s'afficheront sous forme de symboles étranges `?`. 
+> Pour traduire la sortie de votre programme en UTF-8 à la volée et retrouver un affichage lisible, vous pouvez utiliser un "pipe" vers l'outil `iconv` :
+> ```sh
+> ./spellchecker --dicts <dict_path> --input <input_path> | iconv -f ISO-8859-1
+> ```
+
+<!-- > [!TIP]
+> Si vous lisez attentivement ce fameux fichier en-tête `io.h`, vous remarquerez la présence des fonctions `pretty_print_detection` et `pretty_print_correction`. Ces fonctions, déjà implémentées, vous permettent de visualiser le résultat de votre programme dans le terminal avec de jolies couleurs. -->
 
 #### 2. Correction
 
@@ -67,7 +78,7 @@ L'argument `--dicts <dicts_path>` permet de spécifier le dossier contenant tous
 Le chemin des dictionnaires vous étant donnés par argument, il ne vous reste plus qu'à lire les dictionnaires en utilisant les fonctions fournies dans la librairie `io.o`.
 
 #### 4. Lecture/Écriture (I/O)
-Jusqu'en S8, un fichier objet (`.o`) pré-compilé ainsi que son fichier en-tête (`.h`) vous seront fournis afin de vous permettre de lire les dictionnaires sans devoir implémenter le code vous-même. A partir de la S8, les connaissances vous étant acquises, vous devrez vous passer de ce fichier et implémenter vous-même le code de lecture/écriture. Attention, vous n'avez pas le droit d'utiliser les fonctions faisant appel aux *streams* (utilisant `FILE`). Vous avez donc accès aux fonctions classiques vues en TP comme `open`, `close`, `mmap`, `write`, ... Les fonctions comme `fopen`, `fclose` ou encore `fwrite` sont interdites.
+Jusqu'en S8, un fichier en-tête (`.h`) vous est fournis afin de vous permettre de lire les dictionnaires sans devoir implémenter le code vous-même. A partir de la S8, les connaissances vous étant acquises, vous devrez vous passer de ce fichier et implémenter vous-même le code de lecture/écriture. Attention, vous n'avez pas le droit d'utiliser les fonctions faisant appel aux *streams* (utilisant `FILE`). Vous avez donc accès aux fonctions classiques vues en TP comme `open`, `close`, `mmap`, `write`, ... Les fonctions comme `fopen`, `fclose` ou encore `fwrite` sont interdites.
 
 #### 5. Threads
 La première partie du projet se déroule jusqu'en S8 et requiert une implémentation séquentielle fonctionnelle à l'issue de celle-ci. En S8, vous aurez vu les bénéfices importants que peut apporter la parallélisation du travail. Il existe plusieurs structures et organisations possibles, la plus connue étant le duo [Producteur/Consommateur](https://sites.uclouvain.be/SystInfo/notes/Theorie/html/Threads/coordination.html#probleme-des-producteurs-consommateurs). Nous vous demandons de proposer une implémentation parallélisée du code que vous avez soumis en fin de S8. 
@@ -85,7 +96,7 @@ Pensez à réfléchir aux principaux [bottlenecks](https://en.wikipedia.org/wiki
 Un fichier `README.md` est un fichier au format *Markdown*, comme celui-ci, qui explique l'utilisation et le fonctionnement d'un programme. Comme nous ne travaillerons pas sur votre projet, nous vous demandons de nous expliquer en quelques lignes comme celui-ci fonctionne et quelles sont les fonctionnalités que vous avez développées. Ces explications figureront dans un fichier `REPORT.md`.
 
 ### Makefile
-Un `Makefile` est un fichier permettant de simplifier la compilation de programme. Un point de départ vous est fourni, à vous de le compléter. Le code doit être au minimum compilé avec les flags `-Wall` et `-Werror` de GCC. Le fichier `Makefile` doit permettre au moins les 3 commandes suivantes:
+Un `Makefile` est un fichier permettant de simplifier la compilation de programme. Un point de départ vous est fourni, à vous de le compléter. Le code doit être au minimum compilé avec les flags `-Wall` et `-Werror` de `clang`. Le fichier `Makefile` doit permettre au moins les 3 commandes suivantes:
 - `make`: compile le programme et produit l'exécutable nommé `spellchecker` à la racine du répertoire
 - `make tests`: compile le programme et lance les tests que vous avez écrits
 - `make clean`: nettoie le projet en supprimant l'exécutable et les fichiers objets produits lors de la compilation
@@ -103,7 +114,7 @@ Afin d'aider à la correction, vous devez impérativement suivre l'arborescence 
 
 - `dicts` : dossier où sont stockés l'ensemble des dictionnaires,
 - `hearders` : dossier où sont stockés l'ensemble des headers (fichiers finissant par `.h`) utilisés par votre code,
-- `libs` : dossier où est stockés le fichier `io.o`, ce fichier vous permets de lire les fichiers avant le tp où vous apprendrez comment coder le lecteur de fichier,
+<!-- - `libs` : dossier où est stockés le fichier `io.o`, ce fichier vous permets de lire les fichiers avant le tp où vous apprendrez comment coder le lecteur de fichier, -->
 - `src` : dossier où sont stockés l'ensemble de vos fichiers de code en C (fichiers finissant par `.h`),
 - `build` : dossier où sont stockés l'ensemble des fichiers de compilation (exécutable et fichiers finissant par `.o`)
 - `tests` : dossier où est stocké l'ensemble de vos codes de tests.
