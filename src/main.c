@@ -97,13 +97,6 @@ CommandLineArgs_t* parse_args(int argc, char const *argv[]) {
         }
     }
 
-
-    if (args->input_path == NULL) {
-        print_help(argv[0]);
-        free_args(args);
-        exit(EXIT_FAILURE);
-    }
-
     return args;
 }
 
