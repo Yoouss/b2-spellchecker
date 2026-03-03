@@ -115,7 +115,7 @@ Afin d'aider à la correction, vous devez impérativement suivre l'arborescence 
 - `dicts` : dossier où sont stockés l'ensemble des dictionnaires,
 - `hearders` : dossier où sont stockés l'ensemble des headers (fichiers finissant par `.h`) utilisés par votre code,
 <!-- - `libs` : dossier où est stockés le fichier `io.o`, ce fichier vous permets de lire les fichiers avant le tp où vous apprendrez comment coder le lecteur de fichier, -->
-- `src` : dossier où sont stockés l'ensemble de vos fichiers de code en C (fichiers finissant par `.h`),
+- `src` : dossier où sont stockés l'ensemble de vos fichiers de code en C (fichiers finissant par `.c`),
 - `build` : dossier où sont stockés l'ensemble des fichiers de compilation (exécutable et fichiers finissant par `.o`)
 - `tests` : dossier où est stocké l'ensemble de vos codes de tests.
 
