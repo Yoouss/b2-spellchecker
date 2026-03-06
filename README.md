@@ -48,9 +48,38 @@ Durant cette semaine, les arguments `--dicts <dict_path>` et `--input <input_pat
 Consacrez-vous à la détection des mots erronés dans chaque ligne.
 Le fichier `input.pos` contient les positions des mots erronés, vous pouvez le comparer avec votre solution pour vérifier que vous avez détecter les bons.
 
-<!-- Les fonctions de lecture et d'écriture (I/O) ne vous étant pas encore connues, vous pouvez utiliser la librairie `io.o` fournie. Celle-ci vous donne toutes les fonctions nécessaires à la réalisation de votre tâche.-->
+Dans un premier temps, tant que la lecture des fichiers n'est pas implémentée (et donc que `-DDISABLE_IO` est dans les `CPPFLAGS` dans le `Makefile`), vous pouvez ignorer les arguments dans `argv` et load le dictionnaire et l'input dans la fonction `main` de la manière suivante :
+```c
+CommandLineArgs_t* args = parse_args(argc, argv);
+
+/*
+...
+*/
+
+// Load input
+char** lines = NULL;
+uint32_t* lines_sizes = NULL;
+size_t line_count = 0;
+
+read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
+
+// Load dictionnary
+Dictionary_t* dicts = NULL;
+size_t dicts_count = 0;
+
+load_dictionaries(args->dictionnaries_path, &dicts, &dicts_count);
+
+/* 
+ ...
+*/
+```
 
 Lisez le fichier en-tête `io.h` pour comprendre le fonctionnement et l'utilisation de la librairie 😉.  
+
+> [!warning]
+> Pour les tâches 1, 2 et 3, vous ne devez pas implémenter les fonctions de `io.h`. Vous pouvez par conséquent conserver les lignes ci-dessus dans votre programme.
+> Cependant, ces implémentations sont temporaires et, dès la 4ème tâche, vous pourrez utiliser votre propre implémentation pour lire réellement les fichiers répertoriés dans `args->input_path` et `args->dictionaries_path`.
+
 
 > [!TIP]
 > **Problème d'affichage dans le terminal ?**
@@ -61,7 +90,7 @@ Lisez le fichier en-tête `io.h` pour comprendre le fonctionnement et l'utilisat
 > ```
 
 > [!TIP]
-> Si vous lisez attentivement ce fameux fichier en-tête `pretty_print.h`, vous remarquerez la présence des fonctions `pretty_print_detection` et `pretty_print_correction`. Ces fonctions, déjà implémentées, vous permettent de visualiser le résultat de votre programme dans le terminal avec de jolies couleurs **sans l'utilisation du pipe**.
+> Si vous lisez attentivement ce fameux fichier en-tête `pretty_print.h`, vous remarquerez la présence des fonctions `pretty_print_detection` et `pretty_print_correction`. Ces fonctions, déjà implémentées, vous permettent de visualiser le résultat de votre programme dans le terminal avec de jolies couleurs.
 
 #### 2. Correction
 
@@ -94,6 +123,12 @@ En utilisant votre implémentation du calcul du nombre de mots incorrects, vous 
 
 #### 4. Lecture/Écriture (I/O)
 Jusqu'en S8, un fichier en-tête (`.h`) vous est fournis afin de vous permettre de lire les dictionnaires sans devoir implémenter le code vous-même. A partir de la S8, les connaissances vous étant acquises, vous devrez vous passer de ce fichier et implémenter vous-même le code de lecture/écriture. Attention, vous n'avez pas le droit d'utiliser les fonctions faisant appel aux *streams* (utilisant `FILE`). Vous avez donc accès aux fonctions classiques vues en TP comme `open`, `close`, `mmap`, `write`, ... Les fonctions comme `fopen`, `fclose` ou encore `fwrite` sont interdites.
+
+> [!warning]
+> Par défaut, le projet est configuré en mode "mock" via le flag `-DDISABLE_IO` dans le `Makefile`. Ce mode utilise les fonctions temporaires définies dans `io.h`.
+> Dès que vous commencez la Tâche 4, c'est à vous de :
+> * Créer le fichier `src/io.c` avec vos implémentations.
+> * Modifier manuellement le `Makefile` pour retirer le flag `-DDISABLE_IO`.
 
 #### 5. Threads
 La première partie du projet se déroule jusqu'en S8 et requiert une implémentation séquentielle fonctionnelle à l'issue de celle-ci. En S8, vous aurez vu les bénéfices importants que peut apporter la parallélisation du travail. Il existe plusieurs structures et organisations possibles, la plus connue étant le duo [Producteur/Consommateur](https://sites.uclouvain.be/SystInfo/notes/Theorie/html/Threads/coordination.html#probleme-des-producteurs-consommateurs). Nous vous demandons de proposer une implémentation parallélisée du code que vous avez soumis en fin de S8. 

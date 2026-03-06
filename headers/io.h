@@ -1,11 +1,5 @@
 #include "common.h"
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include "dict.h"
-#include "input.h"
 
 #ifndef IO_H
 #define IO_H
@@ -62,6 +56,8 @@ int write_detection(OutputStreams_t *output_stream, uint32_t line_number,
 int write_correction(OutputStreams_t *output_streams, uint32_t word_count,
                      char **corrections);
 
+#ifndef DISABLE_IO
+
 /**
  * @brief Read the input file and store each line in a dynamically allocated
  * array.
@@ -74,7 +70,31 @@ int write_correction(OutputStreams_t *output_streams, uint32_t word_count,
  * @return int 0 on success, -1 on failure.
  */
 int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes,
-                    size_t *line_count) {
+                    size_t *line_count);
+
+/**
+ * @brief Read the dictionary files from the specified path.
+ *
+ * @param dicts_path The path to the directory containing the dictionary files.
+ * @param dicts A pointer to an array of `Dictionary_t` structures to hold the
+ * loaded dictionaries.
+ * @param dict_count A pointer to a size_t variable to store the number of
+ * dictionaries successfully loaded.
+ * @return 0 on success, -1 on failure.
+ */
+int load_dictionaries(const char *path, Dictionary_t **dicts,
+                      size_t *dict_count);
+
+#else
+
+#include <stdlib.h>
+#include <string.h>
+
+#include "dict.h"
+#include "input.h"
+
+static inline int read_input_file(char *input_path, char ***lines,
+                                  uint32_t **line_sizes, size_t *line_count) {
   *line_count = 0;
 
   *lines = malloc(sizeof(char *) * INPUT_LINE_COUNT);
@@ -104,18 +124,8 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes,
   return 0;
 }
 
-/**
- * @brief Read the dictionary files from the specified path.
- *
- * @param dicts_path The path to the directory containing the dictionary files.
- * @param dicts A pointer to an array of `Dictionary_t` structures to hold the
- * loaded dictionaries.
- * @param dict_count A pointer to a size_t variable to store the number of
- * dictionaries successfully loaded.
- * @return 0 on success, -1 on failure.
- */
-int load_dictionaries(const char *path, Dictionary_t **dicts,
-                      size_t *dict_count) {
+static inline int load_dictionaries(const char *path, Dictionary_t **dicts,
+                                    size_t *dict_count) {
 
   *dict_count = DICT_COUNT;
 
@@ -160,5 +170,7 @@ fail:
   free(*dicts);
   return -1;
 }
+
+#endif
 
 #endif // IO_H
