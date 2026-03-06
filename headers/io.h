@@ -1,6 +1,8 @@
 #include "common.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "dict.h"
 #include "input.h"
@@ -61,31 +63,6 @@ int write_correction(OutputStreams_t *output_streams, uint32_t word_count,
                      char **corrections);
 
 /**
- * @brief Pretty print the result of a bad word detection to the console
- *
- * @param line The line of text where the bad words were found.
- * @param line_number The line number where the bad words were found.
- * @param word_count The total number of bad words in the line.
- * @param word_indices An array of indices where the bad words were found.
- * @return int 0 on success, -1 on failure.
- */
-int pretty_print_detection(char *line, uint32_t line_number, size_t word_count,
-                           uint32_t *word_indices);
-
-/**
- * @brief Pretty print the result of a bad word correction to the console
- *
- * @param line The line of text where the bad words were found.
- * @param line_number The line number where the bad words were found.
- * @param word_count The number of corrections available.
- * @param word_indices An array of indices where the bad words were found.
- * @param corrections An array of suggested corrections for the bad words.
- * @return int 0 on success, -1 on failure.
- */
-int pretty_print_correction(char *line, uint32_t line_number, size_t word_count,
-                            uint32_t *word_indices, char **corrections);
-
-/**
  * @brief Read the input file and store each line in a dynamically allocated
  * array.
  *
@@ -110,7 +87,7 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes,
     return -1;
   }
   for (size_t i = 0; i < INPUT_LINE_COUNT; i++) {
-    (*lines)[i] = strdup(input_data[i]);
+    (*lines)[i] = strdup(INPUT_DATA[i]);
 
     if (!(*lines)[i]) {
       for (size_t j = 0; j < i; j++) {
@@ -139,43 +116,49 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes,
  */
 int load_dictionaries(const char *path, Dictionary_t **dicts,
                       size_t *dict_count) {
-  *dicts = malloc(sizeof(Dictionary_t));
+
+  *dict_count = DICT_COUNT;
+
+  *dicts = calloc(DICT_COUNT, sizeof(Dictionary_t));
   if (!*dicts)
     return -1;
 
-  Dictionary_t *d = *dicts;
-  d->id = 1;
-  d->word_count = DICTIONARY_SIZE;
+  for (size_t i = 0; i < DICT_COUNT; i++) {
+    const char **source_words = DICTIONARIES[i];
+    Dictionary_t *d = &(*dicts)[i];
 
-  d->lang = strdup("wallon");
-  if (!d->lang) {
-    free(d);
-    return -1;
+    d->word_count = DICT_SIZES[i] - 1; // id excluded
+    d->id = (uint32_t)strtoul(source_words[0], NULL, 10);
+    d->lang = strdup(DICT_LANGS[i]);
+
+    if (!d->lang)
+      goto fail;
+
+    d->words = calloc(d->word_count, sizeof(char *));
+    if (!d->words)
+      goto fail;
+
+    for (size_t j = 1; j < DICT_SIZES[i]; j++) {
+      d->words[j - 1] = strdup(source_words[j]);
+      if (!d->words[j - 1])
+        goto fail;
+    }
   }
+  return 0;
 
-  d->words = malloc(sizeof(char *) * DICTIONARY_SIZE);
-  if (!d->words) {
-    free(d->lang);
-    free(d);
-    return -1;
-  }
-
-  for (size_t i = 0; i < DICTIONARY_SIZE; i++) {
-    d->words[i] = strdup(dictionary[i]);
-
-    if (!d->words[i]) {
-      for (size_t j = 0; j < i; j++) {
+fail:
+  for (size_t i = 0; i < DICT_COUNT; i++) {
+    Dictionary_t *d = &(*dicts)[i];
+    if (d->words) {
+      for (uint32_t j = 0; j < d->word_count; j++) {
         free(d->words[j]);
       }
       free(d->words);
-      free(d->lang);
-      free(d);
-      return -1;
     }
+    free(d->lang);
   }
-
-  *dict_count = 1;
-  return 0;
+  free(*dicts);
+  return -1;
 }
 
 #endif // IO_H

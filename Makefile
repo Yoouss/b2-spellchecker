@@ -28,7 +28,7 @@ TEST_OBJECTS = $(patsubst $(TEST_DIR)/%.c, $(TEST_OBJ_DIR)/%.o, $(TEST_SOURCES))
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC)  $^ $(LDLIBS) -o $@ 
+	@$(CC)  $^ $(LDLIBS) -o $@ 
 
 $(TEST): $(OBJECTS_NO_MAIN) $(TEST_OBJECTS)
 	@$(CC)  $^ $(LDLIBS) -lcunit  -o $@
