@@ -338,8 +338,54 @@ Durant ce projet vous apprendrez également à utiliser [<img height="16" src="h
 - Utilisation du flag `-fsanitize` pour aider à détecter les accès hors d'un tableau
 
 > [!TIP]
+> Pour avoir une bonne visualisation des branches sur votre git, configurer la commande `lola`
+> ```sh
+> $ git config --global alias.lola "log --graph --decorate --pretty=oneline --abbrev-commit --all"
+> ```
+> Vous pouvez alors voir l'arbre avec
+> ```sh
+> $ git lola
+> ```
+> Très utile pour voir ce qu'il se passe pour le tip suivant.
+
+> [!TIP]
 > Votre repository est un fork de [celui ci](https://forge.uclouvain.be/lepl15031/students/projet-typos).
 > Pour profiter de corrections faites sur le projet, [mettez à jour votre fork](https://docs.gitlab.com/topics/git/forks/).
+> Pour se faire, un membre du groupe doit faire ce qu'il suit.
+> Commencez par ajouter notre remote avec l'une des deux commandes suivantes (si ce n'est pas déjà fait):
+> ```sh
+> $ git remote add upstream https://forge.uclouvain.be/lepl15031/students/projet-typos.git
+> $ git remote add upstream git@forge.uclouvain.be:lepl15031/students/projet-typos.git
+> ```
+> Ensuite, récupérez ou mettez à jour la branch `upstream/main`:
+> ```sh
+> $ git fetch upstream
+> ```
+> Passez sur la branche `main`:
+> ```sh
+> $ git checkout main
+> ```
+> Assurez-vous d'avoir la dernière version de votre fork:
+> ```sh
+> $ git pull origin main
+> ```
+> Maintenant, mettez à jour votre branche `main` avec les changements de `upstream`:
+> ```sh
+> $ git merge upstream/main
+> ```
+> Mettez à jour la branche `main` sur le gitlab:
+> ```sh
+> $ git push origin main
+> ```
+> Les autres membres du groupe peuvent alors simplement faire:
+> ```sh
+> $ git checkout main
+> ```
+> Puis:
+> ```sh
+> $ git pull origin main
+> ```
+> Pour mettre à jour leur branche `main` en local.
 > Comme nos corrections sont sur le README et sur le dossier `headers` que vous n'êtes pas sensé modifier,
 > ça ne devrait pas créer de conflit avec votre code.
 
