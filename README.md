@@ -45,11 +45,41 @@ De nombreux algorithmes ont été développés afin de réaliser cette tâche. L
 
 Durant cette semaine, les arguments `--dicts <dict_path>` et `--input <input_path>` n'ont pas besoin d'être utilisés. Par défaut, les fonctions `load_dictionaries` et `read_input_file` du fichier io.h chargent des fichiers prédéfinis.
 
-Consacrez-vous à la détection des mots erronés dans chaque ligne. Les positions des mots à détecter pour chaque ligne se trouvent dans le fichier `input.pos`.
+Consacrez-vous à la détection des mots erronés dans chaque ligne.
+Le fichier `input.pos` contient les positions des mots erronés, vous pouvez le comparer avec votre solution pour vérifier que vous avez détecter les bons.
 
-<!-- Les fonctions de lecture et d'écriture (I/O) ne vous étant pas encore connues, vous pouvez utiliser la librairie `io.o` fournie. Celle-ci vous donne toutes les fonctions nécessaires à la réalisation de votre tâche.-->
+Dans un premier temps, tant que la lecture des fichiers n'est pas implémentée (et donc que `-DDISABLE_IO` est dans les `CPPFLAGS` dans le `Makefile`), vous pouvez ignorer les arguments dans `argv` et load le dictionnaire et l'input dans la fonction `main` de la manière suivante :
+```c
+CommandLineArgs_t* args = parse_args(argc, argv);
+
+/*
+...
+*/
+
+// Load input
+char** lines = NULL;
+uint32_t* lines_sizes = NULL;
+size_t line_count = 0;
+
+read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
+
+// Load dictionnary
+Dictionary_t* dicts = NULL;
+size_t dicts_count = 0;
+
+load_dictionaries(args->dictionnaries_path, &dicts, &dicts_count);
+
+/* 
+ ...
+*/
+```
 
 Lisez le fichier en-tête `io.h` pour comprendre le fonctionnement et l'utilisation de la librairie 😉.  
+
+> [!warning]
+> Pour les tâches 1, 2 et 3, vous ne devez pas implémenter les fonctions de `io.h`. Vous pouvez par conséquent conserver les lignes ci-dessus dans votre programme.
+> Cependant, ces implémentations sont temporaires et, dès la 4ème tâche, vous pourrez utiliser votre propre implémentation pour lire réellement les fichiers répertoriés dans `args->input_path` et `args->dictionaries_path`.
+
 
 > [!TIP]
 > **Problème d'affichage dans le terminal ?**
@@ -59,26 +89,46 @@ Lisez le fichier en-tête `io.h` pour comprendre le fonctionnement et l'utilisat
 > ./spellchecker --dicts <dict_path> --input <input_path> | iconv -f ISO-8859-1
 > ```
 
-<!-- > [!TIP]
-> Si vous lisez attentivement ce fameux fichier en-tête `io.h`, vous remarquerez la présence des fonctions `pretty_print_detection` et `pretty_print_correction`. Ces fonctions, déjà implémentées, vous permettent de visualiser le résultat de votre programme dans le terminal avec de jolies couleurs. -->
+> [!TIP]
+> Si vous lisez attentivement ce fameux fichier en-tête `pretty_print.h`, vous remarquerez la présence des fonctions `pretty_print_detection` et `pretty_print_correction`. Ces fonctions, déjà implémentées, vous permettent de visualiser le résultat de votre programme dans le terminal avec de jolies couleurs.
 
 #### 2. Correction
 
 Maintenant que vous êtes capable d'identifier les mots incorrects, proposez une correction pour ceux-ci. N'hésitez pas à vous renseigner sur les algorithmes existants ainsi qu'à vous inspirer de ceux-ci.
 
 #### 3. Meilleur dictionnaire
+Cette semaine, vous travaillerez avec plusieurs dictionnaires. Étant donné que les fonctions de lecture et d'écriture de fichiers (`io.h`) ne sont pas encore implémentées, vous devrez utiliser les scripts Python situés dans le dossier `scripts/` pour générer de nouveaux fichiers d'en-tête `input.h` et `dict.h`. Contrairement aux semaines précédentes, `dict.h` contiendra désormais une collection de plusieurs dictionnaires.
+
+Depuis la racine du projet, exécutez la commande suivante pour générer un nouveau fichier `input.h` :
+
+```bash
+python scripts/gen_input_h.py --input inputs/input_10l.txt --output headers/input.h
+```
+
+*(Note : pour tester votre code avec un fichier plus grand, vous pouvez remplacer `input_10l.txt` par `input_50l.txt` dans la commande ci-dessus).*
+
+Ensuite, générez le fichier `dict.h` avec la commande suivante :
+
+```bash
+python scripts/gen_dict_h.py --input dicts/ --output headers/dict.h
+```
+
+Vous pouvez dès à présent charger l'entrée et les dictionnaires de la même manière que les semaines précédentes.
+
 Chaque dictionnaire correspond à une langue unique. Une ligne du fichier d’entrée est écrite entièrement dans une seule langue, mais la langue peut changer d’une ligne à l’autre.
 
 Le meilleur dictionnaire pour une ligne donnée est donc le dictionnaire correspondant à la langue dans laquelle cette ligne précise est écrite, c’est-à-dire celui qui minimise le nombre de mots incorrects pour cette ligne.
 
 En utilisant votre implémentation du calcul du nombre de mots incorrects, vous calculerez le dictionnaire qui correspond le mieux à l'entrée saisie parmi une sélection de dictionnaires donnée. 
 
-L'argument `--dicts <dicts_path>` permet de spécifier le dossier contenant tous les dictionnaires. Pour vous simplifier la tâche la semaine passée, si cet argument n'était pas spécifié, le programme allait chercher le dictionnaire wallon par défaut. Cette semaine vous allez devoir implémenter cet argument et permettre de lire tous les dictionnaires du dossier spécifié afin de trouver le meilleur. 
-
-Le chemin des dictionnaires vous étant donnés par argument, il ne vous reste plus qu'à lire les dictionnaires en utilisant les fonctions fournies dans la librairie `io.o`.
-
 #### 4. Lecture/Écriture (I/O)
 Jusqu'en S8, un fichier en-tête (`.h`) vous est fournis afin de vous permettre de lire les dictionnaires sans devoir implémenter le code vous-même. A partir de la S8, les connaissances vous étant acquises, vous devrez vous passer de ce fichier et implémenter vous-même le code de lecture/écriture. Attention, vous n'avez pas le droit d'utiliser les fonctions faisant appel aux *streams* (utilisant `FILE`). Vous avez donc accès aux fonctions classiques vues en TP comme `open`, `close`, `mmap`, `write`, ... Les fonctions comme `fopen`, `fclose` ou encore `fwrite` sont interdites.
+
+> [!warning]
+> Par défaut, le projet est configuré en mode "mock" via le flag `-DDISABLE_IO` dans le `Makefile`. Ce mode utilise les fonctions temporaires définies dans `io.h`.
+> Dès que vous commencez la Tâche 4, c'est à vous de :
+> * Créer le fichier `src/io.c` avec vos implémentations.
+> * Modifier manuellement le `Makefile` pour retirer le flag `-DDISABLE_IO`.
 
 #### 5. Threads
 La première partie du projet se déroule jusqu'en S8 et requiert une implémentation séquentielle fonctionnelle à l'issue de celle-ci. En S8, vous aurez vu les bénéfices importants que peut apporter la parallélisation du travail. Il existe plusieurs structures et organisations possibles, la plus connue étant le duo [Producteur/Consommateur](https://sites.uclouvain.be/SystInfo/notes/Theorie/html/Threads/coordination.html#probleme-des-producteurs-consommateurs). Nous vous demandons de proposer une implémentation parallélisée du code que vous avez soumis en fin de S8. 
@@ -115,7 +165,7 @@ Afin d'aider à la correction, vous devez impérativement suivre l'arborescence 
 - `dicts` : dossier où sont stockés l'ensemble des dictionnaires,
 - `hearders` : dossier où sont stockés l'ensemble des headers (fichiers finissant par `.h`) utilisés par votre code,
 <!-- - `libs` : dossier où est stockés le fichier `io.o`, ce fichier vous permets de lire les fichiers avant le tp où vous apprendrez comment coder le lecteur de fichier, -->
-- `src` : dossier où sont stockés l'ensemble de vos fichiers de code en C (fichiers finissant par `.c`),
+- `src` : dossier où sont stockés l'ensemble de vos fichiers de code en C (fichiers finissant par `.h`),
 - `build` : dossier où sont stockés l'ensemble des fichiers de compilation (exécutable et fichiers finissant par `.o`)
 - `tests` : dossier où est stocké l'ensemble de vos codes de tests.
 
@@ -287,6 +337,57 @@ Durant ce projet vous apprendrez également à utiliser [<img height="16" src="h
 - *Cppcheck* vous permet de vérifier statiquement que votre code C ne présente pas de problème *a priori*. Pour l'utiliser, il suffit d'utiliser `cppcheck path/to/file` ou `cppcheck path/to/dir/` pour analyser un fichier ou tous les fichiers d'un dossier. Le programme vous renverra les erreurs potentielles ainsi que le fichier et la ligne problématique.
 - Utilisation du flag `-fsanitize` pour aider à détecter les accès hors d'un tableau
 
+> [!TIP]
+> Pour avoir une bonne visualisation des branches sur votre git, configurer la commande `lola`
+> ```sh
+> $ git config --global alias.lola "log --graph --decorate --pretty=oneline --abbrev-commit --all"
+> ```
+> Vous pouvez alors voir l'arbre avec
+> ```sh
+> $ git lola
+> ```
+> Très utile pour voir ce qu'il se passe pour le tip suivant.
+
+> [!TIP]
+> Votre repository est un fork de [celui ci](https://forge.uclouvain.be/lepl15031/students/projet-typos).
+> Pour profiter de corrections faites sur le projet, [mettez à jour votre fork](https://docs.gitlab.com/topics/git/forks/).
+> Pour se faire, un membre du groupe doit faire ce qu'il suit.
+> Commencez par ajouter notre remote avec l'une des deux commandes suivantes (si ce n'est pas déjà fait):
+> ```sh
+> $ git remote add upstream https://forge.uclouvain.be/lepl15031/students/projet-typos.git
+> $ git remote add upstream git@forge.uclouvain.be:lepl15031/students/projet-typos.git
+> ```
+> Ensuite, récupérez ou mettez à jour la branch `upstream/main`:
+> ```sh
+> $ git fetch upstream
+> ```
+> Passez sur la branche `main`:
+> ```sh
+> $ git checkout main
+> ```
+> Assurez-vous d'avoir la dernière version de votre fork:
+> ```sh
+> $ git pull origin main
+> ```
+> Maintenant, mettez à jour votre branche `main` avec les changements de `upstream`:
+> ```sh
+> $ git merge upstream/main
+> ```
+> Mettez à jour la branche `main` sur le gitlab:
+> ```sh
+> $ git push origin main
+> ```
+> Les autres membres du groupe peuvent alors simplement faire:
+> ```sh
+> $ git checkout main
+> ```
+> Puis:
+> ```sh
+> $ git pull origin main
+> ```
+> Pour mettre à jour leur branche `main` en local.
+> Comme nos corrections sont sur le README et sur le dossier `headers` que vous n'êtes pas sensé modifier,
+> ça ne devrait pas créer de conflit avec votre code.
 
 # F. Evaluations & Livrables
 - Vendredi 20/03 à 18:00 : Finir la partie séquentielle du projet qui sera évaluée dans les peer reviews.
