@@ -113,6 +113,41 @@ int main(int argc, char const *argv[]) {
     printf("Verbose: %s\n", args->verbose ? "Enabled" : "Disabled");
     printf("Threads: %u\n", args->threads);
 
+
+    // Load input
+    char** lines = NULL;
+    uint32_t* lines_sizes = NULL;
+    size_t line_count = 0;
+
+    read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
+
+    // Load dictionnary
+    Dictionary_t* dicts = NULL;
+    size_t dicts_count = 0;
+
+    load_dictionaries(args->dictionnaries_path, &dicts, &dicts_count);
+
+
+    // Boucle qui lit le fichier
+    for (size_t i = 0; i < line_count; i++) {
+        printf("ligne %zu (%u mots): %s\n", i + 1, lines_sizes[i], lines[i]);
+    }
+
+    printf("nombre de lignes : %zu\n", line_count);
+
+    // Boucle qui lit le dictionnaire 
+    for (size_t i = 0; i < dicts_count; i++) {
+        printf("dictionnaire numéro %zu (%s) : %i mots \n", i + 1, dicts[i].lang, dicts[i].word_count);
+    } 
+
+    printf("nombre de dictionnaire : %zu\n", dicts_count);
+    
+    
+    //char line[] = "bonjour ceci est un test simple";
+    //uint32_t bad_words[] = {2,4};
+    //pretty_print_detection(line, 1, 2, bad_words);
+    
+
     free_args(args);
     return 0;
 }
