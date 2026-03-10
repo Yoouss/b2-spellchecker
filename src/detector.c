@@ -4,7 +4,7 @@
 #include <io.h>
 #include "common.h"
 #include <input.pos>
-
+// Il faut ajouter le inclde de detector.h
 
 int word_in_dictionary(char* word, Dictionary_t* dict){
     if (word==NULL||dict==NULL){
@@ -42,25 +42,23 @@ words_in_line(char* line, int length, Dictionary_t* dict){
 }
 
 
+int** words_in_file(char* filename, Dictionary_t* dicts ){
 
+    // Load input
+    char** lines = NULL;
+    uint32_t* lines_sizes = NULL;
+    size_t line_count = 0;
 
-//load_dictionaries &  read_input_files
+    read_input_file(filename, &lines, &lines_sizes, &line_count);
 
+    int** matrice = malloc(line_count*sizeof(int*));
 
+    for(int i=0;i<line_count;i++){
+        int* ligne = lines[i];
+        int* lst_pos_badwords = words_in_line(ligne,lines_sizes[i],dicts);
+        matrice[i]= lst_pos_badwords;
 
+    }
+    return matrice;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
