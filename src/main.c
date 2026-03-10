@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "common.h"
+#include "pretty_print.h"
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>
 #include <getopt.h>
+
+
 
 void free_args(CommandLineArgs_t* args) {
     if (args) {
