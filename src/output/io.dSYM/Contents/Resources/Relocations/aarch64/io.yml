@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/yassineelmohajer/s1/src/output/io'
+relocations:     []
+...
