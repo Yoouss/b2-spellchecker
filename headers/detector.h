@@ -26,7 +26,7 @@ int word_in_dictionary(char* word, Dictionary_t* dict);
  * @param  dict un pointeur vers un dictionaire de type Dictionary_t
  * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
  */
-int[] words_in_line(char** line, int lenght, Dictionary_t* dict );
+int* words_in_line(char** line, int lenght, Dictionary_t* dict );
 
 
 /**
@@ -37,9 +37,5 @@ int[] words_in_line(char** line, int lenght, Dictionary_t* dict );
  * @param  dict un pointeur vers un dictionaire de type Dictionary_t
  * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
  */
-int[] words_in_file(char*** file, int length, Dictionary_t* dict );
-
-
-
-
+int** words_in_file(char** file, int length, Dictionary_t* dict );
 
