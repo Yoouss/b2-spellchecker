@@ -5,9 +5,6 @@
 #include "dict.h"
 #include "input.h"
 
-#ifndef IO_H
-#define IO_H
-
 
 /**
  * @brief  fonction qui prend un mot et vérifie si le mot est dans le dictionnaire : 

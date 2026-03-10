@@ -3,7 +3,7 @@
 #include "common.h"
 #include <io.h>
 #include <stdlib.h>
-// Ajouter le include de detector.c quand il sera dans header
+#include "detector.h"
 
 /**
  * @brief loads the dictionary fr.dict.test using load_dictionaries()'s implementation
@@ -88,21 +88,6 @@ int** give_expected_output_with_input_5l_test() {
     return matrix;
 }
 
-// À enlever après implémentation
-int word_in_dictionary(char* word, Dictionary_t* dict) {
-    return 0;
-}
-
-// À enlever apres l'implémentation
-int* words_in_line(char** line, int length, Dictionary_t* dict) {
-    return NULL; 
-}
-
-// A enlever après implémentation !!! 
-int** words_in_file(char** file, int length, Dictionary_t* dict ) {
-    return give_expected_output_with_input_5l_test();
-}
-
 void test_word_in_dictionary(void) {
     Dictionary_t* dicts = load_dictionary_for_test();
 
@@ -117,7 +102,7 @@ void test_word_in_dictionary(void) {
 void test_words_in_line(void) {
     Dictionary_t* dicts = load_dictionary_for_test();
 
-    char* line_test[] = {"manger", "une", "pomme"};//(Younes est dans le dico, "pomme" n'y est pas)
+    char* line_test = {"manger une,pomme"};//(Younes est dans le dico, "pomme" n'y est pas)
     int line_length = 3;
 
     int* result = words_in_line(line_test, line_length, dicts);
@@ -151,12 +136,12 @@ void test_words_in_file(void) {
     int** expectedOutput = give_expected_output_with_input_5l_test();
     CU_ASSERT_PTR_NOT_NULL_FATAL(expectedOutput);
 
-    int** noFile = words_in_file(NULL, line_count, dicts);
+    int** noFile = words_in_file(NULL, dicts);
     CU_ASSERT_PTR_NULL_FATAL(noFile);
-    int** noDicts = words_in_file(lines, line_count, NULL);
+    int** noDicts = words_in_file(inputPath, NULL);
     CU_ASSERT_PTR_NULL_FATAL(noDicts);
 
-    int** result = words_in_file(lines, line_count, dicts);
+    int** result = words_in_file(inputPath, dicts);
 
     CU_ASSERT_EQUAL(result[0][0], 3);
     CU_ASSERT_EQUAL(result[0][1], 7);
