@@ -10,8 +10,7 @@ int word_in_dictionary(char* word, Dictionary_t* dict){
     if (word==NULL||dict==NULL){
         return -1;
     }
-    char **p;
-    p=dict;
+    char **p = dict->words;
     while(*p!=NULL){
         if (strcmp(*p, word) == 0){
             return 1;
@@ -20,7 +19,7 @@ int word_in_dictionary(char* word, Dictionary_t* dict){
     return 0;
 }
 
-words_in_line(char** line, int length, Dictionary_t* dict){
+words_in_line(char* line, int length, Dictionary_t* dict){
     if (line==NULL||dict==NULL|| length<=0){
         return -1;
     }
