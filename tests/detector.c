@@ -10,6 +10,11 @@ int word_in_dictionary(char* word, Dictionary_t* dict) {
     return 0;
 }
 
+// À enlever apres l'implémentation
+int* words_in_line(char** line, int length, Dictionary_t* dict) {
+    return NULL; 
+}
+
 void test_word_in_dictionary(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
@@ -105,4 +110,28 @@ void test_words_in_file(void) {
     CU_ASSERT_EQUAL(result[4][0], 4);
 
     free_matrix_input_5l_test(expectedOutput, 5);
+}
+
+void test_words_in_line(void) {
+    Dictionary_t* dict = NULL;
+    size_t dict_count = 0;
+    load_dictionaries("fr.dict.test", &dict, &dict_count);
+
+    char* line_test[] = {"manger", "une", "pomme"};//(Younes est dans le dico, "pomme" n'y est pas)
+    int line_length = 3;
+
+    int* result = words_in_line(line_test, line_length, dict);
+    //"pomme" est le seul mot faux à la 3ème position
+    CU_ASSERT_PTR_NOT_NULL(result);
+    if (result != NULL) {
+        CU_ASSERT_EQUAL(result[0], 3); 
+    }
+
+    if (result != NULL) {
+        free(result);
+    }
+
+    CU_ASSERT_PTR_NULL(words_in_line(line_test, line_length, NULL));// Test cas extrême : dictionnaire NULL
+    
+    CU_ASSERT_PTR_NULL(words_in_line(NULL, 0, dict));// Si la ligne est vide
 }
