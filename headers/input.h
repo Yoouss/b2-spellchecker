@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-static const char *const input_data[] = {
+static const char *const INPUT_DATA[] = {
     "tanisez concernassions n'anath\351matisai amidonniez t'invitai "
     "d\351nombr\351es rechausses minoritaires alanguissez m'affinassent "
     "n'esclavageant l'aggravaient d\351raitd\356meps t'intercepteraient "
