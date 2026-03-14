@@ -97,17 +97,17 @@ static inline int read_input_file(char *input_path, char ***lines,
                                   uint32_t **line_sizes, size_t *line_count) {
   *line_count = 0;
 
-  *lines = malloc(sizeof(char *) * INPUT_LINE_COUNT);
+  *lines = malloc(sizeof(char *) * TEST_INPUT_LINE_COUNT);
   if (!*lines)
     return -1;
 
-  *line_sizes = malloc(sizeof(uint32_t) * INPUT_LINE_COUNT);
+  *line_sizes = malloc(sizeof(uint32_t) * TEST_INPUT_LINE_COUNT);
   if (!*line_sizes) {
     free(*lines);
     return -1;
   }
-  for (size_t i = 0; i < INPUT_LINE_COUNT; i++) {
-    (*lines)[i] = strdup(INPUT_DATA[i]);
+  for (size_t i = 0; i < TEST_INPUT_LINE_COUNT; i++) {
+    (*lines)[i] = strdup(TEST_INPUT_DATA[i]);
 
     if (!(*lines)[i]) {
       for (size_t j = 0; j < i; j++) {
@@ -118,28 +118,28 @@ static inline int read_input_file(char *input_path, char ***lines,
       return -1;
     }
 
-    (*line_sizes)[i] = INPUT_WORD_COUNTS[i];
+    (*line_sizes)[i] = TEST_INPUT_WORD_COUNTS[i];
   }
-  *line_count = INPUT_LINE_COUNT;
+  *line_count = TEST_INPUT_LINE_COUNT;
   return 0;
 }
 
 static inline int load_dictionaries(const char *path, Dictionary_t **dicts,
                                     size_t *dict_count) {
 
-  *dict_count = DICT_COUNT;
+  *dict_count = TEST_DICT_COUNT;
 
-  *dicts = calloc(DICT_COUNT, sizeof(Dictionary_t));
+  *dicts = calloc(TEST_DICT_COUNT, sizeof(Dictionary_t));
   if (!*dicts)
     return -1;
 
-  for (size_t i = 0; i < DICT_COUNT; i++) {
-    const char **source_words = DICTIONARIES[i];
+  for (size_t i = 0; i < TEST_DICT_COUNT; i++) {
+    const char **source_words = TEST_DICTIONARIES[i];
     Dictionary_t *d = &(*dicts)[i];
 
-    d->word_count = DICT_SIZES[i] - 1; // id excluded
+    d->word_count = TEST_DICT_SIZES[i] - 1; // id excluded
     d->id = (uint32_t)strtoul(source_words[0], NULL, 10);
-    d->lang = strdup(DICT_LANGS[i]);
+    d->lang = strdup(TEST_DICT_LANGS[i]);
 
     if (!d->lang)
       goto fail;
@@ -148,7 +148,7 @@ static inline int load_dictionaries(const char *path, Dictionary_t **dicts,
     if (!d->words)
       goto fail;
 
-    for (size_t j = 1; j < DICT_SIZES[i]; j++) {
+    for (size_t j = 1; j < TEST_DICT_SIZES[i]; j++) {
       d->words[j - 1] = strdup(source_words[j]);
       if (!d->words[j - 1])
         goto fail;
@@ -157,7 +157,7 @@ static inline int load_dictionaries(const char *path, Dictionary_t **dicts,
   return 0;
 
 fail:
-  for (size_t i = 0; i < DICT_COUNT; i++) {
+  for (size_t i = 0; i < TEST_DICT_COUNT; i++) {
     Dictionary_t *d = &(*dicts)[i];
     if (d->words) {
       for (uint32_t j = 0; j < d->word_count; j++) {

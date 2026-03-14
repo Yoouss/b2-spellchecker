@@ -6,8 +6,6 @@
 #include "detector.h"
 #include <string.h>
 
-
-
 int word_in_dictionary(char* word, Dictionary_t* dict){
     if (word==NULL||dict==NULL){
         return -1;
@@ -29,8 +27,10 @@ int* words_in_line(char* line, int length, Dictionary_t* dict){
     }
     
     int count = 0;
+    char *copy = strdup(line);
+    if (copy == NULL) return NULL;
 
-    char* mot = strtok(line," %\t.,;:!?\"'()[]{}-_/\\|@#$^&*+=~`");
+    char* mot = strtok(copy," %\t.,;:!?\"'()[]{}-_/\\|@#$^&*+=~`");
     while (mot != NULL){
         if(word_in_dictionary(mot,dict)==0){
             count++;
@@ -38,11 +38,27 @@ int* words_in_line(char* line, int length, Dictionary_t* dict){
         mot = strtok(NULL, " %\t.,;:!?\"'()[]{}-_/\\|@#$^&*+=~`");
     }
 
+    free(copy);
+
+    if (count == 0) return NULL;
+
 
     int* index = malloc(count*sizeof(int));
+    if (index == NULL) {
+        free(copy); 
+        return NULL;
+    }
+    
     int recount = 0;
     int pos=0;
-    char* mot2 = strtok(line," %\t.,;:!?\"'()[]{}-_/\\|@#$^&*+=~`");
+
+    copy = strdup(line);
+    if (copy == NULL) {
+        free(index); 
+        return NULL;
+    }
+
+    char* mot2 = strtok(copy," %\t.,;:!?\"'()[]{}-_/\\|@#$^&*+=~`");
         while (mot2 != NULL){
         if(word_in_dictionary(mot2,dict)==0){
             index[pos] = recount;
@@ -53,11 +69,15 @@ int* words_in_line(char* line, int length, Dictionary_t* dict){
         mot2 = strtok(NULL, " %\t.,;:!?\"'()[]{}-_/\\|@#$^&*+=~`");
     }
 
-   return index; 
+    free(copy);
+
+    return index; 
 }
 
 
-int** words_in_file(char* filename, Dictionary_t* dicts ){
+int** words_in_file(char* filename, Dictionary_t* dict){
+
+    if (filename == NULL || dict == NULL) return NULL;
 
     // Load input
     char** lines = NULL;
@@ -66,14 +86,13 @@ int** words_in_file(char* filename, Dictionary_t* dicts ){
 
     read_input_file(filename, &lines, &lines_sizes, &line_count);
 
-    int** matrice = malloc(line_count*sizeof(int*));
+    int** matrice = malloc(line_count * sizeof(int*));
 
-    for(int i=0;i<line_count;i++){
-        char* ligne = lines[i];
-        int* lst_pos_badwords = words_in_line(ligne,lines_sizes[i],dicts);
+    for (int i = 0; i < line_count; i++){
+        char* line = lines[i];
+        int* lst_pos_badwords = words_in_line(line, lines_sizes[i], dict);
         matrice[i]= lst_pos_badwords;
-
     }
-    return matrice;
 
+    return matrice;
 }
