@@ -283,4 +283,22 @@ static const uint32_t INPUT_WORD_COUNTS[] = {
 
 #define INPUT_LINE_COUNT 50
 
+static const char *const TEST_INPUT_DATA[] = {
+    "bonjour chat ami chieen jouer dans la maiison",
+    "Sofia aimer boire eau abeille jouerr avec son abeille",
+    "je vouloir lire le livvre je parler avec Younes",
+    "le petit chien dormir dans la maison pour venir voir",
+    "Younes ami Ilyes vouloir mangerr pour jouer"
+};
+
+static const uint32_t TEST_INPUT_WORD_COUNTS[] = {
+    8,  
+    9,  
+    9,  
+    10, 
+    7 
+};
+
+#define TEST_INPUT_LINE_COUNT 5
+
 #endif

@@ -89,36 +89,32 @@ int** give_expected_output_with_input_5l_test() {
 }
 
 void test_word_in_dictionary(void) {
-    Dictionary_t* dicts = load_dictionary_for_test();
+    Dictionary_t* dict = load_dictionary_for_test();
 
-    CU_ASSERT_PTR_NOT_NULL(dicts);
-    CU_ASSERT_EQUAL(1, word_in_dictionary("bonjour", dicts));
-    CU_ASSERT_EQUAL(0, word_in_dictionary("mmzjd", dicts));
-    CU_ASSERT_EQUAL(-1, word_in_dictionary(NULL, dicts)); // cas extrême 1 : on ne donne pas de mot à chercher
+    CU_ASSERT_PTR_NOT_NULL(dict);
+    CU_ASSERT_EQUAL(1, word_in_dictionary("bonjour", dict));
+    CU_ASSERT_EQUAL(0, word_in_dictionary("mmzjd", dict));
+    CU_ASSERT_EQUAL(-1, word_in_dictionary(NULL, dict)); // cas extrême 1 : on ne donne pas de mot à chercher
     CU_ASSERT_EQUAL(-1, word_in_dictionary("bonjour", NULL)); // cas extrême 2 : pas de dictionnaire trouvé 
 }
 
 
 void test_words_in_line(void) {
-    Dictionary_t* dicts = load_dictionary_for_test();
+    Dictionary_t* dict = load_dictionary_for_test();
 
-    char* line_test = {"manger une,pomme"};//(Younes est dans le dico, "pomme" n'y est pas)
-    int line_length = 3;
+    char* line_test = "manger une,pomme";//(Younes est dans le dico, "pomme" n'y est pas)
+    int line_length = 16;
 
-    int* result = words_in_line(line_test, line_length, dicts);
-    //"pomme" est le seul mot faux à la 3ème position
-    CU_ASSERT_PTR_NOT_NULL(result);
-    if (result != NULL) {
-        CU_ASSERT_EQUAL(result[0], 3); 
-    }
-
-    if (result != NULL) {
-        free(result);
-    }
+    int* result = words_in_line(line_test, line_length, dict);
+    //"pomme" est le seul mot faux à la 2ème position (on commence à 0)
+    CU_ASSERT_PTR_NOT_NULL_FATAL(result);
+   
+    CU_ASSERT_EQUAL(result[0], 2); 
+    free(result);
 
     CU_ASSERT_PTR_NULL(words_in_line(line_test, line_length, NULL));// Test cas extrême : dictionnaire NULL
     
-    CU_ASSERT_PTR_NULL(words_in_line(NULL, 0, dicts));// Si la ligne est vide
+    CU_ASSERT_PTR_NULL(words_in_line(NULL, 0, dict));// Si la ligne est vide
 }
 
 void test_words_in_file(void) {
@@ -131,21 +127,21 @@ void test_words_in_file(void) {
 
     read_input_file(inputPath, &lines, &lines_sizes, &line_count);
 
-    Dictionary_t* dicts = load_dictionary_for_test();
+    Dictionary_t* dict = load_dictionary_for_test();
 
     int** expectedOutput = give_expected_output_with_input_5l_test();
     CU_ASSERT_PTR_NOT_NULL_FATAL(expectedOutput);
 
-    int** noFile = words_in_file(NULL, dicts);
+    int** noFile = words_in_file(NULL, dict);
     CU_ASSERT_PTR_NULL_FATAL(noFile);
     int** noDicts = words_in_file(inputPath, NULL);
     CU_ASSERT_PTR_NULL_FATAL(noDicts);
 
-    int** result = words_in_file(inputPath, dicts);
+    int** result = words_in_file(inputPath, dict);
 
     CU_ASSERT_EQUAL(result[0][0], 3);
     CU_ASSERT_EQUAL(result[0][1], 7);
-    CU_ASSERT_EQUAL(result[1][0], 6);
+    CU_ASSERT_EQUAL(result[1][0], 5);
     CU_ASSERT_EQUAL(result[2][0], 4);
     CU_ASSERT_PTR_NULL(result[3]);
     CU_ASSERT_EQUAL(result[4][0], 4);
