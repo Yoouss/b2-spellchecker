@@ -7,17 +7,18 @@
 
 /**
  * @brief loads the dictionary fr.dict.test using load_dictionaries()'s implementation
+ * 
  */
 Dictionary_t* load_dictionary_for_test() {
     char* dictionaryPath = "fr.dict.test";
    
     // Load dictionnary
-    Dictionary_t* dicts = NULL;
+    Dictionary_t* dict = NULL;
     size_t dicts_count = 0;
 
-    load_dictionaries(dictionaryPath, &dicts, &dicts_count);
+    load_dictionaries(dictionaryPath, &dict, &dicts_count);
 
-    return dicts;
+    return dict;
 }
 
 /**
