@@ -7,8 +7,8 @@ HEADERS_DIR=headers
 CC=clang
 
 CPPFLAGS=-Iinclude -Iheaders -DDISABLE_IO # /!\ Enlever -DDISABLE_IO pour utiliser votre implementation io.c
-CFLAGS=-Wall -Werror -g # Ajoutez -g pour Valgrind :)
-LDLIBS=-lm 
+CFLAGS=-Wall -Werror # Ajoutez -g pour Valgrind :)
+LDLIBS=-lm
 
 TARGET=spellchecker
 TEST=test
@@ -18,7 +18,7 @@ SOURCES   = $(wildcard $(SRC_DIR)/*.c)
 # List path to object files
 OBJECTS   = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 # List path to headers files
-HEADERS 	= $(wildcard $(HEADERS_DIR)/*.h)
+HEADERS        = $(wildcard $(HEADERS_DIR)/*.h)
 
 # Filter object files to exclude program's main
 OBJECTS_NO_MAIN = $(filter-out $(OBJ_DIR)/main.o, $(OBJECTS))
@@ -28,24 +28,26 @@ TEST_SOURCES = $(wildcard $(TEST_DIR)/*.c)
 # List path to test object files
 TEST_OBJECTS = $(patsubst $(TEST_DIR)/%.c, $(TEST_OBJ_DIR)/%.o, $(TEST_SOURCES))
 
-
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC)  $^ $(LDLIBS) $(CFLAGS) -o $@ 
+	$(CC) $(CPPFLAGS) $(CFLAGS)  $^ $(LDLIBS) -o $@
 
 $(TEST): $(OBJECTS_NO_MAIN) $(TEST_OBJECTS)
-	$(CC)  $^ $(LDLIBS) -lcunit $(CFLAGS) -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ $(LDLIBS) -lcunit  -o $@
+
+tests: $(TEST)
+	./$(TEST)
 
 clean:
-	@rm -f $(TARGET) $(TEST) $(OBJECTS) $(TEST_OBJECTS)
+	rm -f $(TARGET) $(TEST) $(OBJECTS) $(TEST_OBJECTS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
-	@mkdir -p $(OBJ_DIR)
+	mkdir -p $(OBJ_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(TEST_OBJ_DIR)/%.o: $(TEST_DIR)/%.c $(HEADERS)
-	@mkdir -p $(TEST_OBJ_DIR)
+	mkdir -p $(TEST_OBJ_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-.PHONY: all clean test
+.PHONY: all clean tests
