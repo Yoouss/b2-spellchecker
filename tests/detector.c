@@ -128,6 +128,7 @@ void test_words_in_file(void) {
 
     read_input_file(inputPath, &lines, &lines_sizes, &line_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(lines);
+    CU_ASSERT_FATAL(line_count >= 0);
 
     Dictionary_t* dict = load_dictionary_for_test();
     CU_ASSERT_PTR_NOT_NULL_FATAL(dict);
