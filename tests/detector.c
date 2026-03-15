@@ -1,13 +1,13 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include "common.h"
 #include <io.h>
-#include <stdlib.h>
+#include "common.h"
 #include "detector.h"
 
 /**
  * @brief loads the dictionary fr.dict.test using load_dictionaries()'s implementation
  * 
+ * @return a pointer to the Dictionary_t dictionary for the tests
  */
 Dictionary_t* load_dictionary_for_test() {
     char* dictionaryPath = "fr.dict.test";
@@ -91,31 +91,31 @@ int** give_expected_output_with_input_5l_test() {
 
 void test_word_in_dictionary(void) {
     Dictionary_t* dict = load_dictionary_for_test();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(dict);
 
-    CU_ASSERT_PTR_NOT_NULL(dict);
     CU_ASSERT_EQUAL(1, word_in_dictionary("bonjour", dict));
     CU_ASSERT_EQUAL(0, word_in_dictionary("mmzjd", dict));
-    CU_ASSERT_EQUAL(-1, word_in_dictionary(NULL, dict)); // cas extrême 1 : on ne donne pas de mot à chercher
-    CU_ASSERT_EQUAL(-1, word_in_dictionary("bonjour", NULL)); // cas extrême 2 : pas de dictionnaire trouvé 
+
+    CU_ASSERT_EQUAL(-1, word_in_dictionary(NULL, dict)); 
+    CU_ASSERT_EQUAL(-1, word_in_dictionary("bonjour", NULL));
 }
 
 
 void test_words_in_line(void) {
     Dictionary_t* dict = load_dictionary_for_test();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(dict);
 
-    char* line_test = "manger une,pomme";//(Younes est dans le dico, "pomme" n'y est pas)
-    int line_length = 16;
+    char* line_test = "manger une,pomme"; // "pomme" n'est pas dans le dictionnaire test
 
-    int* result = words_in_line(line_test, line_length, dict);
-    //"pomme" est le seul mot faux à la 2ème position (on commence à 0)
+    int* result = words_in_line(line_test, dict);
     CU_ASSERT_PTR_NOT_NULL_FATAL(result);
    
     CU_ASSERT_EQUAL(result[0], 2); 
     free(result);
 
-    CU_ASSERT_PTR_NULL(words_in_line(line_test, line_length, NULL));// Test cas extrême : dictionnaire NULL
+    CU_ASSERT_PTR_NULL(words_in_line(line_test, NULL));
     
-    CU_ASSERT_PTR_NULL(words_in_line(NULL, 0, dict));// Si la ligne est vide
+    CU_ASSERT_PTR_NULL(words_in_line(NULL, dict));
 }
 
 void test_words_in_file(void) {
@@ -127,8 +127,10 @@ void test_words_in_file(void) {
     size_t line_count = 0;
 
     read_input_file(inputPath, &lines, &lines_sizes, &line_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(lines);
 
     Dictionary_t* dict = load_dictionary_for_test();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(dict);
 
     int** expectedOutput = give_expected_output_with_input_5l_test();
     CU_ASSERT_PTR_NOT_NULL_FATAL(expectedOutput);
@@ -139,6 +141,7 @@ void test_words_in_file(void) {
     CU_ASSERT_PTR_NULL_FATAL(noDicts);
 
     int** result = words_in_file(inputPath, dict);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(result);
 
     CU_ASSERT_EQUAL(result[0][0], 3);
     CU_ASSERT_EQUAL(result[0][1], 7);
