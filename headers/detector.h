@@ -35,3 +35,4 @@ int* words_in_line(char* line, int lenght, Dictionary_t* dict);
  */
 int** words_in_file(char* filename, Dictionary_t* dict);
 
+#endif
