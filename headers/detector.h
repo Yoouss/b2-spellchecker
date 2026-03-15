@@ -43,3 +43,4 @@ int[] words_in_file(char*** file, int length, Dictionary_t* dict );
 
 
 
+#endif
