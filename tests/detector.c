@@ -44,7 +44,7 @@ void free_matrix_input_5l_test(int** matrix, int matrixLength) {
  * 
  * @return 0 on succeed, -1 on failure after freeing the whole matrix
  */
-int allocate_memory_for_matrix(int** matrix, int index, int numberOfElements) {
+short allocate_memory_for_matrix(int** matrix, int index, int numberOfElements) {
     matrix[index] = malloc(numberOfElements * sizeof(int));
 
     if (matrix[index] == NULL) {
@@ -65,7 +65,7 @@ int allocate_memory_for_matrix(int** matrix, int index, int numberOfElements) {
 int** give_expected_output_with_input_5l_test() {
     int** matrix = malloc(5 * sizeof(int *));
     if (matrix == NULL) return NULL;
-    int status;
+    short status;
 
     status = allocate_memory_for_matrix(matrix, 0, 2);
     if (status == -1) return NULL;
@@ -114,21 +114,11 @@ void test_words_in_line(void) {
     free(result);
 
     CU_ASSERT_PTR_NULL(words_in_line(line_test, NULL));
-    
     CU_ASSERT_PTR_NULL(words_in_line(NULL, dict));
 }
 
 void test_words_in_file(void) {
     char* inputPath = "input_5l_test.txt";
-
-    // Load input
-    char** lines = NULL;
-    uint32_t* lines_sizes = NULL;
-    size_t line_count = 0;
-
-    read_input_file(inputPath, &lines, &lines_sizes, &line_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(lines);
-    CU_ASSERT_FATAL(line_count >= 0);
 
     Dictionary_t* dict = load_dictionary_for_test();
     CU_ASSERT_PTR_NOT_NULL_FATAL(dict);
