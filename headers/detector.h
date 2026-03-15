@@ -34,5 +34,3 @@ int* words_in_line(char* line, int lenght, Dictionary_t* dict);
  * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
  */
 int** words_in_file(char* filename, Dictionary_t* dict);
-
-#endif
