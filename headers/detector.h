@@ -1,10 +1,7 @@
-#include "common.h"
 #include <stdint.h>
 #include <stdio.h>
-
-#include "dict.h"
-#include "input.h"
-
+#include <string.h>
+#include "common.h"
 
 /**
  * @brief  fonction qui prend un mot et vérifie si le mot est dans le dictionnaire : 
@@ -19,11 +16,10 @@ int word_in_dictionary(char* word, Dictionary_t* dict);
  * @brief  fonction qui prend une ligne qui représente une phrase et vérifie si les mots sont dans le dictionnaire  
  *
  * @param  line un tableau de mots qui contiennent des charactères
- * @param  int longueur de la ligne
  * @param  dict un pointeur vers un dictionaire de type Dictionary_t
  * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
  */
-int* words_in_line(char* line, int lenght, Dictionary_t* dict);
+int* words_in_line(char* line, Dictionary_t* dict);
 
 
 /**
@@ -34,3 +30,39 @@ int* words_in_line(char* line, int lenght, Dictionary_t* dict);
  * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
  */
 int** words_in_file(char* filename, Dictionary_t* dict);
+
+/**
+ * @brief  O(log(n)) search of a word in a given dictionary
+ *
+ * @param word An array of characters representing a word
+ * @param dict a pointer to a Dictionary_t dictionnary
+ * @return 1 if found, -1 if an error occured and 0 otherwise 
+ */
+static inline int binary_search_word_in_dictonary(char* targetWord, Dictionary_t* dict) {
+    if (targetWord == NULL || dict == NULL) return -1;
+
+    char** words = dict->words;
+    int32_t left = 0;
+    int32_t right = dict->word_count - 1;
+
+    while (left <= right) {
+        int32_t middle = (left + right) / 2;
+        char* word = words[middle];
+
+        short comparison = strcmp(word, targetWord); // Is word smaller or greater than TargetWord ?
+
+        if (comparison < 0) {
+            left = middle + 1;
+        }
+
+        else if (comparison > 0) {
+            right = middle - 1;
+        }
+
+        else {
+            return 1;
+        }
+    }
+
+    return 0;
+}
