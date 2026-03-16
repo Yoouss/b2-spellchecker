@@ -28,7 +28,7 @@ char* soundex(char* word);
 char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_count);
 
 /**
- * @brief Calcule la distance d'édition entre deux mots
+ * @brief Calcule la distance de Levenstein d'édition entre deux mots
  * 
  * @param word1 Le premier mot
  * @param word2 Le second mot
