@@ -6,6 +6,54 @@
 #include "algo.h"
 #include <string.h>
 
+char get_soundex_code(char c) {
+    c = toupper(c);
+    switch (c) {
+        case 'B': case 'F': case 'P': case 'V': return '1';
+        case 'C': case 'G': case 'J': case 'K': case 'Q': case 'S': case 'X': case 'Z': return '2';
+        case 'D': case 'T': return '3';
+        case 'L': return '4';
+        case 'M': case 'N': return '5';
+        case 'R': return '6';
+        case 'A': case 'E': case 'I': case 'O': case 'U': case 'Y': case 'H': case 'W': return '-';
+        default: return '0';
+    }
+}
+char* soundex(char* word) {
+    if (word == NULL || strlen(word) == 0) return NULL;
+
+    char* code = malloc(5 * sizeof(char));
+    if (code == NULL) return NULL;
+
+    code[0] = toupper(word[0]);
+    
+    int code_index = 1;
+    char last_digit = get_soundex_code(word[0]);
+
+    for (int i = 1; word[i] != '\0' && code_index < 4; i++) {
+        char current_digit = get_soundex_code(word[i]);
+
+        if (current_digit == '-') {
+            last_digit = '-';
+            continue;
+        }
+
+        if (current_digit != '0' && current_digit != last_digit) {
+            code[code_index] = current_digit;
+            code_index++;
+            last_digit = current_digit;
+        }
+    }
+
+    while (code_index < 4) {
+        code[code_index] = '0';
+        code_index++;
+    }
+
+    code[4] = '\0';
+    return code;
+}
+
 
 char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_count) {
     uint32_t dict_size = dict->word_count;
