@@ -76,11 +76,7 @@ int calculate_distance(char* word1, char* word2){
             int insertion = matrix[i][j - 1] + 1;      
             int substitution = matrix[i - 1][j - 1] + cost; 
 
-            int min = deletion;
-            if (insertion < min) min = insertion;
-            if (substitution < min) min = substitution;
-
-            matrix[i][j] = min;
+            matrix[i][j] = min3(deletion,insertion,substitution);
 
 
         }
