@@ -116,3 +116,25 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
 
     return candidates_distances;
 }
+
+
+void sort_candidate_distances(int** distance_matrix, int nb_candidates){
+    int j;
+    int* temp;
+
+    for(int i = 0;i<=nb_candidates;i++){
+        temp = distance_matrix[i];
+        j= i;
+
+        //on compare la distance situé à temp[1]
+        //on déplace les éléments qui ont une dist > temp[1]
+
+        while (0<=j&&distance_matrix[j][1]>temp[1]){
+            distance_matrix[j+1] = distance_matrix[j];
+            j = j-1;
+        }
+
+        distance_matrix[j+1] = temp;
+    }
+
+}
