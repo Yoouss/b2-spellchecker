@@ -60,6 +60,6 @@ void sort_candidate_distances(int** distance_matrix, int nb_candidates);
  * @param sorted_matrix La matrice de distances après tri
  * @return un pointeur vers sort_cnadidate_distances[0][0]
  */
-char* get_final_correction(int** sorted_matrix);
+char* get_final_correction(int** sorted_matrix, char** candidates);
 
 #endif
