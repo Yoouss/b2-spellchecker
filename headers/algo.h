@@ -5,8 +5,8 @@
 #include "dict.h"
 #include "input.h"
 
-#ifndef IO_H
-#define IO_H
+#ifndef ALGO_H
+#define ALGO_H
 
 
 /**
