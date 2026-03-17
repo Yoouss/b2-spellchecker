@@ -5,6 +5,7 @@
 #include "common.h"
 #include "algo.h"
 #include <string.h>
+#include <ctype.h>
 
 char get_soundex_code(char c) {
     c = toupper(c);
@@ -98,8 +99,8 @@ int calculate_distance(char* word1, char* word2){
     int n = strlen(word1);
     int m = strlen(word2);
     //cas de base
-    if (n==0) return NULL;
-    if (m==0) return NULL;
+    if (n==0) return -1;
+    if (m==0) return -1;
     //construire la matrice
     int matrix[n+1][m+1];
 
