@@ -1,7 +1,11 @@
+#include <CUnit/CUnit.h>
+#include <CUnit/Basic.h>
+#include <ctype.h>
 #include <stdio.h>
-#include <dict.h>
-#include <input.h>
-#include <io.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
 #include "common.h"
 #include "algo.h"
 #include <string.h>
@@ -20,6 +24,7 @@ char get_soundex_code(char c) {
         default: return '0';
     }
 }
+
 char* soundex(char* word) {
     if (word == NULL || strlen(word) == 0) return NULL;
 
@@ -50,11 +55,9 @@ char* soundex(char* word) {
         code[code_index] = '0';
         code_index++;
     }
-
     code[4] = '\0';
     return code;
 }
-
 
 char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_count) {
     uint32_t dict_size = dict->word_count;
@@ -88,13 +91,13 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
     return candidate_words;
 }
 
-
 int min3(int a, int b, int c){
     int ref = a;
     if (b<ref) ref=b;
     if (c<ref) ref = c;
     return ref;
 }
+
 int calculate_distance(char* word1, char* word2){
     int n = strlen(word1);
     int m = strlen(word2);
@@ -126,18 +129,10 @@ int calculate_distance(char* word1, char* word2){
             int substitution = matrix[i - 1][j - 1] + cost; 
 
             matrix[i][j] = min3(deletion,insertion,substitution);
-
-
         }
     }
     return matrix[n][m];
-
-
-
-
-
 }
-
 
 int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candidates) {
     int** candidates_distances = malloc((nb_candidates) * sizeof(int*));
@@ -166,7 +161,6 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
     return candidates_distances;
 }
 
-
 void sort_candidate_distances(int** distance_matrix, int nb_candidates){
     int j;
     int* temp;
@@ -185,5 +179,9 @@ void sort_candidate_distances(int** distance_matrix, int nb_candidates){
 
         distance_matrix[j+1] = temp;
     }
+}
 
+
+char* get_final_correction(int** sorted_matrix, char** candidates){
+    return candidates[sorted_matrix[0][0]];//prend le mot candidat avec le 1er indice trouvé dans la matrice 
 }
