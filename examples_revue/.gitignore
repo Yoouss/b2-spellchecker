@@ -1,0 +1,6 @@
+/data_race
+/deadlock
+/test_list
+*.gcov
+*.gcda
+*.gcno
