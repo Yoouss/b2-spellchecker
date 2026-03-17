@@ -181,3 +181,8 @@ void sort_candidate_distances(int** distance_matrix, int nb_candidates){
         distance_matrix[j+1] = temp;
     }
 }
+
+
+char* get_final_correction(int** sorted_matrix, char** candidates){
+    return candidates[sorted_matrix[0][0]];//prend le mot candidat avec le 1er indice trouvé dans la matrice 
+}
