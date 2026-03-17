@@ -8,9 +8,8 @@
 
 #include "common.h"
 #include "algo.h"
-#include "dict.h"
-#include "input.h"
-#include "io.h"
+#include <string.h>
+#include <ctype.h>
 
 char get_soundex_code(char c) {
     c = toupper(c);
