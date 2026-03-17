@@ -2,6 +2,8 @@
 #include <CUnit/Basic.h>
 
 void test_word_in_dictionary();
+void test_find_candidate_dict_for_line();
+void test_number_and_indexes_of_bad_words_in_line();
 void test_words_in_line();
 void test_words_in_file();
 void test_get_soundex_code(); 
@@ -11,6 +13,13 @@ void test_calculate_distance();
 void test_sort_candidate_distances(); 
 
 int main(void) {
+    CU_initialize_registry();
+    CU_pSuite suiteDetector = CU_add_suite("Détécteur d'erreurs S5", 0, 0);
+    CU_add_test(suiteDetector, "test_word_in_dictionary", test_word_in_dictionary);
+    CU_add_test(suiteDetector, "test_find_candidate_dict_for_line", test_find_candidate_dict_for_line);
+    CU_add_test(suiteDetector, "test_number_and_indexes_of_bad_words_in_line", test_number_and_indexes_of_bad_words_in_line);
+    CU_add_test(suiteDetector, "test_words_in_line", test_words_in_line);
+    CU_add_test(suiteDetector, "test_words_in_file", test_words_in_file);
     if (CUE_SUCCESS != CU_initialize_registry()) return CU_get_error();
 
     // Suite S5
