@@ -5,20 +5,29 @@
 #include "detector.h"
 
 /**
- * @brief loads the dictionary fr.dict.test using load_dictionaries()'s implementation
+ * @brief loads the dictionaries using load_dictionaries()'s implementation
  * 
- * @return a pointer to the Dictionary_t dictionary for the tests
+ * @return a pointer to the Dictionary_t* dictionaries for the tests
  */
-Dictionary_t* load_dictionary_for_test() {
-    char* dictionaryPath = "fr.dict.test";
-   
+Dictionary_t* load_dictionaries_for_test() {
+    char* dictionaryPath = "dummy"; // il sert à rien pour l'instant
+
     // Load dictionnary
-    Dictionary_t* dict = NULL;
+    Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
-    load_dictionaries(dictionaryPath, &dict, &dicts_count);
+    load_dictionaries(dictionaryPath, &dicts, &dicts_count);
 
-    return dict;
+    return dicts;
+}
+
+/**
+ * @brief loads the dictionaries using load_dictionaries()'s implementation
+ * 
+ * @return a pointer to the Dictionary_t* dictionaries for the tests
+ */
+Dictionary_t load_dictionary_for_test() {
+    return load_dictionaries_for_test()[1];
 }
 
 /**
@@ -119,49 +128,78 @@ int** give_expected_output_with_input_10l() {
 }
 
 void test_word_in_dictionary(void) {
-    Dictionary_t* dict = load_dictionary_for_test();
-    CU_ASSERT_PTR_NOT_NULL_FATAL(dict);
+    Dictionary_t dict = load_dictionary_for_test();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(&dict);
 
-    CU_ASSERT_EQUAL(1, word_in_dictionary("bonjour", dict));
-    CU_ASSERT_EQUAL(0, word_in_dictionary("mmzjd", dict));
+    CU_ASSERT_EQUAL(1, word_in_dictionary("bonjour", &dict));
+    CU_ASSERT_EQUAL(0, word_in_dictionary("mmzjd", &dict));
 
-    CU_ASSERT_EQUAL(-1, word_in_dictionary(NULL, dict)); 
+    CU_ASSERT_EQUAL(-1, word_in_dictionary(NULL, &dict)); 
     CU_ASSERT_EQUAL(-1, word_in_dictionary("bonjour", NULL));
 }
 
 
 void test_words_in_line(void) {
-    Dictionary_t* dict = load_dictionary_for_test();
-    CU_ASSERT_PTR_NOT_NULL_FATAL(dict);
+    Dictionary_t* dicts = NULL;
+    size_t dicts_count = 0;
+
+    load_dictionaries("dummy", &dicts, &dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
     char* line_test = "manger une,pommeee"; // "pommeee" n'est pas dans le dictionnaire test
 
-    int* result = words_in_line(line_test, dict);
+    int* result = words_in_line(line_test, dicts, dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(result);
    
     CU_ASSERT_EQUAL(result[0], 2); 
     free(result);
 
-    CU_ASSERT_PTR_NULL(words_in_line(line_test, NULL));
-    CU_ASSERT_PTR_NULL(words_in_line(NULL, dict));
+    CU_ASSERT_PTR_NULL(words_in_line(line_test, NULL, dicts_count));
+    CU_ASSERT_PTR_NULL(words_in_line(NULL, dicts, dicts_count));
+    CU_ASSERT_PTR_NULL(words_in_line(line_test, dicts, 0));
 }
 
 void test_words_in_file(void) {
-    char* inputPath = "input_5l_test.txt";
+    char* inputPath = "input_10l.txt";
 
-    Dictionary_t* dict = load_dictionary_for_test();
-    CU_ASSERT_PTR_NOT_NULL_FATAL(dict);
+    Dictionary_t* dicts = NULL;
+    size_t dicts_count = 0;
 
-    int** expectedOutput = give_expected_output_with_input_5l_test();
+    load_dictionaries("dummy", &dicts, &dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
+
+    int** expectedOutput = give_expected_output_with_input_10l();
     CU_ASSERT_PTR_NOT_NULL_FATAL(expectedOutput);
 
-    int** noFile = words_in_file(NULL, dict);
+    int** noFile = words_in_file(NULL, dicts, dicts_count);
     CU_ASSERT_PTR_NULL_FATAL(noFile);
-    int** noDicts = words_in_file(inputPath, NULL);
+    int** noDicts = words_in_file(inputPath, NULL, dicts_count);
     CU_ASSERT_PTR_NULL_FATAL(noDicts);
+    int** invalidDictsCount = words_in_file(inputPath, dicts, 0);
+    CU_ASSERT_PTR_NULL_FATAL(invalidDictsCount);
 
-    int** matrixOfBadWordsIndexes = words_in_file(inputPath, dict);
+    int** matrixOfBadWordsIndexes = words_in_file(inputPath, dicts, dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(matrixOfBadWordsIndexes);
+    
+
+    printf("%i\n", matrixOfBadWordsIndexes[0][0]);
+printf("%i\n", matrixOfBadWordsIndexes[0][1]);
+printf("%i\n", matrixOfBadWordsIndexes[1][0]);
+printf("%i\n", matrixOfBadWordsIndexes[1][1]);
+printf("%i\n", matrixOfBadWordsIndexes[2][0]);
+printf("%i\n", matrixOfBadWordsIndexes[2][1]);
+printf("%i\n", matrixOfBadWordsIndexes[3][0]);
+printf("%i\n", matrixOfBadWordsIndexes[3][1]);
+printf("%i\n", matrixOfBadWordsIndexes[4][0]);
+printf("%i\n", matrixOfBadWordsIndexes[4][1]);
+printf("%i\n", matrixOfBadWordsIndexes[5][0]);
+printf("%i\n", matrixOfBadWordsIndexes[5][1]);
+printf("%i\n", matrixOfBadWordsIndexes[6][0]);
+printf("%i\n", matrixOfBadWordsIndexes[7][0]);
+printf("%i\n", matrixOfBadWordsIndexes[8][0]);
+printf("%i\n", matrixOfBadWordsIndexes[8][1]);
+printf("%i\n", matrixOfBadWordsIndexes[9][0]);
+printf("%i\n", matrixOfBadWordsIndexes[9][1]);
 
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[0][0], 0);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[0][1], 3);
