@@ -148,6 +148,8 @@ void test_number_and_indexes_of_bad_words_in_line(void) {
     CU_ASSERT_PTR_NOT_NULL_FATAL(indexesOfBadWords);
 
     CU_ASSERT_EQUAL(indexesOfBadWords[0], 0);
+
+    free(indexesOfBadWords);
 }
 
 void test_words_in_line(void) {
