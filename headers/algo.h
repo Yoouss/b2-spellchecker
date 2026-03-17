@@ -8,6 +8,13 @@
 #ifndef ALGO_H
 #define ALGO_H
 
+/**
+ * @brief Calcule le code Soundex d'un caractère
+ * 
+ * @param c Le caractère à encoder
+ * @return le code Soundex
+ */
+char get_soundex_code(char c);
 
 /**
  * @brief Calcule le Soundex d'un mot
