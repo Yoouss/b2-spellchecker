@@ -15,14 +15,23 @@
 short word_in_dictionary(char* word, Dictionary_t* dict);
 
 /**
+ * @brief  fonction qui prend une ligne et trouve le dictionnaire candidat qui minimise le nombre d'erreurs 
+ *
+ * @param  line un tableau de mots qui contiennent des charactères
+ * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
+ * @return un pointeur vers le dictionnaire candidat ou NULL en cas d'erreur
+ */
+Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dicts);
+
+/**
  * @brief  fonction qui prend une ligne qui représente une phrase et vérifie si les mots sont dans le dictionnaire  
  *
  * @param  line un tableau de mots qui contiennent des charactères
- * @param  dict un pointeur vers un dictionaire de type Dictionary_t
+ * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
  * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
  *         (NULL si tous les mots sont dans le dictionnaire)
  */
-int* words_in_line(char* line, Dictionary_t* dict);
+int* words_in_line(char* line, Dictionary_t* dicts);
 
 /**
  * @brief  fonction helper de words_in_line qui informe sur les nombres de mots n'étant pas dans le dictionnaire 
@@ -46,10 +55,10 @@ int* get_indexes_of_bad_words_in_line(char* line, uint32_t numberOfBadWords, Dic
  * @brief  fonction qui prend un fichier et vérifie si les tous mots sont dans le dictionnaire  
  *
  * @param  filename le nom du fichier du dossier inputs
- * @param  dict un pointeur vers un dictionaire de type Dictionary_t
+ * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
  * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
  */
-int** words_in_file(char* filename, Dictionary_t* dict);
+int** words_in_file(char* filename, Dictionary_t* dicts);
 
 /**
  * @brief  O(log(n)) search of a word in a given dictionary
