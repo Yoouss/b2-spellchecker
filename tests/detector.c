@@ -64,69 +64,6 @@ short allocate_memory_for_matrix(int** matrix, int index, int numberOfElements) 
     return 0;
 }
 
-/**
- * @brief Helper function of test_words_in_file() that gives the expected matrix for the file input_10l.txt
- *
- * You can find the expected positions on the file input_10l.pos
- * 
- * @return a int** matrix on succeed, NULL on failure
- */
-int** give_expected_output_with_input_10l() {
-    int** matrix = malloc(10 * sizeof(int *));
-    if (matrix == NULL) return NULL;
-    short status;
-
-    status = allocate_memory_for_matrix(matrix, 0, 2);
-    if (status == -1) return NULL;
-    matrix[0][0] = 0;
-    matrix[0][1] = 3;
-
-    status = allocate_memory_for_matrix(matrix, 1, 2);
-    if (status == -1) return NULL;
-    matrix[1][0] = 1;
-    matrix[1][1] = 10;
-
-    status = allocate_memory_for_matrix(matrix, 2, 2);
-    if (status == -1) return NULL;
-    matrix[2][0] = 2;
-    matrix[2][1] = 7;
-
-    status = allocate_memory_for_matrix(matrix, 3, 2);
-    if (status == -1) return NULL;
-    matrix[3][0] = 3;
-    matrix[3][1] = 8;
-
-    status = allocate_memory_for_matrix(matrix, 4, 2);
-    if (status == -1) return NULL;
-    matrix[4][0] = 4;
-    matrix[4][1] = 7;
-
-    status = allocate_memory_for_matrix(matrix, 5, 2);
-    if (status == -1) return NULL;
-    matrix[5][0] = 5;
-    matrix[5][1] = 3;
-
-    status = allocate_memory_for_matrix(matrix, 6, 1);
-    if (status == -1) return NULL;
-    matrix[6][0] = 6;
-
-    status = allocate_memory_for_matrix(matrix, 7, 1);
-    if (status == -1) return NULL;
-    matrix[7][0] = 7;
-
-    status = allocate_memory_for_matrix(matrix, 8, 2);
-    if (status == -1) return NULL;
-    matrix[8][0] = 8;
-    matrix[8][1] = 0;
-
-    status = allocate_memory_for_matrix(matrix, 9, 2);
-    if (status == -1) return NULL;
-    matrix[9][0] = 9;
-    matrix[9][1] = 4;
-
-    return matrix;
-}
-
 void test_word_in_dictionary(void) {
     Dictionary_t dict = load_dictionary_for_test();
     CU_ASSERT_PTR_NOT_NULL_FATAL(&dict);
@@ -138,6 +75,80 @@ void test_word_in_dictionary(void) {
     CU_ASSERT_EQUAL(-1, word_in_dictionary("bonjour", NULL));
 }
 
+void test_find_candidate_dict_for_line(void) {
+    Dictionary_t* dicts = NULL;
+    size_t dicts_count = 0;
+
+    load_dictionaries("dummy", &dicts, &dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
+
+    Dictionary_t* noFile = find_candidate_dict_for_line(NULL, dicts, dicts_count);
+    CU_ASSERT_PTR_NULL_FATAL(noFile);
+    Dictionary_t* noDicts = find_candidate_dict_for_line("I am a line", NULL, dicts_count);
+    CU_ASSERT_PTR_NULL_FATAL(noDicts);
+    Dictionary_t* InvalidNumberOfDicts = find_candidate_dict_for_line("I am a line", dicts, 0);
+    CU_ASSERT_PTR_NULL_FATAL(InvalidNumberOfDicts);
+    
+    char* lineFr = "je suis supper occupé et j'aime les boulettes";
+    Dictionary_t* candidateDictForLineFr = find_candidate_dict_for_line(lineFr, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineFr);
+
+    char* lineEn = "I am veryy tired and sleepy";
+    Dictionary_t* candidateDictForLineEn = find_candidate_dict_for_line(lineEn, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineEn);
+
+    CU_ASSERT_STRING_EQUAL(candidateDictForLineFr->lang, "fr");
+    CU_ASSERT_STRING_EQUAL(candidateDictForLineEn->lang, "en");
+}
+
+void test_number_and_indexes_of_bad_words_in_line(void) {
+    Dictionary_t* dicts = NULL;
+    size_t dicts_count = 0;
+
+    load_dictionaries("dummy", &dicts, &dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
+
+    // ─────────────── TEST 1 ───────────────
+    // Au moins une faute détectée
+
+    char* lineFr = "prestant d\351billardez n'insuffla d'xaltante p\351nicilliums t'accablassiez sublim\342tes tois\342tes accouch\351 n'octaviant n'\351palasse qu'agresserai l'enivreraient santonnerai am\351liorai t'habill\350rent t'all\351guerait qu'enrayasses magasini\350re";
+
+    Dictionary_t* candidateDictForLineFr = find_candidate_dict_for_line(lineFr, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineFr);
+    CU_ASSERT_STRING_EQUAL(candidateDictForLineFr->lang, "fr");
+
+    int32_t numberOfBadWords = number_of_bad_words_in_line(lineFr, candidateDictForLineFr);
+    CU_ASSERT_NOT_EQUAL_FATAL(numberOfBadWords, -1);
+
+    CU_ASSERT_EQUAL(numberOfBadWords, 1); 
+
+    int32_t* indexesOfBadWords = get_indexes_of_bad_words_in_line(lineFr, numberOfBadWords, candidateDictForLineFr);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(indexesOfBadWords);
+
+    CU_ASSERT_EQUAL(indexesOfBadWords[0], 1);
+    CU_ASSERT_EQUAL(indexesOfBadWords[1], 3);
+
+    free(indexesOfBadWords);
+
+    // ─────────────── TEST 2 ───────────────
+    // Aucune faute détectée
+
+    char* lineEn = "whether you win or lose, looking back and learning from your experiences is a part of life";
+
+    Dictionary_t* candidateDictForLineEn = find_candidate_dict_for_line(lineEn, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineEn);
+    CU_ASSERT_STRING_EQUAL(candidateDictForLineEn->lang, "en");
+
+    numberOfBadWords = number_of_bad_words_in_line(lineEn, candidateDictForLineEn);
+    CU_ASSERT_NOT_EQUAL_FATAL(numberOfBadWords, -1);
+
+    CU_ASSERT_EQUAL(numberOfBadWords, 0); 
+
+    indexesOfBadWords = get_indexes_of_bad_words_in_line(lineEn, numberOfBadWords, candidateDictForLineEn);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(indexesOfBadWords);
+
+    CU_ASSERT_EQUAL(indexesOfBadWords[0], 0);
+}
 
 void test_words_in_line(void) {
     Dictionary_t* dicts = NULL;
@@ -151,7 +162,7 @@ void test_words_in_line(void) {
     int* result = words_in_line(line_test, dicts, dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(result);
    
-    CU_ASSERT_EQUAL(result[0], 2); 
+    CU_ASSERT_EQUAL(result[1], 2); 
     free(result);
 
     CU_ASSERT_PTR_NULL(words_in_line(line_test, NULL, dicts_count));
@@ -168,58 +179,34 @@ void test_words_in_file(void) {
     load_dictionaries("dummy", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
-    int** expectedOutput = give_expected_output_with_input_10l();
-    CU_ASSERT_PTR_NOT_NULL_FATAL(expectedOutput);
-
-    int** noFile = words_in_file(NULL, dicts, dicts_count);
+    int32_t** noFile = words_in_file(NULL, dicts, dicts_count);
     CU_ASSERT_PTR_NULL_FATAL(noFile);
-    int** noDicts = words_in_file(inputPath, NULL, dicts_count);
+    int32_t** noDicts = words_in_file(inputPath, NULL, dicts_count);
     CU_ASSERT_PTR_NULL_FATAL(noDicts);
-    int** invalidDictsCount = words_in_file(inputPath, dicts, 0);
+    int32_t** invalidDictsCount = words_in_file(inputPath, dicts, 0);
     CU_ASSERT_PTR_NULL_FATAL(invalidDictsCount);
 
-    int** matrixOfBadWordsIndexes = words_in_file(inputPath, dicts, dicts_count);
+    int32_t** matrixOfBadWordsIndexes = words_in_file(inputPath, dicts, dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(matrixOfBadWordsIndexes);
-    
 
-    printf("%i\n", matrixOfBadWordsIndexes[0][0]);
-printf("%i\n", matrixOfBadWordsIndexes[0][1]);
-printf("%i\n", matrixOfBadWordsIndexes[1][0]);
-printf("%i\n", matrixOfBadWordsIndexes[1][1]);
-printf("%i\n", matrixOfBadWordsIndexes[2][0]);
-printf("%i\n", matrixOfBadWordsIndexes[2][1]);
-printf("%i\n", matrixOfBadWordsIndexes[3][0]);
-printf("%i\n", matrixOfBadWordsIndexes[3][1]);
-printf("%i\n", matrixOfBadWordsIndexes[4][0]);
-printf("%i\n", matrixOfBadWordsIndexes[4][1]);
-printf("%i\n", matrixOfBadWordsIndexes[5][0]);
-printf("%i\n", matrixOfBadWordsIndexes[5][1]);
-printf("%i\n", matrixOfBadWordsIndexes[6][0]);
-printf("%i\n", matrixOfBadWordsIndexes[7][0]);
-printf("%i\n", matrixOfBadWordsIndexes[8][0]);
-printf("%i\n", matrixOfBadWordsIndexes[8][1]);
-printf("%i\n", matrixOfBadWordsIndexes[9][0]);
-printf("%i\n", matrixOfBadWordsIndexes[9][1]);
-
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[0][0], 0);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[0][0], 1);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[0][1], 3);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[1][0], 1);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[1][1], 10);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[2][0], 2);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[2][0], 1);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[2][1], 7);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[3][0], 3);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[3][0], 1);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[3][1], 8);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[4][0], 4);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[4][0], 1);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[4][1], 7);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[5][0], 5);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[5][0], 1);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[5][1], 3);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[6][0], 6);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[7][0], 7);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[8][0], 8);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[6][0], 0);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[7][0], 0);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[8][0], 1);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[8][1], 0);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[9][0], 9);
+    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[9][0], 1);
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[9][1], 4);
 
-    free_matrix(expectedOutput, 10);
     free_matrix(matrixOfBadWordsIndexes, 10);
 }

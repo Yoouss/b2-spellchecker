@@ -30,7 +30,7 @@ Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dicts, uint
  * @param  line un tableau de mots qui contiennent des charactères
  * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
  * @param  number_of_dictionaries le nombre de dictionaires 
- * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
+ * @return retourne un tableau avec à l'index 0 le nombre d'erreurs et leur index dans la line
  *         (NULL si tous les mots sont dans le dictionnaire)
  */
 int* words_in_line(char* line, Dictionary_t* dicts, uint16_t number_of_dictionaries);
@@ -42,16 +42,16 @@ int* words_in_line(char* line, Dictionary_t* dicts, uint16_t number_of_dictionar
  * @param  dict un pointeur vers un dictionaire de type Dictionary_t
  * @return -1 en cas d'erreur, les nombres de mauvais mots sinon
  */
-int32_t numbers_of_bad_words_in_line(char* line, Dictionary_t* dict);
+int32_t number_of_bad_words_in_line(char* line, Dictionary_t* dict);
 
 /**
  * @brief  fonction helper de words_in_line qui fourni l'index des mauvais mots 
  *
  * @param  line un tableau de mots qui contiennent des charactères
  * @param  dict un pointeur vers un dictionaire de type Dictionary_t
- * @return NULL en cas d'erreur, un tableau des index des mauvais mots sinon
+ * @return NULL en cas d'erreur, un tableau avec le nombre de mauvais mots à l'index 0 et leur index aux index du tableau suivants
  */
-int* get_indexes_of_bad_words_in_line(char* line, int32_t numberOfBadWords, Dictionary_t* dict);
+int32_t* get_indexes_of_bad_words_in_line(char* line, int32_t numberOfBadWords, Dictionary_t* dict);
 
 /**
  * @brief  fonction qui prend un fichier et vérifie si les tous mots sont dans le dictionnaire  
@@ -59,9 +59,11 @@ int* get_indexes_of_bad_words_in_line(char* line, int32_t numberOfBadWords, Dict
  * @param  filename le nom du fichier du dossier inputs
  * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
  * @param  number_of_dictionaries le nombre de dictionaires 
- * @return retourne un tableau contenant les positions des mots qui ne figurent pas dans le dico 
+ * @return NULL en cas d'erreur, retourne un matrice contenant les tableaux des 
+ *         positions des mots qui ne figurent pas dans le dico sinon
+ *         (index 0 = longueur du tableau = nombre de mauvais mots à cette ligne du fichier -> index de la ligne de la matrice)
  */
-int** words_in_file(char* filename, Dictionary_t* dicts, uint16_t number_of_dictionaries);
+int32_t** words_in_file(char* filename, Dictionary_t* dicts, uint16_t number_of_dictionaries);
 
 /**
  * @brief  O(log(n)) search of a word in a given dictionary
