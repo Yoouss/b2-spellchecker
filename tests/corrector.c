@@ -64,3 +64,32 @@ void test_calculate_distance(void){
 
 }
 
+void test_sort_candidate_distances(void){
+    int nb_candidates = 3;
+    
+    // 1. Allocation de la matrice (tableau de pointeurs)
+    int** matrix = malloc(nb_candidates * sizeof(int*));
+    for (int i = 0; i < nb_candidates; i++) {
+        matrix[i] = malloc(2 * sizeof(int));
+    }
+
+    // données non triées
+    matrix[0][0] = 10; matrix[0][1] = 5;  // Candidat A, dist 5
+    matrix[1][0] = 20; matrix[1][1] = 2;  // Candidat B, dist 2
+    matrix[2][0] = 30; matrix[2][1] = 8;  // Candidat C, dist 8
+
+    sort_candidate_distances(matrix, nb_candidates);
+
+    // Le plus petit (dist 2) doit être en premier
+    CU_ASSERT_EQUAL(matrix[0][1], 2);
+    CU_ASSERT_EQUAL(matrix[0][0], 20);
+    CU_ASSERT_EQUAL(matrix[1][1], 5);
+    CU_ASSERT_EQUAL(matrix[1][0], 10);
+    CU_ASSERT_EQUAL(matrix[2][1], 8);
+    CU_ASSERT_EQUAL(matrix[2][0], 30);
+
+    for (int i = 0; i < nb_candidates; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+}

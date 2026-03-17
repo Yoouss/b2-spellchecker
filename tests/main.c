@@ -8,6 +8,7 @@ void test_get_soundex_code();
 void test_soundex();
 void test_calculate_distance();
 void test_get_candidate_words();
+void test_sort_candidate_distance();
 
 int main(void) {
     CU_initialize_registry();
@@ -20,6 +21,7 @@ int main(void) {
     CU_add_test(suite, "test de soundex complet", test_soundex);
     CU_add_test(suite, "test_get_candidate_words", test_get_candidate_words);
     CU_add_test(suite, "test_calculate_distance", test_calculate_distance);
+    CU_add_test(suite, "test_sort_candidate_distance", test_sort_candidate_distance);
 
     CU_basic_run_tests();
     CU_cleanup_registry();
