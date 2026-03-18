@@ -102,8 +102,8 @@ int calculate_distance(char* word1, char* word2){
     int n = strlen(word1);
     int m = strlen(word2);
     //cas de base
-    if (n==0) return -1;
-    if (m==0) return -1;
+    if (n==0) return m;
+    if (m==0) return n;
     //construire la matrice
     int matrix[n+1][m+1];
 
@@ -115,11 +115,11 @@ int calculate_distance(char* word1, char* word2){
         matrix[0][col] = col;
     }
 
-    for (int i = 0;i<=n;i++){
-        for (int j = 0;j<=m;j++){
+    for (int i = 1;i<=n;i++){
+        for (int j = 1;j<=m;j++){
             int cost;
             //si les lettres sont égales ou non
-            if(word1[i]==word2[j]){
+            if(word1[i-1]==word2[j-1]){
                 cost = 0;
             }else{cost =1;}
 
@@ -165,9 +165,9 @@ void sort_candidate_distances(int** distance_matrix, int nb_candidates){
     int j;
     int* temp;
 
-    for(int i = 0;i<=nb_candidates;i++){
+    for(int i = 1;i<nb_candidates;i++){
         temp = distance_matrix[i];
-        j= i;
+        j= i-1;
 
         //on compare la distance situé à temp[1]
         //on déplace les éléments qui ont une dist > temp[1]
