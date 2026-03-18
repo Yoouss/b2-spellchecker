@@ -33,7 +33,7 @@ Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dicts, uint
  * @return retourne un tableau avec à l'index 0 le nombre d'erreurs et leur index dans la line
  *         (NULL si tous les mots sont dans le dictionnaire)
  */
-int* words_in_line(char* line, Dictionary_t* dicts, uint16_t number_of_dictionaries);
+uint32_t* words_in_line(char* line, Dictionary_t* dicts, uint16_t number_of_dictionaries);
 
 /**
  * @brief  fonction helper de words_in_line qui informe sur les nombres de mots n'étant pas dans le dictionnaire 
@@ -42,16 +42,26 @@ int* words_in_line(char* line, Dictionary_t* dicts, uint16_t number_of_dictionar
  * @param  dict un pointeur vers un dictionaire de type Dictionary_t
  * @return -1 en cas d'erreur, les nombres de mauvais mots sinon
  */
-int32_t number_of_bad_words_in_line(char* line, Dictionary_t* dict);
+uint32_t number_of_bad_words_in_line(char* line, Dictionary_t* dict);
 
 /**
  * @brief  fonction helper de words_in_line qui fourni l'index des mauvais mots 
  *
  * @param  line un tableau de mots qui contiennent des charactères
+ * @param  numberOfBadWords le nombre de mauvais mots
  * @param  dict un pointeur vers un dictionaire de type Dictionary_t
  * @return NULL en cas d'erreur, un tableau avec le nombre de mauvais mots à l'index 0 et leur index aux index du tableau suivants
  */
-int32_t* get_indexes_of_bad_words_in_line(char* line, int32_t numberOfBadWords, Dictionary_t* dict);
+uint32_t* get_indexes_of_bad_words_in_line(char* line, uint32_t numberOfBadWords, Dictionary_t* dict);
+
+/**
+ * @brief  fonction utilisée dans src/main.c qui fourni la listes des mauvais mots 
+ *
+ * @param  line un tableau de mots qui contiennent des charactères
+ * @param  indexesOfBadWords tableau ayant le nombre de mauvais mots à l'index 0 et les mauvais mots à la suite
+ * @return NULL en cas d'erreur, un tableau avec les mauvais mots
+ */
+char** get_bad_words_in_line(char* line, uint32_t* indexesOfBadWords);
 
 /**
  * @brief  fonction qui prend un fichier et vérifie si les tous mots sont dans le dictionnaire  
@@ -63,7 +73,21 @@ int32_t* get_indexes_of_bad_words_in_line(char* line, int32_t numberOfBadWords, 
  *         positions des mots qui ne figurent pas dans le dico sinon
  *         (index 0 = longueur du tableau = nombre de mauvais mots à cette ligne du fichier -> index de la ligne de la matrice)
  */
-int32_t** words_in_file(char* filename, Dictionary_t* dicts, uint16_t number_of_dictionaries);
+uint32_t** words_in_file(char* filename, Dictionary_t* dicts, uint16_t number_of_dictionaries);
+
+/**
+ * @brief Function that frees the matrix's memory
+ *
+ * @param matrix The matrix
+ * @param matrixLength The number of rows the matrix has
+ */
+static inline void free_matrix(uint32_t** matrix, int matrixLength) {
+    for (int i = 0; i < matrixLength; i++) {
+        if (matrix[i] != NULL) free(matrix[i]);
+    }
+
+    free(matrix);
+}
 
 /**
  * @brief  O(log(n)) search of a word in a given dictionary

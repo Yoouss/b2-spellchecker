@@ -6,6 +6,7 @@ void test_find_candidate_dict_for_line();
 void test_number_and_indexes_of_bad_words_in_line();
 void test_words_in_line();
 void test_words_in_file();
+
 void test_get_soundex_code(); 
 void test_soundex(); 
 void test_get_candidate_words_manual(); 
