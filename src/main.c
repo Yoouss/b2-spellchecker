@@ -5,6 +5,8 @@
 #include <string.h>
 #include <io.h>
 #include <getopt.h>
+#include "detector.h"
+#include "algo.h"
 
 void free_args(CommandLineArgs_t* args) {
     if (args) {
@@ -109,8 +111,89 @@ int main(int argc, char const *argv[]) {
     printf("Output File: %s\n", args->output_path ? args->output_path : "Not Provided");
     printf("Mode: %s\n", args->mode ? args->mode : "Not Provided");
     printf("Verbose: %s\n", args->verbose ? "Enabled" : "Disabled");
-    printf("Threads: %u\n", args->threads);
+    printf("Threads: %u\n\n", args->threads);
 
+    Dictionary_t* dicts = NULL;
+    size_t dicts_count = 0;
+
+    char** lines = NULL;
+    uint32_t* lines_sizes = NULL;
+    size_t line_count = 0;
+
+    if (strlen(args->dictionnaries_path) > 0) {
+        load_dictionaries(args->dictionnaries_path, &dicts, &dicts_count);
+    }
+
+    if (args->input_path) {
+        read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
+    }
+
+    uint32_t** matrixOfBadWordsIndexes = words_in_file(args->input_path, dicts, dicts_count);
+
+    printf("Detection des erreurs du fichier %s : \n\n", args->input_path);
+
+    for (int i = 0; i < line_count; i++) {
+        char* line = lines[i];
+        uint32_t numberOfBadWords = matrixOfBadWordsIndexes[i][0];
+        uint32_t* IndexesOfBadWords = matrixOfBadWordsIndexes[i] + 1;
+
+        pretty_print_detection(line, i, numberOfBadWords, IndexesOfBadWords);
+    }
+
+    printf("\n\nCorrection des erreurs du fichier %s : \n\n", args->input_path);
+
+    for (int i = 0; i < line_count; i++) {
+        char* line = lines[i];
+
+        uint32_t numberOfBadWords = matrixOfBadWordsIndexes[i][0];
+        uint32_t* IndexesOfBadWords = matrixOfBadWordsIndexes[i] + 1;
+
+        Dictionary_t* dict = find_candidate_dict_for_line(line, dicts, dicts_count);
+
+        char** corrections = malloc(numberOfBadWords * sizeof(char*));
+        if (corrections == NULL) return -1;
+
+        // copie de la ligne pour récupérer les mots
+        char* lineCopy = strdup(line);
+        char* words[lines_sizes[i]]; 
+        int word_count = 0;
+
+        char* word = strtok(lineCopy, SEPARATORS);
+        while (word != NULL) {
+            words[word_count++] = word;
+            word = strtok(NULL, SEPARATORS);
+        }
+
+        for (int j = 0; j < numberOfBadWords; j++) {
+            char* badWord = words[IndexesOfBadWords[j]];
+
+            int numberOfCandidates = 0;
+            char** candidates = get_candidate_words(badWord, dict, &numberOfCandidates);
+
+            if (candidates == NULL || numberOfCandidates == 0) {
+                corrections[j] = badWord;
+                continue;
+            }
+
+            int** distances = get_candidates_distances(badWord, candidates, numberOfCandidates);
+            sort_candidate_distances(distances, numberOfCandidates);
+
+            corrections[j] = get_final_correction(distances, candidates);
+
+            for (int k = 0; k < numberOfCandidates; k++) {
+                free(distances[k]);
+            }
+            free(distances);
+            free(candidates);
+        }
+
+        pretty_print_correction(line, i, numberOfBadWords, IndexesOfBadWords, corrections);
+
+        free(corrections);
+        free(lineCopy);
+    }
+    
+    free_matrix(matrixOfBadWordsIndexes, line_count);
     free_args(args);
     return 0;
 }

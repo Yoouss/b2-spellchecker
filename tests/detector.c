@@ -30,40 +30,6 @@ Dictionary_t load_dictionary_for_test() {
     return load_dictionaries_for_test()[1];
 }
 
-/**
- * @brief Helper function of test_words_in_file and inner function of allocate_memory_for_matrix() that frees the matrix's memory
- *
- * @param matrix The excepted matrix
- * @param matrixLength The number of rows the matrix has
- */
-void free_matrix(int** matrix, int matrixLength) {
-    for (int i = 0; i < matrixLength; i++) {
-        if (matrix[i] != NULL) free(matrix[i]);
-    }
-
-    free(matrix);
-}
-
-/**
- * @brief Inner function of give_expected_output_with_input_5l_test() that allocates memory depending on :
- *
- * @param matrix The future output of give_expected_output_with_input_5l_test()
- * @param index The target row of the allocation
- * @param numberOfElements The numbers of bad words on this row
- * 
- * @return 0 on succeed, -1 on failure after freeing the whole matrix
- */
-short allocate_memory_for_matrix(int** matrix, int index, int numberOfElements) {
-    matrix[index] = malloc(numberOfElements * sizeof(int));
-
-    if (matrix[index] == NULL) {
-        free_matrix(matrix, index);
-        return -1;
-    }
-
-    return 0;
-}
-
 void test_word_in_dictionary(void) {
     Dictionary_t dict = load_dictionary_for_test();
     CU_ASSERT_PTR_NOT_NULL_FATAL(&dict);
@@ -117,12 +83,12 @@ void test_number_and_indexes_of_bad_words_in_line(void) {
     CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineFr);
     CU_ASSERT_STRING_EQUAL(candidateDictForLineFr->lang, "fr");
 
-    int32_t numberOfBadWords = number_of_bad_words_in_line(lineFr, candidateDictForLineFr);
+    uint32_t numberOfBadWords = number_of_bad_words_in_line(lineFr, candidateDictForLineFr);
     CU_ASSERT_NOT_EQUAL_FATAL(numberOfBadWords, -1);
 
     CU_ASSERT_EQUAL(numberOfBadWords, 1); 
 
-    int32_t* indexesOfBadWords = get_indexes_of_bad_words_in_line(lineFr, numberOfBadWords, candidateDictForLineFr);
+    uint32_t* indexesOfBadWords = get_indexes_of_bad_words_in_line(lineFr, numberOfBadWords, candidateDictForLineFr);
     CU_ASSERT_PTR_NOT_NULL_FATAL(indexesOfBadWords);
 
     CU_ASSERT_EQUAL(indexesOfBadWords[0], 1);
@@ -161,7 +127,7 @@ void test_words_in_line(void) {
 
     char* line_test = "manger une,pommeee"; // "pommeee" n'est pas dans le dictionnaire test
 
-    int* result = words_in_line(line_test, dicts, dicts_count);
+    uint32_t* result = words_in_line(line_test, dicts, dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(result);
    
     CU_ASSERT_EQUAL(result[1], 2); 
@@ -181,14 +147,14 @@ void test_words_in_file(void) {
     load_dictionaries("dummy", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
-    int32_t** noFile = words_in_file(NULL, dicts, dicts_count);
+    uint32_t** noFile = words_in_file(NULL, dicts, dicts_count);
     CU_ASSERT_PTR_NULL_FATAL(noFile);
-    int32_t** noDicts = words_in_file(inputPath, NULL, dicts_count);
+    uint32_t** noDicts = words_in_file(inputPath, NULL, dicts_count);
     CU_ASSERT_PTR_NULL_FATAL(noDicts);
-    int32_t** invalidDictsCount = words_in_file(inputPath, dicts, 0);
+    uint32_t** invalidDictsCount = words_in_file(inputPath, dicts, 0);
     CU_ASSERT_PTR_NULL_FATAL(invalidDictsCount);
 
-    int32_t** matrixOfBadWordsIndexes = words_in_file(inputPath, dicts, dicts_count);
+    uint32_t** matrixOfBadWordsIndexes = words_in_file(inputPath, dicts, dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(matrixOfBadWordsIndexes);
 
     CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[0][0], 1);
