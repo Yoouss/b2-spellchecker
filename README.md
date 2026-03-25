@@ -323,7 +323,7 @@ A vous de vous arranger pour que cela ne perturbe pas le fonctionnement normal d
 
 # D. Le Championnat
 
-Nouveauté cette année, vos codes seront lus et exécutés chaque dimanche à **23h59** afin d'établir un classement des codes selon différentes métriques. Nous mesurerons la rapidité et la précision de votre code à renvoyer les mots incorrectements orthographiés ainsi que leur correction. Le classement sera ensuite actualisé automatiquement et vous pourrez le consulter à l'adresse [waf-test1.uclouvain.be](waf-test1.uclouvain.be) 🎉
+Nouveauté cette année, vos codes seront lus et exécutés chaque dimanche à **23h59** afin d'établir un classement des codes selon différentes métriques. Nous mesurerons la rapidité et la précision de votre code à renvoyer les mots incorrectements orthographiés ainsi que leur correction. Le classement sera ensuite actualisé automatiquement et vous pourrez le consulter à l'adresse [https://blegat.github.io/LEPL1503/championship/](https://blegat.github.io/LEPL1503/championship/) 🎉
 
 Nous exécuterons votre code avec la commande suivante: 
 ```sh
