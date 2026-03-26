@@ -6,7 +6,7 @@
 #include <io.h>
 #include <getopt.h>
 #include "detector.h"
-#include "algo.h"
+#include "corrector.h"
 
 void free_args(CommandLineArgs_t* args) {
     if (args) {
