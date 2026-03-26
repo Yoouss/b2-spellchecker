@@ -1,5 +1,3 @@
-#include <CUnit/CUnit.h>
-#include <CUnit/Basic.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +5,7 @@
 #include <stdint.h>
 
 #include "common.h"
-#include "algo.h"
+#include "corrector.h"
 #include <string.h>
 #include <ctype.h>
 

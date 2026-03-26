@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "common.h" 
-#include "algo.h" 
+#include "corrector.h"
 #include "dict.h"
 
 void test_get_soundex_code(void) {

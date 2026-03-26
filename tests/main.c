@@ -13,6 +13,9 @@ void test_get_candidate_words_manual();
 void test_calculate_distance(); 
 void test_sort_candidate_distances(); 
 
+void test_read_input_file();
+void test_load_dictionaries();
+
 int main(void) {
     CU_initialize_registry();
     CU_pSuite suiteDetector = CU_add_suite("Détécteur d'erreurs S5", 0, 0);
@@ -28,6 +31,10 @@ int main(void) {
     CU_add_test(suiteCorrector, "test_get_candidate_words_manual", test_get_candidate_words_manual);
     CU_add_test(suiteCorrector, "test_calculate_distance", test_calculate_distance);
     CU_add_test(suiteCorrector, "test_sort_candidate_distances", test_sort_candidate_distances);
+
+    CU_pSuite suiteFileHandler = CU_add_suite("Manipuleur de fichiers S8", 0, 0);
+    CU_add_test(suiteFileHandler, "test_read_input_file", test_read_input_file);
+    CU_add_test(suiteFileHandler, "test_load_dictionaries", test_load_dictionaries);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
