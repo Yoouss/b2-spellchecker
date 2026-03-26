@@ -5,8 +5,8 @@
 #include "dict.h"
 #include "input.h"
 
-#ifndef ALGO_H
-#define ALGO_H
+#ifndef CORRECTOR_H
+#define CORRECTOR_H
 
 /**
  * @brief Calcule le code Soundex d'un caractère

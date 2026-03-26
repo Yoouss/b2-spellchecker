@@ -6,7 +6,7 @@ HEADERS_DIR=headers
 
 CC=clang
 
-CPPFLAGS=-Iinclude -Iheaders -DDISABLE_IO # /!\ Enlever -DDISABLE_IO pour utiliser votre implementation io.c
+CPPFLAGS=-Iinclude -Iheaders # /!\ Enlever -DDISABLE_IO pour utiliser votre implementation io.c
 CFLAGS=-Wall -Werror # Ajoutez -g pour Valgrind :)
 LDLIBS=-lm
 

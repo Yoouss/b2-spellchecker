@@ -1,7 +1,11 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "common.h"
+
+#ifndef DETECTOR_H
+#define DETECTOR_H
 
 #define SEPARATORS " %\t.,;:!?\"()[]{}_/\\|@#$^&*+=~`"
 
@@ -124,3 +128,5 @@ static inline int binary_search_word_in_dictonary(char* targetWord, Dictionary_t
 
     return 0;
 }
+
+#endif
