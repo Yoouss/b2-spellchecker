@@ -2,6 +2,8 @@
 
 Ce document propose un ensemble de lignes directrices pour effectuer une revue de code d'un programme écrit en C. Chaque point est accompagné d'un exemple de mauvaise pratique et d'une suggestion d'amélioration.
 
+Notez qu'il n'est pas nécessaire de fermer l'issue sur gitlab. Mais si elle a été fermée, ce n'est pas un problème non plus.
+
 ---
 
 ## 1. Architecture globale du programme
