@@ -278,8 +278,8 @@ En mode correction, deux fichiers sont générés:
 2. `<output_path>.fix`: contient les corrections des mots fautifs, dans le même ordre que les offsets décrits dans `.err`. 
 
 Le fichier `<output_path>.fix` est une suite de blocs:
-- `uint32`: **(4 octets, big endian)**: longueur du mot corrigé `N+1` en octets (+1 pour le `NULL` char !) ([ISO8859-1](https://fr.wikipedia.org/wiki/ISO/CEI_8859-1))
-- `(N+1) × char`: les caractères du mot corrigé (y compris le `NULL` char !)
+- `uint32`: **(4 octets, big endian)**: longueur du mot corrigé `N` en octets ([ISO8859-1](https://fr.wikipedia.org/wiki/ISO/CEI_8859-1))
+- `N × char`: les caractères du mot corrigé
 
 #### Exemple 
 > Le mardi z'est friite au restaurant universitaire
