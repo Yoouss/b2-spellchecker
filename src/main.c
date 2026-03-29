@@ -130,16 +130,6 @@ int main(int argc, char const *argv[]) {
 
     uint32_t** matrixOfBadWordsIndexes = words_in_file(args->input_path, dicts, dicts_count);
 
-    printf("Detection des erreurs du fichier %s : \n\n", args->input_path);
-
-    for (int i = 0; i < line_count; i++) {
-        char* line = lines[i];
-        uint32_t numberOfBadWords = matrixOfBadWordsIndexes[i][0];
-        uint32_t* IndexesOfBadWords = matrixOfBadWordsIndexes[i] + 1;
-
-        pretty_print_detection(line, i, numberOfBadWords, IndexesOfBadWords);
-    }
-
     printf("\n\nCorrection des erreurs du fichier %s : \n\n", args->input_path);
 
     for (int i = 0; i < line_count; i++) {
