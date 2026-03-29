@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
 #include "common.h"
 #include "corrector.h"
 #include <string.h>
@@ -11,6 +10,7 @@
 
 char get_soundex_code(char c) {
     c = toupper(c);
+
     switch (c) {
         case 'B': case 'F': case 'P': case 'V': return '1';
         case 'C': case 'G': case 'J': case 'K': case 'Q': case 'S': case 'X': case 'Z': return '2';
@@ -26,10 +26,10 @@ char get_soundex_code(char c) {
 char* soundex(char* word) {
     if (word == NULL || strlen(word) == 0) return NULL;
 
-    char* code = malloc(5 * sizeof(char));
-    if (code == NULL) return NULL;
+    char* soundex_code = malloc(5 * sizeof(char));
+    if (soundex_code == NULL) return NULL;
 
-    code[0] = toupper(word[0]);
+    soundex_code[0] = toupper(word[0]);
     
     int code_index = 1;
     char last_digit = get_soundex_code(word[0]);
@@ -43,24 +43,27 @@ char* soundex(char* word) {
         }
 
         if (current_digit != '0' && current_digit != last_digit) {
-            code[code_index] = current_digit;
+            soundex_code[code_index] = current_digit;
             code_index++;
             last_digit = current_digit;
         }
     }
 
     while (code_index < 4) {
-        code[code_index] = '0';
+        soundex_code[code_index] = '0';
         code_index++;
     }
-    code[4] = '\0';
-    return code;
+    
+    soundex_code[4] = '\0';
+    return soundex_code;
 }
 
 char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_count) {
-    uint32_t dict_size = dict->word_count;
-    char** candidate_words = malloc(dict_size * sizeof(char*));
+    if (wrong_word == NULL || strlen(wrong_word) == 0 || dict == NULL) return NULL;
 
+    uint32_t dict_size = dict->word_count;
+
+    char** candidate_words = malloc(dict_size * sizeof(char*));
     if (candidate_words == NULL) return NULL;
     
     int wrong_word_size = strlen(wrong_word);
@@ -74,7 +77,7 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
         char* current_word = words[i];
         int current_word_size = strlen(current_word);
 
-        if (current_word[0] == wrong_word[0] && (wrong_word_size >= current_word_size - 3 && wrong_word_size <= current_word_size + 3)) { // on va calculer le soundex que quand la différence de taille entre wrong_word et current_word est dans un intervalle et que les mots commencent par la même lettre 
+        if (current_word[0] == wrong_word[0] && (wrong_word_size >= current_word_size - 3 && wrong_word_size <= current_word_size + 3)) {
             char* current_word_soundex = soundex(current_word);
 
             if (strcmp(current_word_soundex, wrong_word_soundex) == 0) {
@@ -89,50 +92,55 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
     return candidate_words;
 }
 
-int min3(int a, int b, int c){
-    int ref = a;
-    if (b<ref) ref=b;
-    if (c<ref) ref = c;
-    return ref;
+int min3(int a, int b, int c) {
+    int min = a;
+    if (b < min) min = b;
+    if (c < min) min = c;
+    return min;
 }
 
-int calculate_distance(char* word1, char* word2){
+int calculate_distance(char* word1, char* word2) { // utiliser un malloc pour stocker la matrice 
     int n = strlen(word1);
     int m = strlen(word2);
-    //cas de base
-    if (n==0) return m;
-    if (m==0) return n;
-    //construire la matrice
-    int matrix[n+1][m+1];
 
-    //initialiser la 1ére col et la 1ére ligne à 0->n
-    for (int ligne=0;ligne<=n;ligne++){
-        matrix[ligne][0] = ligne;
+    if (n == 0) return m;
+    if (m == 0) return n;
+    
+    int matrix[n + 1][m + 1];
+
+    // initialiser la 1ère colonne et la 1ère ligne à 0->n
+    for (int line = 0; line <= n; line++) {
+        matrix[line][0] = line;
     }
-    for (int col = 0;col<=m;col++){
+
+    for (int col = 0; col <= m; col++) {
         matrix[0][col] = col;
     }
 
-    for (int i = 1;i<=n;i++){
-        for (int j = 1;j<=m;j++){
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= m ; j++) {
             int cost;
-            //si les lettres sont égales ou non
-            if(word1[i-1]==word2[j-1]){
+            if (word1[i - 1] == word2[j - 1]) {
                 cost = 0;
-            }else{cost =1;}
+            }
+            else {
+                cost = 1;
+            }
 
-            // [i,j] est egal au min de :
             int deletion = matrix[i - 1][j] + 1;       
             int insertion = matrix[i][j - 1] + 1;      
             int substitution = matrix[i - 1][j - 1] + cost; 
 
-            matrix[i][j] = min3(deletion,insertion,substitution);
+            matrix[i][j] = min3(deletion, insertion, substitution);
         }
     }
+
     return matrix[n][m];
 }
 
 int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candidates) {
+    if (wrong_word == NULL || strlen(wrong_word) == 0 || candidates == NULL || nb_candidates <= 0) return NULL;
+
     int** candidates_distances = malloc((nb_candidates) * sizeof(int*));
 
     if (candidates_distances == NULL) return NULL;
@@ -142,7 +150,7 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
         int distance = calculate_distance(wrong_word, current_word);
 
         int* index_distance_array = malloc(2 * sizeof(int));
-        // nettoyage en cas d'erreur d'allocation de la mémoire
+        
         if (index_distance_array == NULL) {
             for (int j = 0; j < i; j++) {
                 free(candidates_distances[j]);
@@ -160,26 +168,23 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
 }
 
 void sort_candidate_distances(int** distance_matrix, int nb_candidates){
+    int* actual_candidate;
     int j;
-    int* temp;
 
-    for(int i = 1;i<nb_candidates;i++){
-        temp = distance_matrix[i];
-        j= i-1;
+    for(int i = 1; i < nb_candidates; i++) {
+        actual_candidate = distance_matrix[i];
+        j = i - 1;
 
-        //on compare la distance situé à temp[1]
-        //on déplace les éléments qui ont une dist > temp[1]
-
-        while (0<=j&&distance_matrix[j][1]>temp[1]){
-            distance_matrix[j+1] = distance_matrix[j];
-            j = j-1;
+        // on déplace les éléments qui ont une distance > actual_candidate[1]
+        while (0 <= j && distance_matrix[j][1] > actual_candidate[1]) {
+            distance_matrix[j + 1] = distance_matrix[j];
+            j = j - 1;
         }
 
-        distance_matrix[j+1] = temp;
+        distance_matrix[j + 1] = actual_candidate;
     }
 }
 
-
-char* get_final_correction(int** sorted_matrix, char** candidates){
-    return candidates[sorted_matrix[0][0]];//prend le mot candidat avec le 1er indice trouvé dans la matrice 
+char* get_final_correction(int** sorted_matrix, char** candidates){ // à remplacer par une fonction de correction 
+    return candidates[sorted_matrix[0][0]];
 }

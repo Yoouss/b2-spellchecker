@@ -35,6 +35,17 @@ char* soundex(char* word);
 char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_count);
 
 /**
+ * @brief Calcule le minimum de trois entiers
+ * * Utilisée pour déterminer l'opération la moins coûteuse (insertion, suppression ou substitution) dans calculate_distance
+ * 
+ * @param a Premier entier (coût de suppression)
+ * @param b Deuxième entier (coût d'insertion)
+ * @param c Troisième entier (coût de substitution)
+ * @return La plus petite valeur entre a, b et c
+ */
+int min3(int a, int b, int c);
+
+/**
  * @brief Calcule la distance de Levenstein d'édition entre deux mots
  * 
  * @param word1 Le premier mot
