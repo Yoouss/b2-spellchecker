@@ -166,25 +166,7 @@ int main(int argc, char const *argv[]) {
 
         for (int j = 0; j < numberOfBadWords; j++) {
             char* badWord = words[IndexesOfBadWords[j]];
-
-            int numberOfCandidates = 0;
-            char** candidates = get_candidate_words(badWord, dict, &numberOfCandidates);
-
-            if (candidates == NULL || numberOfCandidates == 0) {
-                corrections[j] = badWord;
-                continue;
-            }
-
-            int** distances = get_candidates_distances(badWord, candidates, numberOfCandidates);
-            sort_candidate_distances(distances, numberOfCandidates);
-
-            corrections[j] = get_final_correction(distances, candidates);
-
-            for (int k = 0; k < numberOfCandidates; k++) {
-                free(distances[k]);
-            }
-            free(distances);
-            free(candidates);
+            corrections[j] = get_word_correction(badWord, dict);
         }
 
         pretty_print_correction(line, i, numberOfBadWords, IndexesOfBadWords, corrections);
