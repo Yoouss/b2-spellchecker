@@ -6,12 +6,15 @@ HEADERS_DIR=headers
 
 CC=clang
 
-CPPFLAGS=-Iinclude -Iheaders # /!\ Enlever -DDISABLE_IO pour utiliser votre implementation io.c
-CFLAGS=-Wall -Werror # Ajoutez -g pour Valgrind :)
+CPPFLAGS=-Iinclude -Iheaders -DDISABLE_IO # /!\ Enlever -DDISABLE_IO pour utiliser votre implementation io.c
+CFLAGS=-Wall -Werror -g # Ajoutez -g pour Valgrind :)
 LDLIBS=-lm
 
 TARGET=spellchecker
 TEST=test
+
+VALGRIND = valgrind --leak-check=full
+SPELLCHECKER_ARGS = --dicts dicts/ --input input_10l.txt
 
 # List path to sources
 SOURCES   = $(wildcard $(SRC_DIR)/*.c)
@@ -38,6 +41,16 @@ $(TEST): $(OBJECTS_NO_MAIN) $(TEST_OBJECTS)
 
 tests: $(TEST)
 	./$(TEST)
+
+valgrind-all : $(TARGET) $(TEST)
+	$(VALGRIND) ./$(TARGET) $(SPELLCHECKER_ARGS)
+	$(VALGRIND) ./$(TEST)
+
+valgrind : $(TARGET)
+	$(VALGRIND) ./$(TARGET) $(SPELLCHECKER_ARGS)
+
+valgrind-test : $(TEST)
+	$(VALGRIND) ./$(TEST)
 
 clean:
 	rm -f $(TARGET) $(TEST) $(OBJECTS) $(TEST_OBJECTS)
