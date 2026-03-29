@@ -43,14 +43,24 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
  * @param c Troisième entier (coût de substitution)
  * @return La plus petite valeur entre a, b et c
  */
-int min3(int a, int b, int c);
+int get_min3(int a, int b, int c);
 
 /**
- * @brief Calcule la distance de Levenstein d'édition entre deux mots
+ * @brief Alloue dynamiquement une matrice d'entiers en mémoire de dimensions n x m
+ * 
+ * @param n Le nombre de lignes
+ * @param m Le nombre de colonnes
+ * @return Un double pointeur qui est une matrice n x m ou NULL en cas de problème d'allocation de mémoire 
+ */
+int** initialize_matrix(int n, int m);
+
+/**
+ * @brief Calcule la distance d'édition de Levenshtein entre deux mots
+ * * Mesure le nombre minimal d'opérations (insertion, suppression, substitution) pour passer de word1 à word2
  * 
  * @param word1 Le premier mot
  * @param word2 Le second mot
- * @return La distance entre les 2 mots
+ * @return La distance entre les 2 mots (0 si les mots sont identiques)
  */
 int calculate_distance(char* word1, char* word2);
 
@@ -60,7 +70,7 @@ int calculate_distance(char* word1, char* word2);
  * @param wrong_word Le mot erroné de base
  * @param candidates La liste des mots candidats (char**)
  * @param nb_candidates Le nombre de candidats dans la liste
- * @return Un pointeur vers un tableau de tableaux d'entiers [[indice, distance], ...] du style liste_mots_candidats= [[0, 4][1, 7][2, 3]]
+ * @return Un pointeur vers un tableau de tableaux d'entiers [[indice, distance], ...] du style liste_mots_candidats = [[0, 4][1, 7][2, 3]]
  */
 int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candidates);
 

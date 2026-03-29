@@ -94,22 +94,16 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
     return candidate_words;
 }
 
-int min3(int a, int b, int c) {
+int get_min3(int a, int b, int c) {
     int min = a;
     if (b < min) min = b;
     if (c < min) min = c;
     return min;
 }
 
-int calculate_distance(char* word1, char* word2) { // on peut faire une autre fonction qui initialise la matrice 
-    int n = strlen(word1);
-    int m = strlen(word2);
-
-    if (n == 0) return m;
-    if (m == 0) return n;
-    
+int** initialize_matrix(int n, int m) {
     int** matrix = malloc((n + 1) * sizeof(int*));
-    if (matrix == NULL) return -1;
+    if (matrix == NULL) return NULL;
 
     for (int i = 0; i <= n; i++) {
         matrix[i] = malloc((m + 1) * sizeof(int));
@@ -118,9 +112,22 @@ int calculate_distance(char* word1, char* word2) { // on peut faire une autre fo
                 free(matrix[j]);
             }
             free(matrix);
-            return -1;
+            return NULL;
         }
     }
+
+    return matrix;
+}
+
+int calculate_distance(char* word1, char* word2) {
+    int n = strlen(word1);
+    int m = strlen(word2);
+
+    if (n == 0) return m;
+    if (m == 0) return n; 
+    
+    int** matrix = initialize_matrix(n, m);
+    if (matrix == NULL) return -1; 
 
     for (int line = 0; line <= n; line++) {
         matrix[line][0] = line;
@@ -132,19 +139,19 @@ int calculate_distance(char* word1, char* word2) { // on peut faire une autre fo
 
     for (int i = 1; i <= n; i++) {
         for (int j = 1; j <= m ; j++) {
-            int cost;
+            int diff_cost;
             if (word1[i - 1] == word2[j - 1]) {
-                cost = 0;
+                diff_cost = 0;
             }
             else {
-                cost = 1;
+                diff_cost = 1;
             }
 
             int deletion = matrix[i - 1][j] + 1;       
             int insertion = matrix[i][j - 1] + 1;      
-            int substitution = matrix[i - 1][j - 1] + cost; 
+            int substitution = matrix[i - 1][j - 1] + diff_cost; 
 
-            matrix[i][j] = min3(deletion, insertion, substitution);
+            matrix[i][j] = get_min3(deletion, insertion, substitution);
         }
     }
 
