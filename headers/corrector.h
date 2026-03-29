@@ -73,11 +73,12 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
 void sort_candidate_distances(int** distance_matrix, int nb_candidates);
 
 /**
- * @brief Retourne le mot final corrigé après analyse de la matrice triée
+ * @brief Retourne la correction pour un mot mal orthographié
  * 
- * @param sorted_matrix La matrice de distances après tri
- * @return un pointeur vers sort_cnadidate_distances[0][0]
+ * @param wrong_word Le mot à corriger
+ * @param dict Un pointeur vers un dictionaire de type Dictionary_t
+ * @return Un pointeur vers une nouvelle chaîne de caractères contenant le mot corrigé
  */
-char* get_final_correction(int** sorted_matrix, char** candidates);
+char* get_word_correction(char* wrong_word, Dictionary_t* dict);
 
 #endif

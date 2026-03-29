@@ -85,9 +85,11 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
                 candidate_words_index += 1;
                 candidates_counter += 1;
             }
+            free(current_word_soundex);
         }
     }
-
+    
+    free(wrong_word_soundex);
     *(result_count) = candidates_counter;
     return candidate_words;
 }
@@ -99,16 +101,27 @@ int min3(int a, int b, int c) {
     return min;
 }
 
-int calculate_distance(char* word1, char* word2) { // utiliser un malloc pour stocker la matrice 
+int calculate_distance(char* word1, char* word2) { // on peut faire une autre fonction qui initialise la matrice 
     int n = strlen(word1);
     int m = strlen(word2);
 
     if (n == 0) return m;
     if (m == 0) return n;
     
-    int matrix[n + 1][m + 1];
+    int** matrix = malloc((n + 1) * sizeof(int*));
+    if (matrix == NULL) return -1;
 
-    // initialiser la 1ère colonne et la 1ère ligne à 0->n
+    for (int i = 0; i <= n; i++) {
+        matrix[i] = malloc((m + 1) * sizeof(int));
+        if (matrix[i] == NULL) {
+            for (int j = i - 1; j >= 0; j--) {
+                free(matrix[j]);
+            }
+            free(matrix);
+            return -1;
+        }
+    }
+
     for (int line = 0; line <= n; line++) {
         matrix[line][0] = line;
     }
@@ -135,7 +148,14 @@ int calculate_distance(char* word1, char* word2) { // utiliser un malloc pour st
         }
     }
 
-    return matrix[n][m];
+    int distance = matrix[n][m];
+
+    for (int i = 0; i <= n; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+
+    return distance;
 }
 
 int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candidates) {
@@ -185,6 +205,34 @@ void sort_candidate_distances(int** distance_matrix, int nb_candidates){
     }
 }
 
-char* get_final_correction(int** sorted_matrix, char** candidates){ // à remplacer par une fonction de correction 
-    return candidates[sorted_matrix[0][0]];
+char* get_word_correction(char* wrong_word, Dictionary_t* dict) {  
+    if (wrong_word == NULL || strlen(wrong_word) == 0 || dict == NULL) return NULL;
+
+    int number_of_candidates = 0;
+    char** candidate_words = get_candidate_words(wrong_word, dict, &number_of_candidates);
+
+    if (candidate_words == NULL || number_of_candidates == 0) {
+        free(candidate_words);
+        return NULL;
+    }
+
+    int** candidate_distances = get_candidates_distances(wrong_word, candidate_words, number_of_candidates);
+
+    if (candidate_distances == NULL) {
+        free(candidate_words);
+        return NULL;
+    }
+
+    sort_candidate_distances(candidate_distances, number_of_candidates);
+
+    int word_correction_index = candidate_distances[0][0];
+    char* word_correction = strdup(candidate_words[word_correction_index]);
+
+    for (int i = 0; i < number_of_candidates; i++) {
+        free(candidate_distances[i]);
+    }
+    free(candidate_distances);
+    free(candidate_words);
+
+    return word_correction;
 }
