@@ -218,9 +218,12 @@ char* get_word_correction(char* wrong_word, Dictionary_t* dict) {
     int number_of_candidates = 0;
     char** candidate_words = get_candidate_words(wrong_word, dict, &number_of_candidates);
 
-    if (candidate_words == NULL || number_of_candidates == 0) {
+    if (candidate_words == NULL) return NULL;
+
+    // C'est pas normal, les fonctions de corrections ont un problème, je retourne le mauvais mot pour ne pas avoir un seg fault
+    if (number_of_candidates == 0) { 
         free(candidate_words);
-        return NULL;
+        return wrong_word;
     }
 
     int** candidate_distances = get_candidates_distances(wrong_word, candidate_words, number_of_candidates);
@@ -238,6 +241,7 @@ char* get_word_correction(char* wrong_word, Dictionary_t* dict) {
     for (int i = 0; i < number_of_candidates; i++) {
         free(candidate_distances[i]);
     }
+
     free(candidate_distances);
     free(candidate_words);
 
