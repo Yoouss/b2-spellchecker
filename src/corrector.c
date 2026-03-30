@@ -23,7 +23,7 @@ char get_soundex_code(char c) {
     }
 }
 
-char* soundex(char* word) {
+char* soundex(char* word) { // problèmes si erreurs sur première lettre -> susywrk et busywork != code, ignore les voyelles : peler, piler, polaire, pull ont même code, etc.
     if (word == NULL || strlen(word) == 0) return NULL;
 
     char* soundex_code = malloc(5 * sizeof(char));
@@ -77,7 +77,7 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
         char* current_word = words[i];
         int current_word_size = strlen(current_word);
 
-        if (current_word[0] == wrong_word[0] && (wrong_word_size >= current_word_size - 3 && wrong_word_size <= current_word_size + 3)) {
+        if (wrong_word_size >= current_word_size - 5 && wrong_word_size <= current_word_size + 5) {
             char* current_word_soundex = soundex(current_word);
 
             if (strcmp(current_word_soundex, wrong_word_soundex) == 0) {
@@ -119,7 +119,7 @@ int** initialize_matrix(int n, int m) {
     return matrix;
 }
 
-int calculate_distance(char* word1, char* word2) {
+int calculate_distance(char* word1, char* word2) { // soucis avec les accents -> 3 opérations au lieu de deux ... (faire une fonction de nettoyage)
     int n = strlen(word1);
     int m = strlen(word2);
 
