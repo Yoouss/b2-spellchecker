@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 
 // Il pourrait y avoir d'autres fonctions mais je ne pense pas que ça soit le cas
 
@@ -13,61 +14,57 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     int file_descriptor = open(input_path, O_RDONLY);
     if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier");
-        return -1;
+        return  -1;
     }
 
-    struct stat st;
-    if (fstat(file_descriptor, &st) == -1) {
+    struct stat fileStat;
+    if (fstat(file_descriptor, &fileStat) == -1) {
         perror("Erreur fstat");
         close(file_descriptor);
         return -1;
     }
+    size_t fileSize = fileStat.st_size;
 
-    if (st.st_size == 0) {
+    if (fileSize == 0) {
         *lines = NULL;
         *line_sizes = NULL;
         *line_count = 0;
         close(file_descriptor);
         return 0;
     }
-
-    char *buffer = malloc(st.st_size + 1);
-    if (!buffer) {
+    char *file_map = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE, file_descriptor, 0);
+    if (file_map == MAP_FAILED) {
+        perror("Erreur mmap");
         close(file_descriptor);
         return -1;
     }
-
-    ssize_t bytes_read = read(file_descriptor, buffer, st.st_size);
-    if (bytes_read == -1) {
-        perror("Erreur read");
-        free(buffer);
-        close(file_descriptor);
-        return -1;
-    }
-
-    buffer[bytes_read] = '\0';
     close(file_descriptor);
 
     size_t count = 0;
     char **temp_lines = NULL;
     uint32_t *temp_sizes = NULL;
     int start = 0;
-    for (int i = 0; i <= bytes_read; i++) {
-        if (buffer[i] == '\n' || (buffer[i] == '\0' && i > start)) {
+
+    for (int i = 0; i <= (int)fileSize; i++) {
+        if (i == (int)fileSize || file_map[i] == '\n') {
             int length = i - start;
+            char **new_lines = realloc(temp_lines, (count + 1) * sizeof(char *));
+            uint32_t *new_sizes = realloc(temp_sizes, (count + 1) * sizeof(uint32_t));
 
-            temp_lines = realloc(temp_lines, (count + 1) * sizeof(char *));
-            temp_sizes = realloc(temp_sizes, (count + 1) * sizeof(uint32_t));
-
-            if (temp_lines == NULL || temp_sizes == NULL) {
-                free(buffer);
+            if (!new_lines || !new_sizes) {
+                for (size_t j = 0; j < count; j++) free(temp_lines[j]);
+                free(temp_lines);
+                free(temp_sizes);
+                munmap(file_map, fileSize);
                 return -1;
             }
+            temp_lines = new_lines;
+            temp_sizes = new_sizes;
 
-            char *line = malloc((length + 1) * sizeof(char));
+            char *line = malloc(length + 1);
             if (line) {
                 for (int j = 0; j < length; j++) {
-                    line[j] = buffer[start + j];
+                    line[j] = file_map[start + j];
                 }
                 line[length] = '\0';
                 temp_lines[count] = line;
@@ -81,8 +78,9 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     *lines = temp_lines;
     *line_sizes = temp_sizes;
     *line_count = count;
-
-    free(buffer);
+    if (munmap(file_map, fileSize) == -1) {
+        perror("Erreur munmap");
+    }
     return 0;
 }
 
