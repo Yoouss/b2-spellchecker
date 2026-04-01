@@ -144,7 +144,7 @@ int main(int argc, char const *argv[]) {
         read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
     }
 
-    file_t* file_detection = scan_file_for_wrong_words(args->input_path, dicts, dicts_count);
+    file_t* file_detection = scan_file_for_errors(args->input_path, dicts, dicts_count);
     if (file_detection == NULL) {
         free(lines_sizes);
         free_args(args);
@@ -155,7 +155,7 @@ int main(int argc, char const *argv[]) {
     size_t* incorrect_lines_indexes = file_detection->incorrect_lines_indexes;
     size_t incorrect_lines_count = file_detection->incorrect_lines_count;
 
-    printf("\nCorrection des erreurs du fichier %s : \n\n", args->input_path);
+    printf("Correction des erreurs du fichier %s : \n\n\n", args->input_path);
 
     for (size_t i = 0; i < incorrect_lines_count; i++) {
         size_t line_index = incorrect_lines_indexes[i]; 
@@ -176,8 +176,8 @@ int main(int argc, char const *argv[]) {
         }
 
         // Younes s'occupera de créer une fonction qui récupère directement les mauvais mots
-        char* lineCopy = strdup(line);
-        if (lineCopy == NULL) {
+        char* line_copy = strdup(line);
+        if (line_copy == NULL) {
             free(corrections);
             free_file_detection(file_detection);
             free(lines_sizes);
@@ -188,7 +188,7 @@ int main(int argc, char const *argv[]) {
         char* words[lines_sizes[line_index]]; 
         int word_count = 0;
 
-        char* word = strtok(lineCopy, SEPARATORS);
+        char* word = strtok(line_copy, SEPARATORS);
         while (word != NULL) {
             words[word_count++] = word;
             word = strtok(NULL, SEPARATORS);
@@ -198,10 +198,10 @@ int main(int argc, char const *argv[]) {
             corrections[j] = get_word_correction(words[wrong_words_indexes[j]], dict);
         }
 
-        pretty_print_correction(line, line_index, wrong_words_count, wrong_words_indexes, corrections);
+        pretty_print_correction(line, line_index+1, wrong_words_count, wrong_words_indexes, corrections);
 
         free(corrections);
-        free(lineCopy);
+        free(line_copy);
     }
 
     free_file_detection(file_detection);

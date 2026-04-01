@@ -84,7 +84,7 @@ void test_find_candidate_dict_for_line(void) {
     CU_ASSERT_STRING_EQUAL(candidateDictForLineEn->lang, "en");
 }
 
-void test_wrong_words_count_and_indexes_in_line(void) {
+void test_errors_count_and_indexes_in_line(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
@@ -135,7 +135,7 @@ void test_wrong_words_count_and_indexes_in_line(void) {
     free(wrong_words_indexes);
 }
 
-void test_scan_line_for_wrong_words(void) {
+void test_scan_line_for_errors(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
@@ -144,7 +144,7 @@ void test_scan_line_for_wrong_words(void) {
 
     char* line_test = "manger une,pommeee"; // "pommeee" n'est pas dans le dictionnaire test
 
-    line_t* line_detection = scan_line_for_wrong_words(line_test, dicts, dicts_count);
+    line_t* line_detection = scan_line_for_errors(line_test, dicts, dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(line_detection);
 
     uint32_t* wrong_words_indexes = line_detection->wrong_words_indexes;
@@ -154,24 +154,20 @@ void test_scan_line_for_wrong_words(void) {
     CU_ASSERT_EQUAL(wrong_words_indexes[0], 2); 
     free(line_detection);
 
-    CU_ASSERT_PTR_NULL(scan_line_for_wrong_words(line_test, NULL, dicts_count));
-    CU_ASSERT_PTR_NULL(scan_line_for_wrong_words(NULL, dicts, dicts_count));
-    CU_ASSERT_PTR_NULL(scan_line_for_wrong_words(line_test, dicts, 0));
-
-    line_t* no_line = scan_line_for_wrong_words(NULL, dicts, dicts_count);
+    line_t* no_line = scan_line_for_errors(NULL, dicts, dicts_count);
     CU_ASSERT_PTR_NULL(no_line);
     free_line_detection(no_line);
 
-    line_t* no_dicts = scan_line_for_wrong_words(line_test, NULL, dicts_count);
+    line_t* no_dicts = scan_line_for_errors(line_test, NULL, dicts_count);
     CU_ASSERT_PTR_NULL(no_dicts);
     free_line_detection(no_dicts);
 
-    line_t* zero_dicts = scan_line_for_wrong_words(line_test, dicts, 0);
+    line_t* zero_dicts = scan_line_for_errors(line_test, dicts, 0);
     CU_ASSERT_PTR_NULL(zero_dicts);
     free_line_detection(zero_dicts);
 }
 
-void test_scan_file_for_wrong_words(void) {
+void test_scan_file_for_errors(void) {
     char* inputPath = "input_10l.txt";
 
     Dictionary_t* dicts = NULL;
@@ -180,19 +176,19 @@ void test_scan_file_for_wrong_words(void) {
     load_dictionaries("dummy", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
-    file_t* no_file = scan_file_for_wrong_words(NULL, dicts, dicts_count);
+    file_t* no_file = scan_file_for_errors(NULL, dicts, dicts_count);
     CU_ASSERT_PTR_NULL(no_file);
     free_file_detection(no_file);
 
-    file_t* no_dicts = scan_file_for_wrong_words(inputPath, NULL, dicts_count);
+    file_t* no_dicts = scan_file_for_errors(inputPath, NULL, dicts_count);
     CU_ASSERT_PTR_NULL(no_dicts);
     free_file_detection(no_dicts);
 
-    file_t* zero_dicts = scan_file_for_wrong_words(inputPath, dicts, 0);
+    file_t* zero_dicts = scan_file_for_errors(inputPath, dicts, 0);
     CU_ASSERT_PTR_NULL(zero_dicts);
     free_file_detection(zero_dicts);
 
-    file_t* file_detection = scan_file_for_wrong_words(inputPath, dicts, dicts_count);
+    file_t* file_detection = scan_file_for_errors(inputPath, dicts, dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(file_detection);
 
     line_t* incorrect_lines = file_detection->incorrect_lines;
