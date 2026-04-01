@@ -14,20 +14,22 @@
 // Il pourrait y avoir d'autres fonctions mais je ne pense pas que ça soit le cas
 
 int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count) {
-    int file_descriptor = open(input_path, O_RDONLY);
+    int file_descriptor = open(input_path, O_RDONLY); //test de lecture 
     if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier");
         return  -1;
     }
 
-    struct stat fileStat;
+    struct stat fileStat; 
     if (fstat(file_descriptor, &fileStat) == -1) {
         perror("Erreur fstat");
         close(file_descriptor);
         return -1;
     }
+    //taille du fichier
     size_t fileSize = fileStat.st_size;
 
+    //si fichier vide
     if (fileSize == 0) {
         *lines = NULL;
         *line_sizes = NULL;
@@ -35,6 +37,7 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
         close(file_descriptor);
         return 0;
     }
+    //mapping mémoire -> racourci pour visualiser le fichier
     char *file_map = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE, file_descriptor, 0);
     if (file_map == MAP_FAILED) {
         perror("Erreur mmap");
@@ -43,6 +46,7 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     }
     close(file_descriptor);
 
+    
     size_t count = 0;
     char **temp_lines = NULL;
     uint32_t *temp_sizes = NULL;
@@ -50,7 +54,7 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
 
     for (int i = 0; i <= (int)fileSize; i++) {
         if (i == (int)fileSize || file_map[i] == '\n') {
-            int length = i - start;
+            int length = i - start; //longueur de la ligne
             char **new_lines = realloc(temp_lines, (count + 1) * sizeof(char *));
             uint32_t *new_sizes = realloc(temp_sizes, (count + 1) * sizeof(uint32_t));
 
@@ -65,11 +69,11 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
             temp_sizes = new_sizes;
 
             char *line = malloc(length + 1);
-            if (line) {
+            if (line) {//copie des caractéres ->nouvelle chaîné
                 for (int j = 0; j < length; j++) {
                     line[j] = file_map[start + j];
                 }
-                line[length] = '\0';
+                line[length] = '\0'; 
                 temp_lines[count] = line;
                 temp_sizes[count] = (uint32_t)length;
                 count++;
@@ -77,7 +81,7 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
             start = i + 1;
         }
     }
-
+    //résulats et libération du mapping
     *lines = temp_lines;
     *line_sizes = temp_sizes;
     *line_count = count;
@@ -86,6 +90,7 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     }
     return 0;
 }
+
 
 int load_dictionaries(const char *path, Dictionary_t **dicts, size_t *dict_count)  {
     DIR *d;
@@ -144,15 +149,13 @@ int load_single_dictionary(Dictionary_t *dict, const char *filepath) {
     size_t temp_count = 0;
 
     if (read_input_file((char *)filepath, &dict->words, &temp_sizes, &temp_count) != 0) {
-        return -1; //échec de la lectuer
+        return -1; //échec de la lectuers
     }
 
     dict->word_count = (uint32_t)temp_count;
-
     dict->lang = NULL;
     dict ->id=0;
-
-
+    //id et langque initialisé pour avoir quelque chose en mémoire
 
 
     free(temp_sizes);
