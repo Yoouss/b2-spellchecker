@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
 
 // Il pourrait y avoir d'autres fonctions mais je ne pense pas que ça soit le cas
 
@@ -85,6 +88,68 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
 }
 
 int load_dictionaries(const char *path, Dictionary_t **dicts, size_t *dict_count)  {
-    // TODO
+    DIR *d;
+    struct dirent *entry;
+    size_t count = 0;
+    Dictionary_t *temp_dicts = NULL;
+
+    d = opendir(path);
+    if(d == NULL){
+        return -1; //si le dossier n'existe pas/ pas accés
+    }
+    entry=readdir(d);
+    while (entry != NULL){
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..")==0){
+            continue;
+        }
+
+        char full_path[1024]; //chemin du fichier
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+        
+        
+        struct stat st;
+        if (stat(full_path, &st) == -1 || !S_ISREG(st.st_mode)) {
+            continue; //si pas un fichier ou infos pas lisibles --> on passe
+        }
+
+        Dictionary_t *new_d = realloc(temp_dicts, (count + 1) * sizeof(Dictionary_t));
+        if (new_d == NULL){ //erreur -> donc on free l'espace
+            free(temp_dicts);
+            closedir(d);
+            return -1;
+        }
+        temp_dicts = new_d;
+        if (load_single_dictionary(&temp_dicts[count], full_path) ==0){
+            count++;
+        }else{ continue;}//fichier ilisible
+
+    }
+
+
+    *dicts = temp_dicts;
+    *dict_count = count;
+    closedir(d);
+
+    return 0;
+}
+
+int load_single_dictionary(Dictionary_t *dict, const char *filepath) {
+
+    uint32_t *temp_sizes = NULL;
+    size_t temp_count = 0;
+    
+    if (read_input_file((char *)filepath, &dict->words, &temp_sizes, &temp_count) != 0) {
+        return -1; //échec de la lectuer
+    }
+
+    dict->word_count = (uint32_t)temp_count;
+
+    dict->lang = NULL;
+    dict ->id;
+
+
+
+
+    free(temp_sizes);
     return 0;
 }
