@@ -84,7 +84,7 @@ void test_find_candidate_dict_for_line(void) {
     CU_ASSERT_STRING_EQUAL(candidateDictForLineEn->lang, "en");
 }
 
-void test_errors_count_and_indexes_in_line(void) {
+void test_wrong_words_count_and_indexes_in_line(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
