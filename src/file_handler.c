@@ -119,9 +119,14 @@ int load_dictionaries(const char *path, Dictionary_t **dicts, size_t *dict_count
             return -1;
         }
         temp_dicts = new_d;
+
         if (load_single_dictionary(&temp_dicts[count], full_path) ==0){
             count++;
-        }else{ continue;}//fichier ilisible
+        }
+        else{ continue;}//fichier ilisible
+
+        entry = readdir(d);//fichier suivant;
+
 
     }
 
@@ -137,7 +142,7 @@ int load_single_dictionary(Dictionary_t *dict, const char *filepath) {
 
     uint32_t *temp_sizes = NULL;
     size_t temp_count = 0;
-    
+
     if (read_input_file((char *)filepath, &dict->words, &temp_sizes, &temp_count) != 0) {
         return -1; //échec de la lectuer
     }
@@ -145,7 +150,7 @@ int load_single_dictionary(Dictionary_t *dict, const char *filepath) {
     dict->word_count = (uint32_t)temp_count;
 
     dict->lang = NULL;
-    dict ->id;
+    dict ->id=0;
 
 
 
