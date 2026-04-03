@@ -20,25 +20,22 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
         return  -1;
     }
 
-    struct stat fileStat; 
-    if (fstat(file_descriptor, &fileStat) == -1) {
+    struct stat file_stat;
+    if (fstat(file_descriptor, &file_stat) == -1) {
         perror("Erreur fstat");
         close(file_descriptor);
         return -1;
     }
-    //taille du fichier
-    size_t fileSize = fileStat.st_size;
+    size_t file_size = file_stat.st_size;
 
-    //si fichier vide
-    if (fileSize == 0) {
+    if (file_size == 0) {
         *lines = NULL;
         *line_sizes = NULL;
         *line_count = 0;
         close(file_descriptor);
         return 0;
     }
-    //mapping mémoire -> racourci pour visualiser le fichier
-    char *file_map = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE, file_descriptor, 0);
+    char *file_map = mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, file_descriptor, 0);
     if (file_map == MAP_FAILED) {
         perror("Erreur mmap");
         close(file_descriptor);
@@ -51,18 +48,20 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     char **temp_lines = NULL;
     uint32_t *temp_sizes = NULL;
     int start = 0;
-
-    for (int i = 0; i <= (int)fileSize; i++) {
-        if (i == (int)fileSize || file_map[i] == '\n') {
-            int length = i - start; //longueur de la ligne
+    
+    for (size_t i = 0; i <= file_size; i++) {
+        if (i == file_size || file_map[i] == '\n') {
+            int length = i - start;
             char **new_lines = realloc(temp_lines, (count + 1) * sizeof(char *));
             uint32_t *new_sizes = realloc(temp_sizes, (count + 1) * sizeof(uint32_t));
 
             if (!new_lines || !new_sizes) {
-                for (size_t j = 0; j < count; j++) free(temp_lines[j]);
+                for (size_t j = 0; j < count; j++){
+                    free(temp_lines[j]);
+                } 
                 free(temp_lines);
                 free(temp_sizes);
-                munmap(file_map, fileSize);
+                munmap(file_map, file_size);
                 return -1;
             }
             temp_lines = new_lines;
@@ -85,9 +84,11 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     *lines = temp_lines;
     *line_sizes = temp_sizes;
     *line_count = count;
-    if (munmap(file_map, fileSize) == -1) {
+
+    if (munmap(file_map, file_size) == -1) {
         perror("Erreur munmap");
     }
+
     return 0;
 }
 
