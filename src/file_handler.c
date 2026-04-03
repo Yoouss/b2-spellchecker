@@ -11,84 +11,109 @@
 #include <string.h>
 #include <dirent.h>
 
-// Il pourrait y avoir d'autres fonctions mais je ne pense pas que ça soit le cas
-
-int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count) {
-    int file_descriptor = open(input_path, O_RDONLY); //test de lecture 
+static char* map_file(const char* path, size_t* file_size) {
+    int file_descriptor = open(path, O_RDONLY);
     if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier");
-        return  -1;
+        return NULL;
     }
 
     struct stat file_stat;
     if (fstat(file_descriptor, &file_stat) == -1) {
         perror("Erreur fstat");
         close(file_descriptor);
-        return -1;
+        return NULL;
     }
-    size_t file_size = file_stat.st_size;
 
-    if (file_size == 0) {
-        *lines = NULL;
-        *line_sizes = NULL;
-        *line_count = 0;
+    *file_size = file_stat.st_size;
+
+    if (*file_size == 0) {
         close(file_descriptor);
-        return 0;
+        return NULL; 
     }
-    char *file_map = mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, file_descriptor, 0);
-    if (file_map == MAP_FAILED) {
-        perror("Erreur mmap");
-        close(file_descriptor);
-        return -1;
-    }
+    
+    char *file_map = mmap(NULL, *file_size, PROT_READ, MAP_PRIVATE, file_descriptor, 0);
+
     close(file_descriptor);
 
+    if (file_map == MAP_FAILED) {
+        perror("Erreur mmap");
+        return NULL;
+    }
+
+    return file_map;
+}
+
+static size_t count_lines(const char* map, size_t size) {
+    size_t n = 0;
+    for (size_t i = 0; i < size; i++) {
+        if (map[i] == '\n') n++;
+    }
     
-    size_t count = 0;
-    char **temp_lines = NULL;
-    uint32_t *temp_sizes = NULL;
-    int start = 0;
-    
+    if (size > 0 && map[size - 1] != '\n') {
+        n++;
+    }
+    return n;
+}
+
+static void clean_lines(char** lines, uint32_t* sizes, size_t count) {
+    if (lines) {
+        for (size_t i = 0; i < count; i++) {
+            free(lines[i]);
+        }
+        free(lines);
+    }
+    if (sizes) {
+        free(sizes);
+    }
+}
+
+int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count) {
+
+    size_t file_size = 0;
+    char *file_map = map_file(input_path, &file_size);
+    if (!file_map) return -1;
+
+    size_t total_lines = count_lines(file_map, file_size);
+
+    *lines = malloc(total_lines * sizeof(char *));
+    *line_sizes = malloc(total_lines * sizeof(uint32_t));
+
+    if (!*lines || !*line_sizes) {
+        clean_lines(*lines, *line_sizes, 0);
+        munmap(file_map, file_size);
+        return -1;
+    }
+
+    size_t current_line = 0;
+    size_t start = 0;
+
     for (size_t i = 0; i <= file_size; i++) {
         if (i == file_size || file_map[i] == '\n') {
-            int length = i - start;
-            char **new_lines = realloc(temp_lines, (count + 1) * sizeof(char *));
-            uint32_t *new_sizes = realloc(temp_sizes, (count + 1) * sizeof(uint32_t));
+            size_t length = i - start;
 
-            if (!new_lines || !new_sizes) {
-                for (size_t j = 0; j < count; j++){
-                    free(temp_lines[j]);
-                } 
-                free(temp_lines);
-                free(temp_sizes);
+            char *line = malloc(length + 1);
+            if (!line) {
+                clean_lines(*lines, *line_sizes, current_line);
                 munmap(file_map, file_size);
                 return -1;
             }
-            temp_lines = new_lines;
-            temp_sizes = new_sizes;
 
-            char *line = malloc(length + 1);
-            if (line) {//copie des caractéres ->nouvelle chaîné
-                for (int j = 0; j < length; j++) {
-                    line[j] = file_map[start + j];
-                }
-                line[length] = '\0'; 
-                temp_lines[count] = line;
-                temp_sizes[count] = (uint32_t)length;
-                count++;
+            for (size_t j = 0; j < length; j++) {
+                line[j] = file_map[start + j];
             }
+            line[length] = '\0';
+
+            (*lines)[current_line] = line;
+            (*line_sizes)[current_line] = (uint32_t)length;
+            
+            current_line++;
             start = i + 1;
         }
     }
-    //résulats et libération du mapping
-    *lines = temp_lines;
-    *line_sizes = temp_sizes;
-    *line_count = count;
-
-    if (munmap(file_map, file_size) == -1) {
-        perror("Erreur munmap");
-    }
-
+    
+    *line_count = current_line;
+    munmap(file_map, file_size);
     return 0;
 }
 
