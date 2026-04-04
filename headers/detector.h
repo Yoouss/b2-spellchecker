@@ -10,123 +10,149 @@
 #define SEPARATORS " %\t.,;:!?\"()[]{}_/\\|@#$^&*+=~`"
 
 /**
- * @brief  fonction qui prend un mot et vérifie si le mot est dans le dictionnaire : 
+ * Structure représentant une (char*) ligne d'un fichier
+ *
+ * @wrong_words_indexes : tableau des indexes (on commence à compter à 0) des mauvais mots dans la ligne
+ * @wrong_words_count   : nombre de mauvais mots dans la ligne (= la taille de wrong_words_indexes)
+ */
+
+typedef struct line {
+    uint32_t* wrong_words_indexes;
+    uint32_t wrong_words_count;
+} line_t;
+
+/**
+ * Structure représentant un (char**) fichier texte
+ *
+ * @incorrect_lines         : tableau de line_t renseignant sur les indexes et nombres de mauvais mots d'une ligne i
+ * @incorrect_lines_indexes : tableau des indexes (on commence à compter à 0) des lignes contenant des erreurs dans le fichier
+ * @incorrect_lines_count   : nombre de lignes contenant des erreurs (= la taille de incorrect_lines et incorrect_lines_indexes)
+ */
+
+typedef struct file {
+    line_t* incorrect_lines;
+    size_t* incorrect_lines_indexes;
+    size_t incorrect_lines_count;
+} file_t;
+
+/**
+ * @brief  fonction qui prend un mot et vérifie si le mot est dans le dictionnaire en recherche binaire : 
  *
  * @param  word un tableau de charactères qui réprésente un mot.
- * @param  dict un pointeur vers un dictionaire de type Dictionary_t
- * @return si vrai returne 1 si c'est faux on retourne 0 et -1 si erreur
+ * @param  dictionary un pointeur vers un dictionaire de type Dictionary_t
+ * @return si vrai retourne 1 si c'est faux on retourne 0 et -1 si erreur
+ * 
+ * @note   complexité temporelle : O(log(n))
+ *         complexité spaciale : O(1)
+ * 
+ *         n = nombre de mots dans le dictionnaire
  */
-short word_in_dictionary(char* word, Dictionary_t* dict);
+int word_in_dictionary(char* word, Dictionary_t* dictionary);
 
 /**
  * @brief  fonction qui prend une ligne et trouve le dictionnaire candidat qui minimise le nombre d'erreurs 
  *
  * @param  line un tableau de mots qui contiennent des charactères
- * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
- * @param  number_of_dictionaries le nombre de dictionaires 
+ * @param  dictionaries un pointeur vers des dictionaire de type Dictionary_t
+ * @param  dictionaries_count la taille de dictionaries
  * @return un pointeur vers le dictionnaire candidat ou NULL en cas d'erreur
+ * 
+ * @note   complexité temporelle : O(k (l + m log n))
+ *         complexité spaciale : O(1)
+ *
+ *         k = nombre de dictionnaires
+ *         l = nombre de charactères de la ligne
+ *         m = nombre de mots dans la ligne
+ *         n = nombre de mots dans le dictionnaire
  */
-Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dicts, uint16_t number_of_dictionaries);
+Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dictionaries, size_t dictionaries_count);
 
 /**
- * @brief  fonction qui prend une ligne qui représente une phrase et vérifie si les mots sont dans le dictionnaire  
+ * @brief  fonction helper de scan_line_for_errors qui informe sur les nombres de mots n'étant pas dans le dictionnaire 
+ *
+ * @param  line un tableau de mots qui contiennent des 
+ * @param  wrong_words_count l'adresse du nombre de mots erronés dans la ligne
+ * @param  dictionary un pointeur vers un dictionaire de type Dictionary_t
+ * @return -1 en cas d'erreur, 0 sinon (en modifiant le contenu de wrong_words_count)
+ * 
+ * @note   complexité temporelle : O(l + m log n)
+ *         complexité spaciale : O(1)
+ * 
+ *         l = nombre de charactères de la ligne
+ *         m = nombre de mots dans la ligne
+ *         n = nombre de mots dans le dictionnaire
+ */
+int set_wrong_words_count_in_line(char* line, uint32_t* wrong_words_count, Dictionary_t* dictionary);
+
+/**
+ * @brief  fonction helper de scan_line_for_errors qui fourni l'index des mauvais mots 
  *
  * @param  line un tableau de mots qui contiennent des charactères
- * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
- * @param  number_of_dictionaries le nombre de dictionaires 
- * @return retourne un tableau avec à l'index 0 le nombre d'erreurs et leur index dans la line
- *         (NULL si tous les mots sont dans le dictionnaire)
+ * @param  wrong_words_count le nombre de mauvais mots
+ * @param  dictionary un pointeur vers un dictionaire de type Dictionary_t
+ * @return un tableau avec l'index des mauvais mots du tableau, NULL si on a aucun mauvais mots ou en cas d'erreur
+ * 
+ * @note   complexité temporelle : O(l + m log n)
+ *         complexité spaciale : O(j)
+ *       
+ *         j = nombre de mauvais mots
+ *         l = nombre de charactères de la ligne
+ *         m = nombre de mots dans la ligne
+ *         n = nombre de mots dans le dictionnaire
  */
-uint32_t* words_in_line(char* line, Dictionary_t* dicts, uint16_t number_of_dictionaries);
+uint32_t* get_wrong_words_indexes_in_line(char* line, uint32_t wrong_words_count, Dictionary_t* dictionary);
 
 /**
- * @brief  fonction helper de words_in_line qui informe sur les nombres de mots n'étant pas dans le dictionnaire 
+ * @brief  TODO : fonction (bientôt) utilisée dans src/main.c qui fourni la liste des mauvais mots 
  *
  * @param  line un tableau de mots qui contiennent des charactères
- * @param  dict un pointeur vers un dictionaire de type Dictionary_t
- * @return -1 en cas d'erreur, les nombres de mauvais mots sinon
+ * @param  wrong_words_indexes tableau contenant l'index des mauvais mots dans une ligne
+ * @return un tableau avec les mauvais mots ou NULL en cas d'erreur
+ * 
+ * @note   complexité temporelle : TODO
+ *         complexité spaciale : TODO
+ *       
+ *         TODO
  */
-uint32_t number_of_bad_words_in_line(char* line, Dictionary_t* dict);
+char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes);
 
 /**
- * @brief  fonction helper de words_in_line qui fourni l'index des mauvais mots 
+ * @brief  fonction qui prend une ligne (ex : du fichier) et informe sur la présence d'erreurs et leurs index 
  *
  * @param  line un tableau de mots qui contiennent des charactères
- * @param  numberOfBadWords le nombre de mauvais mots
- * @param  dict un pointeur vers un dictionaire de type Dictionary_t
- * @return NULL en cas d'erreur, un tableau avec le nombre de mauvais mots à l'index 0 et leur index aux index du tableau suivants
+ * @param  dictionaries un pointeur vers des dictionaire de type Dictionary_t
+ * @param  dictionaries_count la taille de dictionaries
+ * @return un pointeur vers une structure line_t ou NULL si tous les mots sont dans un des dictionnaires ou en cas d'erreur
+ * 
+ * @note   complexité temporelle : O(k (l + m log n))
+ *         complexité spaciale : O(j)
+ *
+ *         j = nombre de mauvais mots
+ *         k = nombre de dictionnaires
+ *         l = nombre de charactères de la ligne
+ *         m = nombre de mots dans la ligne
+ *         n = nombre de mots dans le dictionnaire
  */
-uint32_t* get_indexes_of_bad_words_in_line(char* line, uint32_t numberOfBadWords, Dictionary_t* dict);
+line_t* scan_line_for_errors(char* line, Dictionary_t* dictionaries, size_t dictionaries_count);
 
 /**
- * @brief  fonction utilisée dans src/main.c qui fourni la listes des mauvais mots 
+ * @brief  fonction qui prend le chemin vers un fichier.txt et informe sur la présence de lignes erronées, leur nombre, 
+ *         leurs index dans le fichier et, pour chaque ligne érronée, leurs erreurs et leur index 
  *
- * @param  line un tableau de mots qui contiennent des charactères
- * @param  indexesOfBadWords tableau ayant le nombre de mauvais mots à l'index 0 et les mauvais mots à la suite
- * @return NULL en cas d'erreur, un tableau avec les mauvais mots
+ * @param  filename le nom d'un fichier (format txt) dans le dossier inputs
+ * @param  dictionaries un pointeur vers des dictionaire de type Dictionary_t
+ * @param  dictionaries_count la taille de dictionaries
+ * @return un pointer vers une structure file_t ou NULL si aucune erreur est detectée ou en cas d'erreur
+ * 
+ * @note complexité temporelle : O(k (l + m log n))
+ *       complexité spaciale : O(m + j)
+ * 
+ *       j = nombre de mauvais mots du fichier
+ *       k = nombre de dictionnaires
+ *       l = nombre de charactères dans le fichier
+ *       m = nombre de mots dans le fichier
+ *       n = nombre de mots dans le dictionnaire
  */
-char** get_bad_words_in_line(char* line, uint32_t* indexesOfBadWords);
-
-/**
- * @brief  fonction qui prend un fichier et vérifie si les tous mots sont dans le dictionnaire  
- *
- * @param  filename le nom du fichier du dossier inputs
- * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
- * @param  number_of_dictionaries le nombre de dictionaires 
- * @return NULL en cas d'erreur, retourne un matrice contenant les tableaux des 
- *         positions des mots qui ne figurent pas dans le dico sinon
- *         (index 0 = longueur du tableau = nombre de mauvais mots à cette ligne du fichier -> index de la ligne de la matrice)
- */
-uint32_t** words_in_file(char* filename, Dictionary_t* dicts, uint16_t number_of_dictionaries);
-
-/**
- * @brief Function that frees the matrix's memory
- *
- * @param matrix The matrix
- * @param matrixLength The number of rows the matrix has
- */
-static inline void free_matrix(uint32_t** matrix, int matrixLength) {
-    for (int i = 0; i < matrixLength; i++) {
-        if (matrix[i] != NULL) free(matrix[i]);
-    }
-
-    free(matrix);
-}
-
-/**
- * @brief  O(log(n)) search of a word in a given dictionary
- *
- * @param word An array of characters representing a word
- * @param dict a pointer to a Dictionary_t dictionnary
- * @return 1 if found, -1 if an error occured and 0 otherwise 
- */
-static inline int binary_search_word_in_dictonary(char* targetWord, Dictionary_t* dict) {
-    if (targetWord == NULL || dict == NULL) return -1;
-
-    char** words = dict->words;
-    int32_t left = 0;
-    int32_t right = dict->word_count - 1;
-
-    while (left <= right) {
-        int32_t middle = (left + right) / 2;
-        char* word = words[middle];
-
-        short comparison = strcmp(word, targetWord); // Is word smaller or greater than TargetWord ?
-
-        if (comparison < 0) {
-            left = middle + 1;
-        }
-
-        else if (comparison > 0) {
-            right = middle - 1;
-        }
-
-        else {
-            return 1;
-        }
-    }
-
-    return 0;
-}
+file_t* scan_file_for_errors(char* filename, Dictionary_t* dictionaries, size_t dictionaries_count);
 
 #endif
