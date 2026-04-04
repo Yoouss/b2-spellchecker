@@ -23,7 +23,8 @@ char get_soundex_code(char c) {
     }
 }
 
-char* soundex(char* word) { // problèmes si erreurs sur première lettre -> susywrk et busywork != code, ignore les voyelles : peler, piler, polaire, pull ont même code, etc.
+// voir si on garde ou non la fonction
+char* soundex(char* word) { // problèmes : si erreurs sur première lettre : susywrk et busywork != code, ignore les voyelles : peler, piler, polaire, pull ont même code, etc.
     if (word == NULL || strlen(word) == 0) return NULL;
 
     char* soundex_code = malloc(5 * sizeof(char));
@@ -119,48 +120,48 @@ int** initialize_matrix(int n, int m) {
     return matrix;
 }
 
-int calculate_distance(char* word1, char* word2) { // soucis avec les accents -> 3 opérations au lieu de deux ... (faire une fonction de nettoyage)
+int compute_levenshtein_distance(char* word1, char* word2) { // ne s'occupe pas du cas où les mots ont des accents (la distance est la même pour peche : pêche et poche)
     int n = strlen(word1);
     int m = strlen(word2);
 
     if (n == 0) return m;
     if (m == 0) return n; 
     
-    int** matrix = initialize_matrix(n, m);
-    if (matrix == NULL) return -1; 
+    int** distances_matrix = initialize_matrix(n, m);
+    if (distances_matrix == NULL) return -1; 
 
     for (int line = 0; line <= n; line++) {
-        matrix[line][0] = line;
+        distances_matrix[line][0] = line;
     }
 
     for (int col = 0; col <= m; col++) {
-        matrix[0][col] = col;
+        distances_matrix[0][col] = col;
     }
 
     for (int i = 1; i <= n; i++) {
         for (int j = 1; j <= m ; j++) {
-            int diff_cost;
+            int cost;
             if (word1[i - 1] == word2[j - 1]) {
-                diff_cost = 0;
+                cost = 0;
             }
             else {
-                diff_cost = 1;
+                cost = 1;
             }
 
-            int deletion = matrix[i - 1][j] + 1;       
-            int insertion = matrix[i][j - 1] + 1;      
-            int substitution = matrix[i - 1][j - 1] + diff_cost; 
+            int deletion = distances_matrix[i - 1][j] + 1;       
+            int insertion = distances_matrix[i][j - 1] + 1;      
+            int substitution = distances_matrix[i - 1][j - 1] + cost; 
 
-            matrix[i][j] = get_min3(deletion, insertion, substitution);
+            distances_matrix[i][j] = get_min3(deletion, insertion, substitution);
         }
     }
 
-    int distance = matrix[n][m];
+    int distance = distances_matrix[n][m];
 
     for (int i = 0; i <= n; i++) {
-        free(matrix[i]);
+        free(distances_matrix[i]);
     }
-    free(matrix);
+    free(distances_matrix);
 
     return distance;
 }
@@ -174,7 +175,7 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
 
     for (int i = 0; i < nb_candidates; i++) {
         char* current_word = candidates[i];
-        int distance = calculate_distance(wrong_word, current_word);
+        int distance = compute_levenshtein_distance(wrong_word, current_word);
 
         int* index_distance_array = malloc(2 * sizeof(int));
         
@@ -195,20 +196,19 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
 }
 
 void sort_candidate_distances(int** distance_matrix, int nb_candidates){
-    int* actual_candidate;
+    int* actual_word_candidate;
     int j;
 
     for(int i = 1; i < nb_candidates; i++) {
-        actual_candidate = distance_matrix[i];
+        actual_word_candidate = distance_matrix[i];
         j = i - 1;
 
-        // on déplace les éléments qui ont une distance > actual_candidate[1]
-        while (0 <= j && distance_matrix[j][1] > actual_candidate[1]) {
+        while (0 <= j && distance_matrix[j][1] > actual_word_candidate[1]) {
             distance_matrix[j + 1] = distance_matrix[j];
             j = j - 1;
         }
 
-        distance_matrix[j + 1] = actual_candidate;
+        distance_matrix[j + 1] = actual_word_candidate;
     }
 }
 

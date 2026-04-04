@@ -36,7 +36,7 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
 
 /**
  * @brief Calcule le minimum de trois entiers
- * * Utilisée pour déterminer l'opération la moins coûteuse (insertion, suppression ou substitution) dans calculate_distance
+ * * Utilisée pour déterminer l'opération la moins coûteuse (insertion, suppression ou substitution) dans compute_levenshtein_distance
  * 
  * @param a Premier entier (coût de suppression)
  * @param b Deuxième entier (coût d'insertion)
@@ -62,7 +62,7 @@ int** initialize_matrix(int n, int m);
  * @param word2 Le second mot
  * @return La distance entre les 2 mots (0 si les mots sont identiques)
  */
-int calculate_distance(char* word1, char* word2);
+int compute_levenshtein_distance(char* word1, char* word2);
 
 /**
  * @brief Génère une matrice de distances pour les candidats
