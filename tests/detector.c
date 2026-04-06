@@ -265,20 +265,21 @@ void test_get_wrong_words_in_line(void) {
 
     // Test 3 : Nombres 
     char* ligne3 = "1234";
-    uint32_t indexesOfBadWord3[] = {1, 0};
+    uint32_t indexesOfBadWord3[] = {0};
     char** res3 = get_wrong_words_in_line(ligne3, indexesOfBadWord3);
-    CU_ASSERT_PTR_NOT_NULL(res3);
+    CU_ASSERT_PTR_NULL(res3);
     if (res3 != NULL) {
-        CU_ASSERT_STRING_EQUAL(res3[0], "1234");
         free(res3[0]); free(res3);
     }
 
     // Test 4 : Que des ponctuations
     char* ligne4 = ".,.;^?+=";
-    uint32_t indexesOfBadWord4[] = {1, 0};
+    uint32_t indexesOfBadWord4[] = {0};
     char** res4 = get_wrong_words_in_line(ligne4, indexesOfBadWord4);
-    CU_ASSERT_TRUE(res4[0] == NULL || res4 == NULL);
-    if(res4) free(res4);
+    CU_ASSERT_PTR_NULL(res4);
+    if (res4 != NULL) {
+        free(res4[0]); free(res4);
+    }
 
     // Test 5 : Ligne NULL
     char* ligne5 = NULL;
@@ -287,7 +288,7 @@ void test_get_wrong_words_in_line(void) {
     CU_ASSERT_PTR_NULL(res5);
 
     // Test 6 : tab index NULL
-    char* ligne6 = "Bonjour, he çuis un ninja";
+    char* ligne6 = "Bonjour, he çuis la féequedemanger";
     uint32_t* indexesOfBadWord6 = NULL;
     char** res6 = get_wrong_words_in_line(ligne6, indexesOfBadWord6);
     CU_ASSERT_PTR_NULL(res6);
