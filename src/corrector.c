@@ -5,57 +5,52 @@
 #include <stdint.h>
 #include "common.h"
 #include "corrector.h"
-#include <string.h>
 #include <ctype.h>
 
-char get_soundex_code(char c) {
-    c = toupper(c);
+int count_number_of_shared_trigrammes(char* word1, char* word2) {
+    int number_of_shared_trigrammes = 0;
+    int word1_size = strlen(word1);
+    int word2_size = strlen(word2);
 
-    switch (c) {
-        case 'B': case 'F': case 'P': case 'V': return '1';
-        case 'C': case 'G': case 'J': case 'K': case 'Q': case 'S': case 'X': case 'Z': return '2';
-        case 'D': case 'T': return '3';
-        case 'L': return '4';
-        case 'M': case 'N': return '5';
-        case 'R': return '6';
-        case 'A': case 'E': case 'I': case 'O': case 'U': case 'Y': case 'H': case 'W': return '-';
-        default: return '0';
-    }
-}
+    if (word1_size < 3 || word2_size < 3) return 0;
 
-char* soundex(char* word) {
-    if (word == NULL || strlen(word) == 0) return NULL;
+    for (int i = 0; i <= word1_size - 3; i++) {
 
-    char* soundex_code = malloc(5 * sizeof(char));
-    if (soundex_code == NULL) return NULL;
+        char* word1_current_trigramme = malloc(4 * sizeof(char));
+        if (word1_current_trigramme == NULL) return -1;
 
-    soundex_code[0] = toupper(word[0]);
-    
-    int code_index = 1;
-    char last_digit = get_soundex_code(word[0]);
+        word1_current_trigramme[0] = word1[i];
+        word1_current_trigramme[1] = word1[i + 1];
+        word1_current_trigramme[2] = word1[i + 2];
+        word1_current_trigramme[3] = '\0';
 
-    for (int i = 1; word[i] != '\0' && code_index < 4; i++) {
-        char current_digit = get_soundex_code(word[i]);
+        for (int j = 0; j <= word2_size - 3; j++) {
 
-        if (current_digit == '-') {
-            last_digit = '-';
-            continue;
+            char* word2_current_trigramme = malloc(4 * sizeof(char));
+            if (word2_current_trigramme == NULL) {
+                free(word1_current_trigramme);
+                return -1;
+            }
+
+            word2_current_trigramme[0] = word2[j];
+            word2_current_trigramme[1] = word2[j + 1];
+            word2_current_trigramme[2] = word2[j + 2];
+            word2_current_trigramme[3] = '\0';
+
+            if (strcmp(word1_current_trigramme, word2_current_trigramme) == 0) {
+                number_of_shared_trigrammes++;
+                free(word2_current_trigramme);
+                break;
+            }
+
+            free(word2_current_trigramme);
+
         }
 
-        if (current_digit != '0' && current_digit != last_digit) {
-            soundex_code[code_index] = current_digit;
-            code_index++;
-            last_digit = current_digit;
-        }
+        free(word1_current_trigramme);
     }
 
-    while (code_index < 4) {
-        soundex_code[code_index] = '0';
-        code_index++;
-    }
-    
-    soundex_code[4] = '\0';
-    return soundex_code;
+    return number_of_shared_trigrammes;
 }
 
 char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_count) {
@@ -66,31 +61,29 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
     char** candidate_words = malloc(dict_size * sizeof(char*));
     if (candidate_words == NULL) return NULL;
     
-    int wrong_word_size = strlen(wrong_word);
-    char* wrong_word_soundex = soundex(wrong_word);
     
     char** words = dict->words;
     int candidate_words_index = 0;
-    int candidates_counter = 0;
+    int number_of_candidates = 0;
+    int min_shared_trigrams;
+
+    if (strlen(wrong_word) < 6) {
+        min_shared_trigrams = 1;
+    }
+    else {
+        min_shared_trigrams = 2;
+    }
     
     for (int i = 0; i < dict_size; i++) {
         char* current_word = words[i];
-        int current_word_size = strlen(current_word);
-
-        if (current_word[0] == wrong_word[0] && (wrong_word_size >= current_word_size - 3 && wrong_word_size <= current_word_size + 3)) {
-            char* current_word_soundex = soundex(current_word);
-
-            if (strcmp(current_word_soundex, wrong_word_soundex) == 0) {
-                candidate_words[candidate_words_index] = current_word;
-                candidate_words_index += 1;
-                candidates_counter += 1;
-            }
-            free(current_word_soundex);
+        if (count_number_of_shared_trigrammes(wrong_word, current_word) >= min_shared_trigrams) {
+            candidate_words[candidate_words_index] = current_word;
+            candidate_words_index++;
+            number_of_candidates++;
         }
     }
-    
-    free(wrong_word_soundex);
-    *(result_count) = candidates_counter;
+
+    *(result_count) = number_of_candidates;
     return candidate_words;
 }
 
@@ -119,48 +112,48 @@ int** initialize_matrix(int n, int m) {
     return matrix;
 }
 
-int calculate_distance(char* word1, char* word2) {
+int compute_levenshtein_distance(char* word1, char* word2) {
     int n = strlen(word1);
     int m = strlen(word2);
 
     if (n == 0) return m;
     if (m == 0) return n; 
     
-    int** matrix = initialize_matrix(n, m);
-    if (matrix == NULL) return -1; 
+    int** distances_matrix = initialize_matrix(n, m);
+    if (distances_matrix == NULL) return -1; 
 
     for (int line = 0; line <= n; line++) {
-        matrix[line][0] = line;
+        distances_matrix[line][0] = line;
     }
 
     for (int col = 0; col <= m; col++) {
-        matrix[0][col] = col;
+        distances_matrix[0][col] = col;
     }
 
     for (int i = 1; i <= n; i++) {
         for (int j = 1; j <= m ; j++) {
-            int diff_cost;
+            int cost;
             if (word1[i - 1] == word2[j - 1]) {
-                diff_cost = 0;
+                cost = 0;
             }
             else {
-                diff_cost = 1;
+                cost = 1;
             }
 
-            int deletion = matrix[i - 1][j] + 1;       
-            int insertion = matrix[i][j - 1] + 1;      
-            int substitution = matrix[i - 1][j - 1] + diff_cost; 
+            int deletion = distances_matrix[i - 1][j] + 1;       
+            int insertion = distances_matrix[i][j - 1] + 1;      
+            int substitution = distances_matrix[i - 1][j - 1] + cost; 
 
-            matrix[i][j] = get_min3(deletion, insertion, substitution);
+            distances_matrix[i][j] = get_min3(deletion, insertion, substitution);
         }
     }
 
-    int distance = matrix[n][m];
+    int distance = distances_matrix[n][m];
 
     for (int i = 0; i <= n; i++) {
-        free(matrix[i]);
+        free(distances_matrix[i]);
     }
-    free(matrix);
+    free(distances_matrix);
 
     return distance;
 }
@@ -174,7 +167,7 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
 
     for (int i = 0; i < nb_candidates; i++) {
         char* current_word = candidates[i];
-        int distance = calculate_distance(wrong_word, current_word);
+        int distance = compute_levenshtein_distance(wrong_word, current_word);
 
         int* index_distance_array = malloc(2 * sizeof(int));
         
@@ -195,20 +188,19 @@ int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candi
 }
 
 void sort_candidate_distances(int** distance_matrix, int nb_candidates){
-    int* actual_candidate;
+    int* actual_word_candidate;
     int j;
 
     for(int i = 1; i < nb_candidates; i++) {
-        actual_candidate = distance_matrix[i];
+        actual_word_candidate = distance_matrix[i];
         j = i - 1;
 
-        // on déplace les éléments qui ont une distance > actual_candidate[1]
-        while (0 <= j && distance_matrix[j][1] > actual_candidate[1]) {
+        while (0 <= j && distance_matrix[j][1] > actual_word_candidate[1]) {
             distance_matrix[j + 1] = distance_matrix[j];
             j = j - 1;
         }
 
-        distance_matrix[j + 1] = actual_candidate;
+        distance_matrix[j + 1] = actual_word_candidate;
     }
 }
 
@@ -216,11 +208,10 @@ char* get_word_correction(char* wrong_word, Dictionary_t* dict) {
     if (wrong_word == NULL || strlen(wrong_word) == 0 || dict == NULL) return NULL;
 
     int number_of_candidates = 0;
-    char** candidate_words = get_candidate_words(wrong_word, dict, &number_of_candidates);
-
+    char** candidate_words = get_candidate_words(wrong_word, dict, &number_of_candidates); 
     if (candidate_words == NULL) return NULL;
 
-    // C'est pas normal, les fonctions de corrections ont un problème, je retourne le mauvais mot pour ne pas avoir un seg fault
+    // juste au cas où mais un mot détecté comme mal orthographié a d'office une correction 
     if (number_of_candidates == 0) { 
         free(candidate_words);
         return wrong_word;
