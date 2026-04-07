@@ -175,33 +175,16 @@ int main(int argc, char const *argv[]) {
             return -1;
         }
 
-        // Younes s'occupera de créer une fonction qui récupère directement les mauvais mots
-        char* line_copy = strdup(line);
-        if (line_copy == NULL) {
-            free(corrections);
-            free_file_detection(file_detection);
-            free(lines_sizes);
-            free_args(args);
-            return -1;
-        }
-
-        char* words[lines_sizes[line_index]]; 
-        int word_count = 0;
-
-        char* word = strtok(line_copy, SEPARATORS);
-        while (word != NULL) {
-            words[word_count++] = word;
-            word = strtok(NULL, SEPARATORS);
-        }
+        char* wrong_words = get_wrong_words_in_line(line, wrong_words_indexes, wrong_words_count);
 
         for (uint32_t j = 0; j < wrong_words_count; j++) {
-            corrections[j] = get_word_correction(words[wrong_words_indexes[j]], dict);
+            corrections[j] = get_word_correction(wrong_words[j], dict);
         }
 
         pretty_print_correction(line, line_index+1, wrong_words_count, wrong_words_indexes, corrections);
 
         free(corrections);
-        free(line_copy);
+        free(wrong_words);
     }
 
     free_file_detection(file_detection);

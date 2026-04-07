@@ -107,6 +107,7 @@ uint32_t* get_wrong_words_indexes_in_line(char* line, uint32_t wrong_words_count
  *
  * @param  line un tableau de mots qui contiennent des charactères
  * @param  wrong_words_indexes tableau contenant l'index des mauvais mots dans une ligne
+ * @param  nbr_wrong_words un nombre non signé qui représente le nombre de mauvais mots
  * @return un tableau avec les mauvais mots ou NULL en cas d'erreur
  * 
  * @note   complexité temporelle : TODO
@@ -114,7 +115,7 @@ uint32_t* get_wrong_words_indexes_in_line(char* line, uint32_t wrong_words_count
  *       
  *         TODO
  */
-char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes);
+char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes, uint32_t nbr_wrong_words);
 
 /**
  * @brief  fonction qui prend une ligne (ex : du fichier) et informe sur la présence d'erreurs et leurs index 

@@ -249,18 +249,16 @@ void test_get_wrong_words_in_line(void) {
     // Test 1 : Aucun mauvais mot
     char* ligne1 = "Bonjour, je suis un ninja";
     uint32_t* indexes_of_bad_word1 = NULL;
-    char** res1 = get_wrong_words_in_line(ligne1, indexes_of_bad_word1);
+    char** res1 = get_wrong_words_in_line(ligne1, indexes_of_bad_word1,0);
     CU_ASSERT_PTR_NULL(res1);
     if (res1 != NULL){
         free(res1);
     }
 
-    printf("test1...\n");
-
     // Test 2 : Cas classique
     char* ligne2 = "Bonjour, he çuis un ninja";
     uint32_t indexes_of_bad_word2[] = {1, 2}; // indices 1 et 2
-    char** res2 = get_wrong_words_in_line(ligne2, indexes_of_bad_word2);
+    char** res2 = get_wrong_words_in_line(ligne2, indexes_of_bad_word2,2);
     CU_ASSERT_PTR_NOT_NULL(res2);
     if (res2 != NULL) {
         CU_ASSERT_STRING_EQUAL(res2[0], "he");
@@ -268,48 +266,41 @@ void test_get_wrong_words_in_line(void) {
         free(res2[0]); free(res2[1]); free(res2);
     }
 
-    printf("test2...\n");
-
     // Test 3 : Nombres 
     char* ligne3 = "1234";
     uint32_t indexes_of_bad_word3[] = {0}; // indice 0
-    char** res3 = get_wrong_words_in_line(ligne3, indexes_of_bad_word3);
+    char** res3 = get_wrong_words_in_line(ligne3, indexes_of_bad_word3,1);
     CU_ASSERT_PTR_NOT_NULL(res3);
     CU_ASSERT_STRING_EQUAL(res3[0],"1234");
     if (res3 != NULL) {
         free(res3[0]); free(res3);
     }
 
-    printf("test3...\n");
-
-
     // Test 4 : Que des ponctuations
     char* ligne4 = ".,.;^?+=";
     uint32_t* indexes_of_bad_word4 = NULL;
-    char** res4 = get_wrong_words_in_line(ligne4, indexes_of_bad_word4);
+    char** res4 = get_wrong_words_in_line(ligne4, indexes_of_bad_word4,0);
     CU_ASSERT_PTR_NULL(res4);
     if (res4 != NULL) {
         free(res4[0]); free(res4);
     }
 
-    printf("test...\n");
-
     // Test 5 : Ligne NULL
     char* ligne5 = NULL;
     uint32_t indexes_of_bad_word5[] = {0,1};
-    char** res5 = get_wrong_words_in_line(ligne5, indexes_of_bad_word5);
+    char** res5 = get_wrong_words_in_line(ligne5, indexes_of_bad_word5,2);
     CU_ASSERT_PTR_NULL(res5);
 
     // Test 6 : tab index NULL
     char* ligne6 = "Bonjour, he çuis la féequedemanger";
     uint32_t* indexes_of_bad_word6 = NULL;
-    char** res6 = get_wrong_words_in_line(ligne6, indexes_of_bad_word6);
+    char** res6 = get_wrong_words_in_line(ligne6, indexes_of_bad_word6,0);
     CU_ASSERT_PTR_NULL(res6);
 
     // Test 7 : tout est NULL
     char* ligne7 = NULL;
     uint32_t* indexes_of_bad_word7 = NULL;
-    char** res7 = get_wrong_words_in_line(ligne7, indexes_of_bad_word7);
+    char** res7 = get_wrong_words_in_line(ligne7, indexes_of_bad_word7,0);
     CU_ASSERT_PTR_NULL(res7);
 
     // Test 8 : tab vide
@@ -317,8 +308,8 @@ void test_get_wrong_words_in_line(void) {
     char* ligne8_bis = "Je suis une justicière masquée";
 
     uint32_t* indexes_of_bad_word8 = NULL;
-    char** res8 = get_wrong_words_in_line(ligne8, indexes_of_bad_word8);
-    char** res8_bis = get_wrong_words_in_line(ligne8_bis, indexes_of_bad_word8);
+    char** res8 = get_wrong_words_in_line(ligne8, indexes_of_bad_word8, 0);
+    char** res8_bis = get_wrong_words_in_line(ligne8_bis, indexes_of_bad_word8,0);
 
     CU_ASSERT_PTR_NULL(res8);
     CU_ASSERT_PTR_NULL(res8_bis);
@@ -328,10 +319,11 @@ void test_get_wrong_words_in_line(void) {
 
     // Test 9 : erreur outOfIndex
     char* ligne9 = "Hurlement du drakon de feu ";
-    uint32_t* indexes_of_bad_word9 = {2,5};
-    char** res9 = get_wrong_words_in_line(ligne9, indexes_of_bad_word9);
+    uint32_t indexes_of_bad_word9[] = {2,5};
+    char** res9 = get_wrong_words_in_line(ligne9, indexes_of_bad_word9, 2);
     
-    CU_ASSERT_PTR_NULL(res9);
+    CU_ASSERT_PTR_NOT_NULL(res9);
+    CU_ASSERT_STRING_EQUAL(res9[0],"drakon");
     if (res9 != NULL) {
         if (res9[0]) free(res9[0]);
         if (res9[1]) free(res9[1]);
