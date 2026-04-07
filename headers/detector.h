@@ -103,18 +103,20 @@ int set_wrong_words_count_in_line(char* line, uint32_t* wrong_words_count, Dicti
 uint32_t* get_wrong_words_indexes_in_line(char* line, uint32_t wrong_words_count, Dictionary_t* dictionary);
 
 /**
- * @brief  TODO : fonction (bientôt) utilisée dans src/main.c qui fourni la liste des mauvais mots 
+ * @brief  fonction utilisée dans src/main.c qui fourni la liste des mauvais mots  présents dans une ligne
  *
  * @param  line un tableau de mots qui contiennent des charactères
  * @param  wrong_words_indexes tableau contenant l'index des mauvais mots dans une ligne
+ * @param  wrong_words_count un nombre non signé qui représente le nombre de mauvais mots
  * @return un tableau avec les mauvais mots ou NULL en cas d'erreur
  * 
- * @note   complexité temporelle : TODO
- *         complexité spaciale : TODO
+ * @note   complexité temporelle : O(l)
+ *         complexité spaciale : O(j)
  *       
- *         TODO
+ *         j = nombre de mauvais mots
+ *         l = nombre de charactères de la ligne
  */
-char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes);
+char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes, uint32_t wrong_words_count);
 
 /**
  * @brief  fonction qui prend une ligne (ex : du fichier) et informe sur la présence d'erreurs et leurs index 

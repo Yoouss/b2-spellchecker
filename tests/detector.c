@@ -135,6 +135,93 @@ void test_wrong_words_count_and_indexes_in_line(void) {
     free(wrong_words_indexes);
 }
 
+void test_get_wrong_words_in_line(void) {
+
+    // Test 1 : Aucun mauvais mot
+    char* ligne1 = "Bonjour, je suis un ninja";
+    uint32_t* indexes_of_bad_word1 = NULL;
+    char** res1 = get_wrong_words_in_line(ligne1, indexes_of_bad_word1,0);
+    CU_ASSERT_PTR_NULL(res1);
+    if (res1 != NULL){
+        free(res1);
+    }
+
+    // Test 2 : Cas classique
+    char* ligne2 = "Bonjour, he çuis un ninja";
+    uint32_t indexes_of_bad_word2[] = {1, 2}; // indices 1 et 2
+    char** res2 = get_wrong_words_in_line(ligne2, indexes_of_bad_word2,2);
+    CU_ASSERT_PTR_NOT_NULL(res2);
+    if (res2 != NULL) {
+        CU_ASSERT_STRING_EQUAL(res2[0], "he");
+        CU_ASSERT_STRING_EQUAL(res2[1], "çuis");
+        free(res2[0]); free(res2[1]); free(res2);
+    }
+
+    // Test 3 : Nombres 
+    char* ligne3 = "1234";
+    uint32_t indexes_of_bad_word3[] = {0}; // indice 0
+    char** res3 = get_wrong_words_in_line(ligne3, indexes_of_bad_word3,1);
+    CU_ASSERT_PTR_NOT_NULL(res3);
+    CU_ASSERT_STRING_EQUAL(res3[0],"1234");
+    if (res3 != NULL) {
+        free(res3[0]); free(res3);
+    }
+
+    // Test 4 : Que des ponctuations
+    char* ligne4 = ".,.;^?+=";
+    uint32_t* indexes_of_bad_word4 = NULL;
+    char** res4 = get_wrong_words_in_line(ligne4, indexes_of_bad_word4,0);
+    CU_ASSERT_PTR_NULL(res4);
+    if (res4 != NULL) {
+        free(res4[0]); free(res4);
+    }
+
+    // Test 5 : Ligne NULL
+    char* ligne5 = NULL;
+    uint32_t indexes_of_bad_word5[] = {0,1};
+    char** res5 = get_wrong_words_in_line(ligne5, indexes_of_bad_word5,2);
+    CU_ASSERT_PTR_NULL(res5);
+
+    // Test 6 : tab index NULL
+    char* ligne6 = "Bonjour, he çuis la féequedemanger";
+    uint32_t* indexes_of_bad_word6 = NULL;
+    char** res6 = get_wrong_words_in_line(ligne6, indexes_of_bad_word6,0);
+    CU_ASSERT_PTR_NULL(res6);
+
+    // Test 7 : tout est NULL
+    char* ligne7 = NULL;
+    uint32_t* indexes_of_bad_word7 = NULL;
+    char** res7 = get_wrong_words_in_line(ligne7, indexes_of_bad_word7,0);
+    CU_ASSERT_PTR_NULL(res7);
+
+    // Test 8 : tab vide
+    char* ligne8 = "";
+    char* ligne8_bis = "Je suis une justicière masquée";
+
+    uint32_t* indexes_of_bad_word8 = NULL;
+    char** res8 = get_wrong_words_in_line(ligne8, indexes_of_bad_word8, 0);
+    char** res8_bis = get_wrong_words_in_line(ligne8_bis, indexes_of_bad_word8,0);
+
+    CU_ASSERT_PTR_NULL(res8);
+    CU_ASSERT_PTR_NULL(res8_bis);
+
+    if(res8 != NULL) free(res8);
+    if(res8_bis != NULL) free(res8_bis);
+
+    // Test 9 : erreur outOfIndex
+    char* ligne9 = "Hurlement du drakon de feu ";
+    uint32_t indexes_of_bad_word9[] = {2,5};
+    char** res9 = get_wrong_words_in_line(ligne9, indexes_of_bad_word9, 2);
+    
+    CU_ASSERT_PTR_NOT_NULL(res9);
+    CU_ASSERT_STRING_EQUAL(res9[0],"drakon");
+    if (res9 != NULL) {
+        if (res9[0]) free(res9[0]);
+        if (res9[1]) free(res9[1]);
+        free(res9);
+    }
+}
+
 void test_scan_line_for_errors(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
@@ -241,86 +328,4 @@ void test_scan_file_for_errors(void) {
     }
 
     free_file_detection(file_detection);
-}
-
-
-void test_get_wrong_words_in_line(void) {
-
-    // Test 1 : Aucun mauvais mot
-    char* ligne1 = "Bonjour, je suis un ninja";
-    uint32_t indexesOfBadWord1[] = {0};
-    char** res1 = get_wrong_words_in_line(ligne1, indexesOfBadWord1);
-    CU_ASSERT_PTR_NULL(res1);
-
-    // Test 2 : Cas classique
-    char* ligne2 = "Bonjour, he çuis un ninja";
-    uint32_t indexesOfBadWord2[] = {2, 1, 2}; // 2 mots, indices 1 et 2
-    char** res2 = get_wrong_words_in_line(ligne2, indexesOfBadWord2);
-    CU_ASSERT_PTR_NOT_NULL(res2);
-    if (res2 != NULL) {
-        CU_ASSERT_STRING_EQUAL(res2[0], "he");
-        CU_ASSERT_STRING_EQUAL(res2[1], "çuis");
-        free(res2[0]); free(res2[1]); free(res2);
-    }
-
-    // Test 3 : Nombres 
-    char* ligne3 = "1234";
-    uint32_t indexesOfBadWord3[] = {1, 0};
-    char** res3 = get_wrong_words_in_line(ligne3, indexesOfBadWord3);
-    CU_ASSERT_PTR_NOT_NULL(res3);
-    if (res3 != NULL) {
-        CU_ASSERT_STRING_EQUAL(res3[0], "1234");
-        free(res3[0]); free(res3);
-    }
-
-    // Test 4 : Que des ponctuations
-    char* ligne4 = ".,.;^?+=";
-    uint32_t indexesOfBadWord4[] = {1, 0};
-    char** res4 = get_wrong_words_in_line(ligne4, indexesOfBadWord4);
-    CU_ASSERT_TRUE(res4[0] == NULL || res4 == NULL);
-    if(res4) free(res4);
-
-    // Test 5 : Ligne NULL
-    char* ligne5 = NULL;
-    uint32_t indexesOfBadWord5[] = {1, 0};
-    char** res5 = get_wrong_words_in_line(ligne5, indexesOfBadWord5);
-    CU_ASSERT_PTR_NULL(res5);
-
-    // Test 6 : tab index NULL
-    char* ligne6 = "Bonjour, he çuis un ninja";
-    uint32_t* indexesOfBadWord6 = NULL;
-    char** res6 = get_wrong_words_in_line(ligne6, indexesOfBadWord6);
-    CU_ASSERT_PTR_NULL(res6);
-
-    // Test 7 : tout est NULL
-    char* ligne7 = NULL;
-    uint32_t* indexesOfBadWord7 = NULL;
-    char** res7 = get_wrong_words_in_line(ligne7, indexesOfBadWord7);
-    CU_ASSERT_PTR_NULL(res7);
-
-    // Test 8 : tab vide
-    char* ligne8 = "";
-    char* ligne8_bis = "Je suis une sailor moon";
-
-    uint32_t indexesOfBadWord8[] = {0};
-    char** res8 = get_wrong_words_in_line(ligne8, indexesOfBadWord8);
-    char** res8_bis = get_wrong_words_in_line(ligne8_bis, indexesOfBadWord8);
-
-    CU_ASSERT_PTR_NULL(res8);
-    CU_ASSERT_PTR_NULL(res8_bis);
-
-    if(res8) free(res8);
-    if(res8_bis) free(res8_bis);
-
-    // Test 9 : erreur outOfIndex
-    char* ligne9 = "Hurlement du drakon de feu ";
-    uint32_t indexesOfBadWord9[] = {2,2,5};
-    char** res9 = get_wrong_words_in_line(ligne9, indexesOfBadWord9);
-    
-    CU_ASSERT_PTR_NULL(res9);
-    if (res9 != NULL) {
-        if (res9[0]) free(res9[0]);
-        if (res9[1]) free(res9[1]);
-        free(res9);
-    }
 }
