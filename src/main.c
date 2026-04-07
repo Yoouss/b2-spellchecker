@@ -103,6 +103,22 @@ CommandLineArgs_t* parse_args(int argc, char const *argv[]) {
     return args;
 }
 
+// /!\ : viens des tests (copier-coller)
+// TODO : eviter ce duplicage de code (Younes s'en occupera)
+static void free_file_detection(file_t* file_detection) {
+    if (file_detection == NULL) return;
+
+    size_t incorrect_lines_count = file_detection->incorrect_lines_count;
+    for (size_t i = 0; i < incorrect_lines_count; i++) {
+        free(file_detection->incorrect_lines[i].wrong_words_indexes);
+    }
+
+    free(file_detection->incorrect_lines_indexes);
+    free(file_detection);
+}
+
+// BEAUCOUP DE FUITES DE MEMOIRE ICI
+// TODO : créer des fonctions pour free les grosses structures tel que dicts, ect...
 int main(int argc, char const *argv[]) {
     CommandLineArgs_t* args = parse_args(argc, argv);
 
@@ -128,72 +144,69 @@ int main(int argc, char const *argv[]) {
         read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
     }
 
-    uint32_t** matrixOfBadWordsIndexes = words_in_file(args->input_path, dicts, dicts_count);
-
-    printf("Detection des erreurs du fichier %s : \n\n", args->input_path);
-
-    for (int i = 0; i < line_count; i++) {
-        char* line = lines[i];
-        uint32_t numberOfBadWords = matrixOfBadWordsIndexes[i][0];
-        uint32_t* IndexesOfBadWords = matrixOfBadWordsIndexes[i] + 1;
-
-        pretty_print_detection(line, i, numberOfBadWords, IndexesOfBadWords);
+    file_t* file_detection = scan_file_for_errors(args->input_path, dicts, dicts_count);
+    if (file_detection == NULL) {
+        free(lines_sizes);
+        free_args(args);
+        return -1;
     }
 
-    printf("\n\nCorrection des erreurs du fichier %s : \n\n", args->input_path);
+    line_t* incorrect_lines = file_detection->incorrect_lines;
+    size_t* incorrect_lines_indexes = file_detection->incorrect_lines_indexes;
+    size_t incorrect_lines_count = file_detection->incorrect_lines_count;
 
-    for (int i = 0; i < line_count; i++) {
-        char* line = lines[i];
+    printf("Correction des erreurs du fichier %s : \n\n\n", args->input_path);
 
-        uint32_t numberOfBadWords = matrixOfBadWordsIndexes[i][0];
-        uint32_t* IndexesOfBadWords = matrixOfBadWordsIndexes[i] + 1;
+    for (size_t i = 0; i < incorrect_lines_count; i++) {
+        size_t line_index = incorrect_lines_indexes[i]; 
+        char* line = lines[line_index];
+
+        line_t* current_line_detection = &incorrect_lines[i];
+        uint32_t* wrong_words_indexes = current_line_detection->wrong_words_indexes;
+        uint32_t wrong_words_count = current_line_detection->wrong_words_count;
 
         Dictionary_t* dict = find_candidate_dict_for_line(line, dicts, dicts_count);
 
-        char** corrections = malloc(numberOfBadWords * sizeof(char*));
-        if (corrections == NULL) return -1;
+        char** corrections = malloc(wrong_words_count * sizeof(char*));
+        if (corrections == NULL) {
+            free_file_detection(file_detection);
+            free(lines_sizes);
+            free_args(args);
+            return -1;
+        }
 
-        // copie de la ligne pour récupérer les mots
-        char* lineCopy = strdup(line);
-        char* words[lines_sizes[i]]; 
+        // Younes s'occupera de créer une fonction qui récupère directement les mauvais mots
+        char* line_copy = strdup(line);
+        if (line_copy == NULL) {
+            free(corrections);
+            free_file_detection(file_detection);
+            free(lines_sizes);
+            free_args(args);
+            return -1;
+        }
+
+        char* words[lines_sizes[line_index]]; 
         int word_count = 0;
 
-        char* word = strtok(lineCopy, SEPARATORS);
+        char* word = strtok(line_copy, SEPARATORS);
         while (word != NULL) {
             words[word_count++] = word;
             word = strtok(NULL, SEPARATORS);
         }
 
-        for (int j = 0; j < numberOfBadWords; j++) {
-            char* badWord = words[IndexesOfBadWords[j]];
-
-            int numberOfCandidates = 0;
-            char** candidates = get_candidate_words(badWord, dict, &numberOfCandidates);
-
-            if (candidates == NULL || numberOfCandidates == 0) {
-                corrections[j] = badWord;
-                continue;
-            }
-
-            int** distances = get_candidates_distances(badWord, candidates, numberOfCandidates);
-            sort_candidate_distances(distances, numberOfCandidates);
-
-            corrections[j] = get_final_correction(distances, candidates);
-
-            for (int k = 0; k < numberOfCandidates; k++) {
-                free(distances[k]);
-            }
-            free(distances);
-            free(candidates);
+        for (uint32_t j = 0; j < wrong_words_count; j++) {
+            corrections[j] = get_word_correction(words[wrong_words_indexes[j]], dict);
         }
 
-        pretty_print_correction(line, i, numberOfBadWords, IndexesOfBadWords, corrections);
+        pretty_print_correction(line, line_index+1, wrong_words_count, wrong_words_indexes, corrections);
 
         free(corrections);
-        free(lineCopy);
+        free(line_copy);
     }
-    
-    free_matrix(matrixOfBadWordsIndexes, line_count);
+
+    free_file_detection(file_detection);
+    free(lines_sizes);
     free_args(args);
+
     return 0;
 }

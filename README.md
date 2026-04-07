@@ -278,8 +278,8 @@ En mode correction, deux fichiers sont générés:
 2. `<output_path>.fix`: contient les corrections des mots fautifs, dans le même ordre que les offsets décrits dans `.err`. 
 
 Le fichier `<output_path>.fix` est une suite de blocs:
-- `uint32`: **(4 octets, big endian)**: longueur du mot corrigé `N+1` en octets (+1 pour le `NULL` char !) ([ISO8859-1](https://fr.wikipedia.org/wiki/ISO/CEI_8859-1))
-- `(N+1) × char`: les caractères du mot corrigé (y compris le `NULL` char !)
+- `uint32`: **(4 octets, big endian)**: longueur du mot corrigé `N` en octets ([ISO8859-1](https://fr.wikipedia.org/wiki/ISO/CEI_8859-1))
+- `N × char`: les caractères du mot corrigé
 
 #### Exemple 
 > Le mardi z'est friite au restaurant universitaire
@@ -323,7 +323,7 @@ A vous de vous arranger pour que cela ne perturbe pas le fonctionnement normal d
 
 # D. Le Championnat
 
-Nouveauté cette année, vos codes seront lus et exécutés chaque dimanche à **23h59** afin d'établir un classement des codes selon différentes métriques. Nous mesurerons la rapidité et la précision de votre code à renvoyer les mots incorrectements orthographiés ainsi que leur correction. Le classement sera ensuite actualisé automatiquement et vous pourrez le consulter à l'adresse [waf-test1.uclouvain.be](waf-test1.uclouvain.be) 🎉
+Nouveauté cette année, vos codes seront lus et exécutés chaque dimanche à **23h59** afin d'établir un classement des codes selon différentes métriques. Nous mesurerons la rapidité et la précision de votre code à renvoyer les mots incorrectements orthographiés ainsi que leur correction. Le classement sera ensuite actualisé automatiquement et vous pourrez le consulter à l'adresse [https://blegat.github.io/LEPL1503/championship/](https://blegat.github.io/LEPL1503/championship/) 🎉
 
 Nous exécuterons votre code avec la commande suivante: 
 ```sh

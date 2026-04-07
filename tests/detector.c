@@ -10,9 +10,7 @@
  * @return a pointer to the Dictionary_t* dictionaries for the tests
  */
 Dictionary_t* load_dictionaries_for_test() {
-    char* dictionaryPath = "dummy"; // il sert à rien pour l'instant
-
-    // Load dictionnary
+    char* dictionaryPath = "dicts/"; // il sert seulement après implémentation du fichier file_handler.c
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
@@ -28,6 +26,25 @@ Dictionary_t* load_dictionaries_for_test() {
  */
 Dictionary_t load_dictionary_for_test() {
     return load_dictionaries_for_test()[1];
+}
+
+static void free_line_detection(line_t* line_detection) {
+    if (line_detection == NULL) return;
+
+    free(line_detection->wrong_words_indexes);
+    free(line_detection);
+}
+
+static void free_file_detection(file_t* file_detection) {
+    if (file_detection == NULL) return;
+
+    size_t incorrect_lines_count = file_detection->incorrect_lines_count;
+    for (size_t i = 0; i < incorrect_lines_count; i++) {
+        free(file_detection->incorrect_lines[i].wrong_words_indexes);
+    }
+
+    free(file_detection->incorrect_lines_indexes);
+    free(file_detection);
 }
 
 void test_word_in_dictionary(void) {
@@ -67,7 +84,7 @@ void test_find_candidate_dict_for_line(void) {
     CU_ASSERT_STRING_EQUAL(candidateDictForLineEn->lang, "en");
 }
 
-void test_number_and_indexes_of_bad_words_in_line(void) {
+void test_wrong_words_count_and_indexes_in_line(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
@@ -77,48 +94,48 @@ void test_number_and_indexes_of_bad_words_in_line(void) {
     // ─────────────── TEST 1 ───────────────
     // Au moins une faute détectée
 
-    char* lineFr = "prestant d\351billardez n'insuffla d'xaltante p\351nicilliums t'accablassiez sublim\342tes tois\342tes accouch\351 n'octaviant n'\351palasse qu'agresserai l'enivreraient santonnerai am\351liorai t'habill\350rent t'all\351guerait qu'enrayasses magasini\350re";
+    char* line_fr = "prestant d\351billardez n'insuffla d'xaltante p\351nicilliums t'accablassiez sublim\342tes tois\342tes accouch\351 n'octaviant n'\351palasse qu'agresserai l'enivreraient santonnerai am\351liorai t'habill\350rent t'all\351guerait qu'enrayasses magasini\350re";
 
-    Dictionary_t* candidateDictForLineFr = find_candidate_dict_for_line(lineFr, dicts, dicts_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineFr);
-    CU_ASSERT_STRING_EQUAL(candidateDictForLineFr->lang, "fr");
+    Dictionary_t* candidate_dict_for_line_fr = find_candidate_dict_for_line(line_fr, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(candidate_dict_for_line_fr);
+    CU_ASSERT_STRING_EQUAL(candidate_dict_for_line_fr->lang, "fr");
+    
+    uint32_t wrong_words_count = 0;
+    int status = set_wrong_words_count_in_line(line_fr, &wrong_words_count, candidate_dict_for_line_fr);
+    CU_ASSERT_NOT_EQUAL_FATAL(status, -1);
 
-    uint32_t numberOfBadWords = number_of_bad_words_in_line(lineFr, candidateDictForLineFr);
-    CU_ASSERT_NOT_EQUAL_FATAL(numberOfBadWords, -1);
+    CU_ASSERT_EQUAL(wrong_words_count, 1); 
 
-    CU_ASSERT_EQUAL(numberOfBadWords, 1); 
+    uint32_t* wrong_words_indexes = get_wrong_words_indexes_in_line(line_fr, wrong_words_count, candidate_dict_for_line_fr);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(wrong_words_indexes);
 
-    uint32_t* indexesOfBadWords = get_indexes_of_bad_words_in_line(lineFr, numberOfBadWords, candidateDictForLineFr);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(indexesOfBadWords);
+    CU_ASSERT_EQUAL(wrong_words_indexes[0], 3);
 
-    CU_ASSERT_EQUAL(indexesOfBadWords[0], 1);
-    CU_ASSERT_EQUAL(indexesOfBadWords[1], 3);
-
-    free(indexesOfBadWords);
+    free(wrong_words_indexes);
 
     // ─────────────── TEST 2 ───────────────
     // Aucune faute détectée
 
-    char* lineEn = "whether you win or lose, looking back and learning from your experiences is a part of life";
+    char* line_en = "whether you win or lose, looking back and learning from your experiences is a part of life";
 
-    Dictionary_t* candidateDictForLineEn = find_candidate_dict_for_line(lineEn, dicts, dicts_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineEn);
-    CU_ASSERT_STRING_EQUAL(candidateDictForLineEn->lang, "en");
+    Dictionary_t* candidate_dict_for_line_en = find_candidate_dict_for_line(line_en, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(candidate_dict_for_line_en);
+    CU_ASSERT_STRING_EQUAL(candidate_dict_for_line_en->lang, "en");
 
-    numberOfBadWords = number_of_bad_words_in_line(lineEn, candidateDictForLineEn);
-    CU_ASSERT_NOT_EQUAL_FATAL(numberOfBadWords, -1);
+    status = set_wrong_words_count_in_line(line_en, &wrong_words_count, candidate_dict_for_line_en);
+    CU_ASSERT_NOT_EQUAL_FATAL(status, -1);
 
-    CU_ASSERT_EQUAL(numberOfBadWords, 0); 
+    // Ce test permet également de vérifier si le compteur est bien réinitialisé à chaque appel de set_wrong_words_count_in_line
+    CU_ASSERT_EQUAL(wrong_words_count, 0);
 
-    indexesOfBadWords = get_indexes_of_bad_words_in_line(lineEn, numberOfBadWords, candidateDictForLineEn);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(indexesOfBadWords);
+    wrong_words_indexes = get_wrong_words_indexes_in_line(line_en, wrong_words_count, candidate_dict_for_line_en);
+    CU_ASSERT_PTR_NULL(wrong_words_indexes);
 
-    CU_ASSERT_EQUAL(indexesOfBadWords[0], 0);
-
-    free(indexesOfBadWords);
+    // Au cas où wrong_words_indexes != NULL -> Pas sensé être le cas
+    free(wrong_words_indexes);
 }
 
-void test_words_in_line(void) {
+void test_scan_line_for_errors(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
@@ -127,18 +144,30 @@ void test_words_in_line(void) {
 
     char* line_test = "manger une,pommeee"; // "pommeee" n'est pas dans le dictionnaire test
 
-    uint32_t* result = words_in_line(line_test, dicts, dicts_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(result);
-   
-    CU_ASSERT_EQUAL(result[1], 2); 
-    free(result);
+    line_t* line_detection = scan_line_for_errors(line_test, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(line_detection);
 
-    CU_ASSERT_PTR_NULL(words_in_line(line_test, NULL, dicts_count));
-    CU_ASSERT_PTR_NULL(words_in_line(NULL, dicts, dicts_count));
-    CU_ASSERT_PTR_NULL(words_in_line(line_test, dicts, 0));
+    uint32_t* wrong_words_indexes = line_detection->wrong_words_indexes;
+    uint32_t wrong_words_count = line_detection->wrong_words_count;
+
+    CU_ASSERT_EQUAL(wrong_words_count, 1)
+    CU_ASSERT_EQUAL(wrong_words_indexes[0], 2); 
+    free(line_detection);
+
+    line_t* no_line = scan_line_for_errors(NULL, dicts, dicts_count);
+    CU_ASSERT_PTR_NULL(no_line);
+    free_line_detection(no_line);
+
+    line_t* no_dicts = scan_line_for_errors(line_test, NULL, dicts_count);
+    CU_ASSERT_PTR_NULL(no_dicts);
+    free_line_detection(no_dicts);
+
+    line_t* zero_dicts = scan_line_for_errors(line_test, dicts, 0);
+    CU_ASSERT_PTR_NULL(zero_dicts);
+    free_line_detection(zero_dicts);
 }
 
-void test_words_in_file(void) {
+void test_scan_file_for_errors(void) {
     char* inputPath = "input_10l.txt";
 
     Dictionary_t* dicts = NULL;
@@ -147,34 +176,151 @@ void test_words_in_file(void) {
     load_dictionaries("dummy", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
-    uint32_t** noFile = words_in_file(NULL, dicts, dicts_count);
-    CU_ASSERT_PTR_NULL_FATAL(noFile);
-    uint32_t** noDicts = words_in_file(inputPath, NULL, dicts_count);
-    CU_ASSERT_PTR_NULL_FATAL(noDicts);
-    uint32_t** invalidDictsCount = words_in_file(inputPath, dicts, 0);
-    CU_ASSERT_PTR_NULL_FATAL(invalidDictsCount);
+    file_t* no_file = scan_file_for_errors(NULL, dicts, dicts_count);
+    CU_ASSERT_PTR_NULL(no_file);
+    free_file_detection(no_file);
 
-    uint32_t** matrixOfBadWordsIndexes = words_in_file(inputPath, dicts, dicts_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(matrixOfBadWordsIndexes);
+    file_t* no_dicts = scan_file_for_errors(inputPath, NULL, dicts_count);
+    CU_ASSERT_PTR_NULL(no_dicts);
+    free_file_detection(no_dicts);
 
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[0][0], 1);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[0][1], 3);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[1][0], 1);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[1][1], 10);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[2][0], 1);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[2][1], 7);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[3][0], 1);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[3][1], 8);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[4][0], 1);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[4][1], 7);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[5][0], 1);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[5][1], 3);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[6][0], 0);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[7][0], 0);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[8][0], 1);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[8][1], 0);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[9][0], 1);
-    CU_ASSERT_EQUAL(matrixOfBadWordsIndexes[9][1], 4);
+    file_t* zero_dicts = scan_file_for_errors(inputPath, dicts, 0);
+    CU_ASSERT_PTR_NULL(zero_dicts);
+    free_file_detection(zero_dicts);
 
-    free_matrix(matrixOfBadWordsIndexes, 10);
+    file_t* file_detection = scan_file_for_errors(inputPath, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(file_detection);
+
+    line_t* incorrect_lines = file_detection->incorrect_lines;
+    size_t* incorrect_lines_indexes = file_detection->incorrect_lines_indexes;
+    size_t incorrect_lines_count = file_detection->incorrect_lines_count;
+
+    CU_ASSERT_EQUAL(incorrect_lines_count, 8);
+
+    for (size_t i = 0; i < incorrect_lines_count; i++) {
+        line_t* line = &incorrect_lines[i];
+        size_t line_index = incorrect_lines_indexes[i];
+
+        switch (line_index) {
+            case 0:
+                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
+                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 3);
+                break;
+            case 1:
+                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
+                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 10);
+                break;
+            case 2:
+                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
+                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 7);
+                break;
+            case 3:
+                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
+                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 8);
+                break;
+            case 4:
+                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
+                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 7);
+                break;
+            case 5:
+                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
+                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 3);
+                break;
+            case 8:
+                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
+                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 0);
+                break;
+            case 9:
+                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
+                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 4);
+                break;
+            default:
+                CU_FAIL("Une ligne du fichier %s a été détéctée avec au moins une erreur alors qu'elle n'est pas sensée en avoir...");
+                break;
+        }
+    }
+
+    free_file_detection(file_detection);
+}
+
+
+void test_get_wrong_words_in_line(void) {
+
+    // Test 1 : Aucun mauvais mot
+    char* ligne1 = "Bonjour, je suis un ninja";
+    uint32_t indexesOfBadWord1[] = {0};
+    char** res1 = get_wrong_words_in_line(ligne1, indexesOfBadWord1);
+    CU_ASSERT_PTR_NULL(res1);
+
+    // Test 2 : Cas classique
+    char* ligne2 = "Bonjour, he çuis un ninja";
+    uint32_t indexesOfBadWord2[] = {2, 1, 2}; // 2 mots, indices 1 et 2
+    char** res2 = get_wrong_words_in_line(ligne2, indexesOfBadWord2);
+    CU_ASSERT_PTR_NOT_NULL(res2);
+    if (res2 != NULL) {
+        CU_ASSERT_STRING_EQUAL(res2[0], "he");
+        CU_ASSERT_STRING_EQUAL(res2[1], "çuis");
+        free(res2[0]); free(res2[1]); free(res2);
+    }
+
+    // Test 3 : Nombres 
+    char* ligne3 = "1234";
+    uint32_t indexesOfBadWord3[] = {1, 0};
+    char** res3 = get_wrong_words_in_line(ligne3, indexesOfBadWord3);
+    CU_ASSERT_PTR_NOT_NULL(res3);
+    if (res3 != NULL) {
+        CU_ASSERT_STRING_EQUAL(res3[0], "1234");
+        free(res3[0]); free(res3);
+    }
+
+    // Test 4 : Que des ponctuations
+    char* ligne4 = ".,.;^?+=";
+    uint32_t indexesOfBadWord4[] = {1, 0};
+    char** res4 = get_wrong_words_in_line(ligne4, indexesOfBadWord4);
+    CU_ASSERT_TRUE(res4[0] == NULL || res4 == NULL);
+    if(res4) free(res4);
+
+    // Test 5 : Ligne NULL
+    char* ligne5 = NULL;
+    uint32_t indexesOfBadWord5[] = {1, 0};
+    char** res5 = get_wrong_words_in_line(ligne5, indexesOfBadWord5);
+    CU_ASSERT_PTR_NULL(res5);
+
+    // Test 6 : tab index NULL
+    char* ligne6 = "Bonjour, he çuis un ninja";
+    uint32_t* indexesOfBadWord6 = NULL;
+    char** res6 = get_wrong_words_in_line(ligne6, indexesOfBadWord6);
+    CU_ASSERT_PTR_NULL(res6);
+
+    // Test 7 : tout est NULL
+    char* ligne7 = NULL;
+    uint32_t* indexesOfBadWord7 = NULL;
+    char** res7 = get_wrong_words_in_line(ligne7, indexesOfBadWord7);
+    CU_ASSERT_PTR_NULL(res7);
+
+    // Test 8 : tab vide
+    char* ligne8 = "";
+    char* ligne8_bis = "Je suis une sailor moon";
+
+    uint32_t indexesOfBadWord8[] = {0};
+    char** res8 = get_wrong_words_in_line(ligne8, indexesOfBadWord8);
+    char** res8_bis = get_wrong_words_in_line(ligne8_bis, indexesOfBadWord8);
+
+    CU_ASSERT_PTR_NULL(res8);
+    CU_ASSERT_PTR_NULL(res8_bis);
+
+    if(res8) free(res8);
+    if(res8_bis) free(res8_bis);
+
+    // Test 9 : erreur outOfIndex
+    char* ligne9 = "Hurlement du drakon de feu ";
+    uint32_t indexesOfBadWord9[] = {2,2,5};
+    char** res9 = get_wrong_words_in_line(ligne9, indexesOfBadWord9);
+    
+    CU_ASSERT_PTR_NULL(res9);
+    if (res9 != NULL) {
+        if (res9[0]) free(res9[0]);
+        if (res9[1]) free(res9[1]);
+        free(res9);
+    }
 }
