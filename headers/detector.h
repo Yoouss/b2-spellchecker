@@ -70,7 +70,7 @@ Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dictionarie
 /**
  * @brief  fonction helper de scan_line_for_errors qui informe sur les nombres de mots n'étant pas dans le dictionnaire 
  *
- * @param  line un tableau de mots qui contiennent des 
+ * @param  line un tableau de mots qui contiennent des charactères
  * @param  wrong_words_count l'adresse du nombre de mots erronés dans la ligne
  * @param  dictionary un pointeur vers un dictionaire de type Dictionary_t
  * @return -1 en cas d'erreur, 0 sinon (en modifiant le contenu de wrong_words_count)

@@ -1,7 +1,6 @@
 #include "common.h"
 #include <stdint.h>
 #include <stdio.h>
-
 #include "dict.h"
 #include "input.h"
 
@@ -9,34 +8,28 @@
 #define CORRECTOR_H
 
 /**
- * @brief Calcule le code Soundex d'un caractère
+ * @brief Calcule le nombre de trigrammes (= mot de trois lettres) de word1 présents dans word2
+ * * Utilisée par get_candidate_words pour réduire le nombre de mots candidats du dictionnaire
  * 
- * @param c Le caractère à encoder
- * @return le code Soundex
+ * @param word1 Le premier mot
+ * @param word2 Le second mot
+ * @return Le nombre de trigrammes présents dans les deux mots
  */
-char get_soundex_code(char c);
+int count_number_of_shared_trigrammes(char* word1, char* word2);
 
 /**
- * @brief Calcule le Soundex d'un mot
- * 
- * @param word Le mot à encoder
- * @return Un pointeur vers une chaîne de caractères (le code Soundex)
- */
-char* soundex(char* word);
-
-/**
- * @brief Parcourt le dictionnaire pour trouver les mots ayant le même code Soundex
+ * @brief Retourne un tableau de mots candidats qui ont au moins 2 trigrammes en commun (ou 1 si le mot mal ortographié est court) avec le mot mal ortographié
  * 
  * @param wrong_word Le mot mal orthographié
- * @param dict Le dictionnaire de référence
- * @param result_count Pointeur pour stocker le nombre de candidats trouvés
- * @return Un tableau de mots (char**) contenant les mots candidats ayant le même soundex
+ * @param dict Le dictionnaire utilisé
+ * @param result_count Pointeur vers un entier qui sera le nombre de mots candidats après l'appel à get_candidate_words
+ * @return Un tableau avec les mots candidats 
  */
 char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_count);
 
 /**
  * @brief Calcule le minimum de trois entiers
- * * Utilisée pour déterminer l'opération la moins coûteuse (insertion, suppression ou substitution) dans calculate_distance
+ * * Utilisée pour déterminer l'opération la moins coûteuse (insertion, suppression ou substitution) dans compute_levenshtein_distance
  * 
  * @param a Premier entier (coût de suppression)
  * @param b Deuxième entier (coût d'insertion)
@@ -62,7 +55,7 @@ int** initialize_matrix(int n, int m);
  * @param word2 Le second mot
  * @return La distance entre les 2 mots (0 si les mots sont identiques)
  */
-int calculate_distance(char* word1, char* word2);
+int compute_levenshtein_distance(char* word1, char* word2);
 
 /**
  * @brief Génère une matrice de distances pour les candidats
