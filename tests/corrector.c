@@ -25,9 +25,9 @@ void test_get_candidate_words_manual(void) {
     free(results); 
 }
 
-void test_calculate_distance(void) {
-    CU_ASSERT_EQUAL(calculate_distance("chien", "chien"), 0);
-    CU_ASSERT(calculate_distance("chien", "chat") > 0);
+void test_compute_levenshtein_distance(void) {
+    CU_ASSERT_EQUAL(compute_levenshtein_distance("chien", "chien"), 0);
+    CU_ASSERT(compute_levenshtein_distance("chien", "chat") > 0);
 }
 
 void test_sort_candidate_distances(void){
