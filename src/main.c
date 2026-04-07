@@ -175,7 +175,7 @@ int main(int argc, char const *argv[]) {
             return -1;
         }
 
-        char* wrong_words = get_wrong_words_in_line(line, wrong_words_indexes, wrong_words_count);
+        char** wrong_words = get_wrong_words_in_line(line, wrong_words_indexes, wrong_words_count);
 
         for (uint32_t j = 0; j < wrong_words_count; j++) {
             corrections[j] = get_word_correction(wrong_words[j], dict);
