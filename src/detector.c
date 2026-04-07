@@ -102,39 +102,36 @@ uint32_t* get_wrong_words_indexes_in_line(char* line, uint32_t wrong_words_count
     return wrong_words_indexes; 
 }
 
-char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes) {
-    if (line == NULL || wrong_words_indexes == NULL) return NULL;
+char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes, uint32_t wrong_words_count) {
+    if (line == NULL || wrong_words_indexes == NULL || wrong_words_count == 0) return NULL;
 
-    uint32_t wrong_words_count = wrong_words_indexes[0];
-    if (wrong_words_count == 0) return NULL;
-
-    char** badWords = malloc(wrong_words_count * sizeof(char*));
-    if (badWords == NULL) return NULL;
+    char** wrong_words = malloc(wrong_words_count * sizeof(char*));
+    if (wrong_words == NULL) return NULL;
         
     char *line_copy = strdup(line);
     if (line_copy == NULL) {
-        free(badWords);
+        free(wrong_words);
         return NULL;
     }
 
     char* word = strtok(line_copy, SEPARATORS);
-    uint32_t indexInbadWords = 0;
-    uint32_t indexInLine = 0;
+    uint32_t index_in_bad_words = 0;
+    uint32_t index_in_line = 0;
 
-    while (word != NULL && indexInbadWords  < wrong_words_count) {
-        if (indexInLine ==  wrong_words_indexes[indexInbadWords + 1]) {
-            badWords[indexInbadWords] = strdup(word);
+    while (word != NULL && index_in_bad_words < wrong_words_count) {
+        if (index_in_line ==  wrong_words_indexes[index_in_bad_words]) {
+            wrong_words[index_in_bad_words] = strdup(word);
 
-            indexInbadWords++;
+            index_in_bad_words++;
         }   
 
-        indexInLine++;
+        index_in_line++;
         word = strtok(NULL, SEPARATORS);
     }
 
     free(line_copy);
 
-    return badWords;
+    return wrong_words;
 }
 
 line_t* scan_line_for_errors(char* line, Dictionary_t* dicts, size_t dictionaries_count){
