@@ -4,6 +4,10 @@
 #ifndef IO_H
 #define IO_H
 
+/**
+ * @brief Manages file descriptors of output files `.fix` and `.err`.
+ * @note These are raw file descriptors that must be opened with `open()`.
+ */
 typedef struct {
   int detection;
   int correction;

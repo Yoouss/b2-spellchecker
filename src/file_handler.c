@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "common.h"
-#include <io.h>
+
 
 // Il pourrait y avoir d'autres fonctions mais je ne pense pas que ça soit le cas
 
