@@ -136,10 +136,12 @@ int main(int argc, char const *argv[]) {
     uint32_t* lines_sizes = NULL;
     size_t line_count = 0;
 
+    // utilisation de THREADS
     if (strlen(args->dictionnaries_path) > 0) {
         load_dictionaries(args->dictionnaries_path, &dicts, &dicts_count);
     }
 
+    // utilisation de THREADS
     if (args->input_path) {
         read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
     }
@@ -177,6 +179,7 @@ int main(int argc, char const *argv[]) {
 
         char** wrong_words = get_wrong_words_in_line(line, wrong_words_indexes, wrong_words_count);
 
+        // utilisation de THREADS (seulement si plus de 4 mauvais mots sur une ligne)
         for (uint32_t j = 0; j < wrong_words_count; j++) {
             corrections[j] = get_word_correction(wrong_words[j], dict);
         }
