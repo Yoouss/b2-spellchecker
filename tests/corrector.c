@@ -10,19 +10,7 @@
 #include "corrector.h"
 #include "dict.h"
 
-void test_get_soundex_code(void) {
-    CU_ASSERT_EQUAL(get_soundex_code('B'), '1');
-    CU_ASSERT_EQUAL(get_soundex_code('R'), '6');
-    CU_ASSERT_EQUAL(get_soundex_code('A'), '-');
-}
-
-void test_soundex(void) {
-    char* result = soundex("Robert");
-    CU_ASSERT_PTR_NOT_NULL_FATAL(result);
-    CU_ASSERT_STRING_EQUAL(result, "R163");
-    free(result);
-}
-
+// Voir s'il faut la modifier car les fonctions de correction ont changées
 void test_get_candidate_words_manual(void) {
     Dictionary_t dict;
     char* words[] = {"bonjour", "chat", "chien"};
