@@ -305,7 +305,7 @@ Bloc binaire attendu (`<output_path>.fix`):
 ```hex
 00 00 00 05    63 27 65 73    # 5 c'es
 74 00 00 00    05 66 72 69    # t 5 fri
-74 65 00 00    00 08 62 4C    # te 8 bâ
+74 65 00 00    00 08 62 E2    # te 8 bâ
 74 69 6D 65    6E 74 00 00    # timent
 00 05 73 75    70 65 72 00    # 5 super
 00 00 04 6C    6F 69 6E       # 4 loin
