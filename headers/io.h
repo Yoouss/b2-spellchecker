@@ -16,6 +16,8 @@ typedef struct {
 /**
  * @brief Open files for writing.
  *
+ * Use `int open(const char*, mode?)`, not `fopen`.
+ *
  * @param pathname The path to the file to open.
  * @return OutputStreams_t* The file streams, or NULL on failure.
  */
@@ -24,6 +26,8 @@ OutputStreams_t *open_outputs(const char *pathname);
 /**
  * @brief Close a file.
  *
+ * Use `int close(int fd)` to handle files, not `fclose`.
+ *
  * @param streams The file streams to close.
  */
 void close_outputs(OutputStreams_t *streams);
@@ -31,8 +35,6 @@ void close_outputs(OutputStreams_t *streams);
 /**
  * @brief Write the result of a bad word detection to the file <output_path>.err
  * following the described format in the README.
- *
- * USE `int open(const char*)` AND `int close(int fd)` TO HANDLE FILES.
  *
  * @param output_stream The file streams to write to. If NULL, write to stdout.
  * @param line_number The line number where the bad words were found.
