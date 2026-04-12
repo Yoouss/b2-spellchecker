@@ -13,7 +13,6 @@
  * @index : l'indexe du mot
  * @value : la valeur de la distance de Levenshtein calculée par compute_levenshtein_distance
  */
-
 typedef struct Distance {
     int index;
     int value;
