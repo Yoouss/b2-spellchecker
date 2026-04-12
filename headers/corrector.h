@@ -8,6 +8,18 @@
 #define CORRECTOR_H
 
 /**
+ * Structure représentant la distance de Levenshtein obtenue entre un mot et le mot mal orthographié
+ *
+ * @index : l'indexe du mot
+ * @value : la valeur de la distance de Levenshtein calculée par compute_levenshtein_distance
+ */
+
+typedef struct Distance {
+    int index;
+    int value;
+} Distance_t;
+
+/**
  * @brief Calcule le nombre de trigrammes (= mot de trois lettres) de word1 présents dans word2
  * * Utilisée par get_candidate_words pour réduire le nombre de mots candidats du dictionnaire
  * 
@@ -58,22 +70,14 @@ int** initialize_matrix(int n, int m);
 int compute_levenshtein_distance(char* word1, char* word2);
 
 /**
- * @brief Génère une matrice de distances pour les candidats
+ * @brief Retourne l'index du mot dans candidates qui a la plus petite distance de Levenshtein avec le mot erroné
  * 
  * @param wrong_word Le mot erroné de base
  * @param candidates La liste des mots candidats (char**)
  * @param nb_candidates Le nombre de candidats dans la liste
- * @return Un pointeur vers un tableau de tableaux d'entiers [[indice, distance], ...] du style liste_mots_candidats = [[0, 4][1, 7][2, 3]]
+ * @return Un entier qui est l'index du mot pour lequel la distance est la plus petite
  */
-int** get_candidates_distances(char* wrong_word, char** candidates, int nb_candidates);
-
-/**
- * @brief Trie la matrice des distances par ordre croissant de score
- * 
- * @param distance_matrix La matrice générée par get_candidates_distances
- * @param nb_candidates Le nombre de lignes dans la matrice
- */
-void sort_candidate_distances(int** distance_matrix, int nb_candidates);
+int get_index_of_smallest_distance_word(char* wrong_word, char** candidates, int nb_candidates);
 
 /**
  * @brief Retourne la correction pour un mot mal orthographié
