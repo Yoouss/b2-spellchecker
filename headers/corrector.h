@@ -35,6 +35,21 @@ typedef struct Distance {
 int count_number_of_shared_trigrammes(char* word1, char* word2);
 
 /**
+ * @brief  retourne un tableau de mots candidats qui a la taille du nombre de mots candidats
+ * *       fonction utilisée dans get_candidate_words pour réduire la complexité spatiale 
+ * 
+ * @param  candidate_words 
+ * @param  number_of_candidates
+ * @return un tableau contenant les mots candidats ou NULL en cas d'erreur
+ * 
+ * @note   complexité temporelle : O(c)
+ *         complexité spaciale : O(c)
+ * 
+ *         c = le nombre de mots candidats           
+ */
+char** get_final_candidates_list(char** candidate_words, int number_of_candidates);
+
+/**
  * @brief  retourne un tableau de mots candidats qui ont au moins 2 trigrammes en commun (ou 1 si le mot mal ortographié est court) avec le mot mal ortographié
  * 
  * @param  wrong_word le mot mal orthographié
