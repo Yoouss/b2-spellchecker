@@ -11,8 +11,6 @@
 #include <string.h>
 #include <dirent.h>
 
-// Y a des problèmes, pour l'instant on les utilise pas 
-
 static char* map_file(const char* path, size_t* file_size) {
     int file_descriptor = open(path, O_RDONLY);
     if (file_descriptor == -1) {
@@ -119,20 +117,36 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     return 0;
 }
 
+static char* get_language(const char* filepath){
+    char *filename = strrchr(filepath, '/');
+    
+    if (filename == NULL) {
+        filename = (char *)filepath;
+    } else {
+        filename++;
+    }
+
+    char *lang = strdup(filename);
+
+    char *extension = strstr(lang, ".dict");
+    if (extension != NULL) {
+        *extension = '\0';
+    }
+    return lang;
+}
+
 int load_single_dictionary(Dictionary_t *dict, const char *filepath, uint32_t id) {
 
     uint32_t *temp_sizes = NULL;
     size_t temp_count = 0;
 
     if (read_input_file((char *)filepath, &dict->words, &temp_sizes, &temp_count) != 0) {
-        return -1; //échec de la lectuers
+        return -1;
     }
 
     dict->word_count = (uint32_t)temp_count;
-    dict->lang = strdup(filepath);
+    dict->lang = get_language(filepath);
     dict ->id=id;
-    //id et langque initialisé pour avoir quelque chose en mémoire
-
 
     free(temp_sizes);
     return 0;
