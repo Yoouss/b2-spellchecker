@@ -26,13 +26,28 @@ typedef struct Distance {
  * @param  word2 le deuxième mot
  * @return le nombre de trigrammes présents dans les deux mots ou 0 si un des deux mots est trop petit
  *
- * @note   complexité temporelle : O(n * m)
+ * @note   complexité temporelle : O(n * m * min(n, m))
  *         complexité spaciale : O(1)
  * 
  *         n = la taille de word1
  *         m = la taille de word2
  */
 int count_number_of_shared_trigrammes(char* word1, char* word2);
+
+/**
+ * @brief  retourne un tableau de mots candidats qui a la taille du nombre de mots candidats
+ * *       fonction utilisée dans get_candidate_words pour réduire la complexité spatiale 
+ * 
+ * @param  candidate_words 
+ * @param  number_of_candidates
+ * @return un tableau contenant les mots candidats ou NULL en cas d'erreur
+ * 
+ * @note   complexité temporelle : O(c)
+ *         complexité spaciale : O(c)
+ * 
+ *         c = le nombre de mots candidats           
+ */
+char** get_final_candidates_list(char** candidate_words, int number_of_candidates);
 
 /**
  * @brief  retourne un tableau de mots candidats qui ont au moins 2 trigrammes en commun (ou 1 si le mot mal ortographié est court) avec le mot mal ortographié
@@ -42,10 +57,11 @@ int count_number_of_shared_trigrammes(char* word1, char* word2);
  * @param  result_count un pointeur vers un entier qui sera le nombre de mots candidats après l'appel à get_candidate_words
  * @return un tableau avec les mots candidats ou NULL en cas d'erreur
  * 
- * @note   complexité temporelle : O(d * (n * m))
- *         complexité spaciale : O(d)
+ * @note   complexité temporelle : O(d * (n * m * min(n, m)))
+ *         complexité spaciale : O(c)
  * 
- *         d = la taille du dictionnaire
+ *         d = le nombre de mots dans le dictionnaire
+ *         c = le nombre de mots candidats 
  *         n = la taille du mot mal orthographié
  *         m = la taille du mot actuel dans le dictionnaire
  */
@@ -120,10 +136,10 @@ int get_index_of_smallest_distance_word(char* wrong_word, char** candidates, int
  * @param  dict un pointeur vers un dictionaire de type Dictionary_t
  * @return un pointeur vers une nouvelle chaîne de caractères contenant le mot corrigé ou NULL en cas d'erreur 
  *
- * @note   complexité temporelle : O(d * (n * m))
+ * @note   complexité temporelle : O(d * (n * m * min(n, m)))
  *         complexité spaciale : O(1) 
  *
- *         d = la taille du dictionnaire
+ *         d = le nombre de mots dans le dictionnaire
  *         n = la taille du mot mal orthographié
  *         m = la taille du mot actuel dans le dictionnaire
  */

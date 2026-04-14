@@ -38,28 +38,45 @@ int count_number_of_shared_trigrammes(char* word1, char* word2) {
     return number_of_shared_trigrammes;
 }
 
+char** get_final_candidates_list(char** candidate_words, int number_of_candidates) {
+    if (candidate_words == NULL || number_of_candidates <= 0) return NULL;
+
+    char** final_candidate_words = malloc(number_of_candidates * sizeof(char*));
+    if (final_candidate_words == NULL) return NULL;
+
+    for (int i = 0; i < number_of_candidates; i++) {
+        final_candidate_words[i] = candidate_words[i];
+    }
+
+    free(candidate_words);
+
+    return final_candidate_words;
+}
+
 char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_count) {
-    if (wrong_word == NULL || strlen(wrong_word) == 0 || dict == NULL) return NULL;
+    int wrong_word_length = strlen(wrong_word);
+
+    if (wrong_word == NULL || wrong_word_length == 0 || dict == NULL) return NULL;
 
     uint32_t dict_size = dict->word_count;
+    char** words = dict->words;
 
     char** candidate_words = malloc(dict_size * sizeof(char*));
     if (candidate_words == NULL) return NULL;
     
-    char** words = dict->words;
     int candidate_words_index = 0;
     int number_of_candidates = 0;
-    int wrong_word_length = strlen(wrong_word);
-
+    
     int min_shared_trigrams;
 
-    if (strlen(wrong_word) < 6) min_shared_trigrams = 1;
+    if (wrong_word_length < 6) min_shared_trigrams = 1;
 
     else min_shared_trigrams = 2;
     
     for (int i = 0; i < dict_size; i++) {
         char* current_word = words[i];
         int current_word_length = strlen(current_word);
+
         if (current_word_length - 2 <= wrong_word_length && current_word_length + 2 >= wrong_word_length && count_number_of_shared_trigrammes(wrong_word, current_word) >= min_shared_trigrams) {
             candidate_words[candidate_words_index] = current_word;
             candidate_words_index++;
@@ -68,7 +85,11 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
     }
 
     *(result_count) = number_of_candidates;
-    return candidate_words;
+
+    char** final_candidate_words = get_final_candidates_list(candidate_words, number_of_candidates);
+    if (final_candidate_words == NULL) return NULL;
+
+    return final_candidate_words;
 }
 
 int get_min3(int a, int b, int c) {
