@@ -2,6 +2,7 @@
 #include <dict.h>
 #include <input.h>
 #include <io.h>
+#include <file_handler.h>
 #include "common.h"
 #include "detector.h"
 #include <string.h>
