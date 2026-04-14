@@ -1,6 +1,7 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include <io.h>
+#include <file_handler.h>
 #include "common.h"
 #include "detector.h"
 

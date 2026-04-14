@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "common.h"
-#include <io.h>
+#include <file_handler.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -11,7 +11,7 @@
 #include <string.h>
 #include <dirent.h>
 
-static char* map_file(const char* path, size_t* file_size) {
+char* map_file(const char* path, size_t* file_size) {
     int file_descriptor = open(path, O_RDONLY);
     if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier");
@@ -44,7 +44,7 @@ static char* map_file(const char* path, size_t* file_size) {
     return file_map;
 }
 
-static size_t count_lines(const char* map, size_t size) {
+size_t count_lines(const char* map, size_t size) {
     size_t n = 0;
     for (size_t i = 0; i < size; i++) {
         if (map[i] == '\n') n++;
@@ -56,7 +56,7 @@ static size_t count_lines(const char* map, size_t size) {
     return n;
 }
 
-static void clean_lines(char** lines, uint32_t* sizes, size_t count) {
+void clean_lines(char** lines, uint32_t* sizes, size_t count) {
     if (lines) {
         for (size_t i = 0; i < count; i++) {
             free(lines[i]);
@@ -117,7 +117,7 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     return 0;
 }
 
-static char* get_language(const char* filepath){
+char* get_language(const char* filepath){
     char *filename = strrchr(filepath, '/');
     
     if (filename == NULL) {
