@@ -46,7 +46,6 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
     char** candidate_words = malloc(dict_size * sizeof(char*));
     if (candidate_words == NULL) return NULL;
     
-    
     char** words = dict->words;
     int candidate_words_index = 0;
     int number_of_candidates = 0;
