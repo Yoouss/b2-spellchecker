@@ -216,7 +216,7 @@ Pour chaque ligne de l’entrée, le programme écrit un bloc structuré comme s
 - `nb`$\times$`uint32`: **(4 octets chacun)**: positions (`offsets`) des mots incorrects dans la ligne, commençant à 0. 
 
 > [!Note]
-L'`offset` des mots à écrire correspond bien à leur place dans la phrase, voir exemples ci-dessous.
+> L'`offset` des mots à écrire correspond bien à leur place dans la phrase, voir exemples ci-dessous.
 
 > [!Note]
 > L'ordre des détection lignes dans le fichier `<output_path>.err` peut peut être arbitraire, il ne doit pas spécialement être en ordre de `n` croissant.
