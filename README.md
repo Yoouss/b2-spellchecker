@@ -218,6 +218,10 @@ Pour chaque ligne de l’entrée, le programme écrit un bloc structuré comme s
 > [!Note]
 L'`offset` des mots à écrire correspond bien à leur place dans la phrase, voir exemples ci-dessous.
 
+> [!Note]
+> L'ordre des détection lignes dans le fichier `<output_path>.err` peut peut être arbitraire, il ne doit pas spécialement être en ordre de `n` croissant.
+> Par contre, l'ordre dans le fichier `<output_path>.err` doit être le même que l'ordre dans le fichier `<output_path>.fix`.
+
 
 Si l'entrée à corriger comporte plusieurs lignes, les blocs sont écrits à la suite dans le fichier.
 
