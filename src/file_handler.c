@@ -88,7 +88,7 @@ int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size
     size_t current_line = 0;
     size_t start = 0;
 
-    for (size_t i = 0; i <= file_size; i++) {
+    for (size_t i = 0; i < file_size; i++) {
         if (i == file_size || file_map[i] == '\n') {
             size_t length = i - start;
 

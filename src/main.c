@@ -7,6 +7,7 @@
 #include <getopt.h>
 #include "detector.h"
 #include "corrector.h"
+#include <file_handler.h>
 
 void free_args(CommandLineArgs_t* args) {
     if (args) {
