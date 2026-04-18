@@ -16,15 +16,16 @@
 #define NUM_THREADS 4
 
 typedef struct {
-    char*** lines;
-    uint32_t** lines_sizes;
-    size_t* line_count;
+    char** lines;
+    uint32_t* lines_sizes;
+    size_t line_count;
     char* file_map;
 
-    int thread_id;
+    int start_index;
+    int end_index;
 } thread_data_t;
 
-pthread_mutex_t found_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int status = 0;
 
 static char* map_file(const char* path, size_t* file_size) {
@@ -60,16 +61,25 @@ static char* map_file(const char* path, size_t* file_size) {
     return file_map;
 }
 
-static void set_line_count_and_lines_sizes(const char* map, size_t file_size, uint32_t** lines_sizes, size_t* line_count) {
-    size_t line_index = 0;
-    size_t current_words_count = 0;
-
+static void set_line_count(const char* map, size_t file_size, size_t* line_count) {
     // Précaution
     *line_count = 0;
 
     for (size_t i = 0; i < file_size; i++) {
+        if (map[i] == '\n') (*line_count)++;
+    }
+    
+    if (file_size > 0 && map[file_size - 1] != '\n') {
+        (*line_count)++;
+    }
+}
+
+static void set_lines_sizes(const char* map, size_t file_size, uint32_t** lines_sizes) {
+    size_t line_index = 0;
+    size_t current_words_count = 0;
+
+    for (size_t i = 0; i < file_size; i++) {
         if (map[i] == '\n') {
-            (*line_count)++;
             (*lines_sizes)[line_index] = current_words_count;
 
             line_index++;
@@ -81,7 +91,6 @@ static void set_line_count_and_lines_sizes(const char* map, size_t file_size, ui
     }
     
     if (file_size > 0 && map[file_size - 1] != '\n') {
-        (*line_count)++;
         (*lines_sizes)[line_index] = current_words_count;
     }
 }
@@ -105,7 +114,7 @@ int read_input_file_multi(char* input_path, char*** lines, uint32_t** lines_size
     char *file_map = map_file(input_path, &file_size);
     if (!file_map) return -1;
 
-    set_line_count_and_lines_sizes(file_map, file_size, lines_sizes, line_count);
+    set_line_count(file_map, file_size, line_count);
 
     *lines = malloc(*line_count * sizeof(char *));
     *lines_sizes = malloc(*line_count * sizeof(uint32_t));
@@ -116,16 +125,28 @@ int read_input_file_multi(char* input_path, char*** lines, uint32_t** lines_size
         return -1;
     }
 
+    set_lines_sizes(file_map, file_size, lines_sizes);
+
+    for (size_t i = 0; i < *line_count; i++) {
+        (*lines)[i] = malloc((*lines_sizes)[i] + 1);
+        (*lines)[i][(*lines_sizes)[i]] = '\0';
+    }
+
     pthread_t threads[NUM_THREADS];
     thread_data_t * thread_data = malloc(NUM_THREADS * sizeof(thread_data_t));
     if (thread_data == NULL) return -1;
 
+    int chunk = file_size / NUM_THREADS;
+
     for (int i = 0; i < NUM_THREADS; i++) {
-        thread_data[i].lines = lines;
-        thread_data[i].lines_sizes = lines_sizes;
-        thread_data[i].line_count = line_count;
+        thread_data[i].lines = *lines;
+        thread_data[i].lines_sizes = *lines_sizes;
+        thread_data[i].line_count = *line_count;
         thread_data[i].file_map = file_map;
-        thread_data[i].thread_id = i;
+
+        thread_data[i].start_index = i * chunk;
+        thread_data[i].end_index = (i == NUM_THREADS - 1) ? file_size : (i + 1) * chunk;
+
         pthread_create(&threads[i], NULL, read_input_file_thread, &thread_data[i]);
     }
     
@@ -142,35 +163,40 @@ void* read_input_file_thread(void* args) {
     if (status == -1) pthread_exit(NULL);
 
     thread_data_t *data = (thread_data_t *) args;
-    char*** lines = data->lines;
-    uint32_t* lines_sizes = *(data->lines_sizes);
-    size_t line_count = *(data->line_count);
+
+    char** lines = data->lines;
+    uint32_t* lines_sizes = data->lines_sizes;
     char* file_map = data->file_map;
-    int thread_id = data->thread_id;
+    
+    int start_index = data->start_index;
+    int end_index = data->end_index;
 
-    int start = 0;
+    int line_index = 0;
+    int total_char = 0;
 
-    for (int i = 0; i < thread_id; i++) {
-        start += lines_sizes[i];
+    while (total_char + lines_sizes[line_index] < start_index) {
+        total_char += lines_sizes[line_index] + 1;
+        line_index++;
     }
 
-    // THREADS
-    for (size_t i = thread_id; i < line_count; i += NUM_THREADS) {
+    int write_offset = start_index - total_char;
 
-        char* line = malloc((lines_sizes[i] + 1) * sizeof(char));
-        if (line == NULL) {
-            status = -1;
-            pthread_exit(NULL);
+    int current_line = line_index;
+    int current_index_in_line = write_offset;
+    
+    for (int i = start_index; i < end_index; i++) {
+        if (lines[current_line] != NULL) {
+            char c = file_map[i];
+
+            if (c == '\n') {
+                current_line++;
+                current_index_in_line = 0;
+            } 
+            else {
+                lines[current_line][current_index_in_line] = c;
+                current_index_in_line++;
+            }
         }
-
-        for (size_t j = 0; j < lines_sizes[i]; j++) {
-            line[j] = file_map[start];
-            start++;
-        }
-
-        line[lines_sizes[i]] = '\0';
-
-        (*lines)[i] = line;
     }
     
     pthread_exit(NULL);
