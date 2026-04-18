@@ -14,6 +14,11 @@ void test_compute_levenshtein_distance();
 void test_read_input_file();
 void test_load_dictionaries();
 
+void test_open_outputs();
+void test_close_outputs();
+void test_write_detection();
+void test_write_correction();
+
 int main(void) {
     CU_initialize_registry();
     CU_pSuite suite_detector = CU_add_suite("Détécteur d'erreurs S5", 0, 0);
@@ -31,6 +36,12 @@ int main(void) {
     CU_pSuite suite_file_handler = CU_add_suite("Manipuleur de fichiers S8", 0, 0);
     CU_add_test(suite_file_handler, "test_read_input_file", test_read_input_file);
     CU_add_test(suite_file_handler, "test_load_dictionaries", test_load_dictionaries);
+
+    CU_pSuite suite_io = CU_add_suite("Détéction et Correction I/O S12", 0, 0);
+    CU_add_test(suite_io, "test_open_outputs", test_open_outputs);
+    CU_add_test(suite_io, "test_close_outputs", test_close_outputs);
+    CU_add_test(suite_io, "test_write_detection", test_write_detection);
+    CU_add_test(suite_io, "test_write_correction", test_write_correction);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
