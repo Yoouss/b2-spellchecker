@@ -1,8 +1,8 @@
 #include "common.h"
 #include <stdint.h>
 
-#ifndef IO_MULTI_H
-#define IO_MULTI_H
+#ifndef FILE_HANDLER_MULTI_H
+#define FILE_HANDLER_MULTI_H
 
 typedef struct {
     char** lines;
@@ -10,8 +10,8 @@ typedef struct {
     size_t line_count;
 
     char* file_map;
-    int start_index;
-    int end_index;
+    size_t start_index;
+    size_t end_index;
 } read_input_data_t;
 
 int read_input_file_multi(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count);
