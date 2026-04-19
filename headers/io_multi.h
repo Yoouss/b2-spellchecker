@@ -12,7 +12,7 @@ typedef struct {
     char* file_map;
     int start_index;
     int end_index;
-} thread_data_read_input_t;
+} read_input_data_t;
 
 int read_input_file_multi(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count);
 
