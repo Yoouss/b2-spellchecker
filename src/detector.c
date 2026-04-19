@@ -3,6 +3,7 @@
 #include <input.h>
 #include <io.h>
 #include <io_multi.h>
+#include <file_handler.h>
 #include "common.h"
 #include "detector.h"
 #include <string.h>
