@@ -7,6 +7,7 @@
 #include <getopt.h>
 #include "detector.h"
 #include "corrector.h"
+#include "detector_multi.h"
 
 void free_args(CommandLineArgs_t* args) {
     if (args) {
@@ -167,7 +168,7 @@ int main(int argc, char const *argv[]) {
         uint32_t* wrong_words_indexes = current_line_detection->wrong_words_indexes;
         uint32_t wrong_words_count = current_line_detection->wrong_words_count;
 
-        Dictionary_t* dict = find_candidate_dict_for_line(line, dicts, dicts_count);
+        Dictionary_t* dict = find_candidate_dict_for_line_thread(line, dicts, dicts_count);
 
         char** corrections = malloc(wrong_words_count * sizeof(char*));
         if (corrections == NULL) {
