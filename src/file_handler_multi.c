@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "common.h"
 #include <io.h>
-#include <io_multi.h>
+#include <file_handler_multi.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -116,14 +116,14 @@ static int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count) {
 void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file_offset, read_input_data_t* data) {
     uint32_t* lines_sizes = data->lines_sizes;
     size_t line_count = data->line_count;
-    int start_index = data->start_index;
+    size_t start_index = data->start_index;
 
     // Précaution
     *start_line_index = 0;
     *file_offset = 0;
 
     while (*start_line_index < line_count) {
-        int line_end_index = *file_offset + lines_sizes[*start_line_index];
+        size_t line_end_index = *file_offset + lines_sizes[*start_line_index];
         if (line_end_index >= start_index) break;
 
         *file_offset += lines_sizes[*start_line_index];
@@ -195,9 +195,9 @@ int read_input_file_multi(char* input_path, char*** lines, uint32_t** lines_size
 
     if (num_threads > 1) {
         pthread_t threads[num_threads];
-        int chunk = file_size / num_threads;
+        size_t chunk = file_size / num_threads;
 
-        for (int i = 0; i < num_threads; i++) {
+        for (size_t i = 0; i < num_threads; i++) {
             read_input_data[i].lines = *lines;
             read_input_data[i].lines_sizes = *lines_sizes;
             read_input_data[i].line_count = *line_count;
@@ -209,7 +209,7 @@ int read_input_file_multi(char* input_path, char*** lines, uint32_t** lines_size
             pthread_create(&threads[i], NULL, read_input_file_thread, &read_input_data[i]);
         }
         
-        for (int i = 0; i < num_threads; i++) {
+        for (size_t i = 0; i < num_threads; i++) {
             pthread_join(threads[i], NULL);
         }
     }

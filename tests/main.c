@@ -1,6 +1,9 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 
+// On désactive l'utilisation de threads pour les tests (ne pas supprimer cette variable !)
+int num_threads = 1;
+
 void test_word_in_dictionary();
 void test_find_candidate_dict_for_line();
 void test_wrong_words_count_and_indexes_in_line();

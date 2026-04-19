@@ -7,7 +7,11 @@
 #include <getopt.h>
 #include "detector.h"
 #include "corrector.h"
+#include <file_handler.h>
+#include "file_handler_multi.h"
 #include "detector_multi.h"
+
+int num_threads;
 
 void free_args(CommandLineArgs_t* args) {
     if (args) {
