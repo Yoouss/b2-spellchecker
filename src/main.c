@@ -122,13 +122,14 @@ static void free_file_detection(file_t* file_detection) {
 // TODO : créer des fonctions pour free les grosses structures tel que dicts, ect...
 int main(int argc, char const *argv[]) {
     CommandLineArgs_t* args = parse_args(argc, argv);
+    num_threads = args->threads > 1 ? args->threads : 1;
 
     printf("Dictionary Path: %s\n", strlen(args->dictionnaries_path) > 0 ? args->dictionnaries_path : "Not Provided");
     printf("Input File: %s\n", args->input_path ? args->input_path : "Not Provided");
     printf("Output File: %s\n", args->output_path ? args->output_path : "Not Provided");
     printf("Mode: %s\n", args->mode ? args->mode : "Not Provided");
     printf("Verbose: %s\n", args->verbose ? "Enabled" : "Disabled");
-    printf("Threads: %u\n\n", args->threads);
+    printf("Threads: %u\n\n", num_threads);
 
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
@@ -144,7 +145,7 @@ int main(int argc, char const *argv[]) {
 
     // utilisation de THREADS
     if (args->input_path) {
-        read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
+        read_input_file_multi(args->input_path, &lines, &lines_sizes, &line_count);
     }
 
     file_t* file_detection = scan_file_for_errors(args->input_path, dicts, dicts_count);

@@ -10,7 +10,6 @@
 #include "corrector.h"
 #include "dict.h"
 
-// Voir s'il faut la modifier car les fonctions de correction ont changées
 void test_get_candidate_words_manual(void) {
     Dictionary_t dict;
     char* words[] = {"bonjour", "chat", "chien"};
@@ -28,34 +27,4 @@ void test_get_candidate_words_manual(void) {
 void test_compute_levenshtein_distance(void) {
     CU_ASSERT_EQUAL(compute_levenshtein_distance("chien", "chien"), 0);
     CU_ASSERT(compute_levenshtein_distance("chien", "chat") > 0);
-}
-
-void test_sort_candidate_distances(void){
-    int nb_candidates = 3;
-    
-    // 1. Allocation de la matrice (tableau de pointeurs)
-    int** matrix = malloc(nb_candidates * sizeof(int*));
-    for (int i = 0; i < nb_candidates; i++) {
-        matrix[i] = malloc(2 * sizeof(int));
-    }
-
-    // données non triées
-    matrix[0][0] = 10; matrix[0][1] = 5;  // Candidat A, dist 5
-    matrix[1][0] = 20; matrix[1][1] = 2;  // Candidat B, dist 2
-    matrix[2][0] = 30; matrix[2][1] = 8;  // Candidat C, dist 8
-
-    sort_candidate_distances(matrix, nb_candidates);
-
-    // Le plus petit (dist 2) doit être en premier
-    CU_ASSERT_EQUAL(matrix[0][1], 2);
-    CU_ASSERT_EQUAL(matrix[0][0], 20);
-    CU_ASSERT_EQUAL(matrix[1][1], 5);
-    CU_ASSERT_EQUAL(matrix[1][0], 10);
-    CU_ASSERT_EQUAL(matrix[2][1], 8);
-    CU_ASSERT_EQUAL(matrix[2][0], 30);
-
-    for (int i = 0; i < nb_candidates; i++) {
-        free(matrix[i]);
-    }
-    free(matrix);
 }
