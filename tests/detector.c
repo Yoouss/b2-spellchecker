@@ -1,32 +1,9 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include <io.h>
+#include <file_handler.h>
 #include "common.h"
 #include "detector.h"
-
-/**
- * @brief loads the dictionaries using load_dictionaries()'s implementation
- * 
- * @return a pointer to the Dictionary_t* dictionaries for the tests
- */
-Dictionary_t* load_dictionaries_for_test() {
-    char* dictionaryPath = "dicts/"; // il sert seulement après implémentation du fichier file_handler.c
-    Dictionary_t* dicts = NULL;
-    size_t dicts_count = 0;
-
-    load_dictionaries(dictionaryPath, &dicts, &dicts_count);
-
-    return dicts;
-}
-
-/**
- * @brief loads the dictionaries using load_dictionaries()'s implementation
- * 
- * @return a pointer to the Dictionary_t* dictionaries for the tests
- */
-Dictionary_t load_dictionary_for_test() {
-    return load_dictionaries_for_test()[1];
-}
 
 static void free_line_detection(line_t* line_detection) {
     if (line_detection == NULL) return;
@@ -48,13 +25,16 @@ static void free_file_detection(file_t* file_detection) {
 }
 
 void test_word_in_dictionary(void) {
-    Dictionary_t dict = load_dictionary_for_test();
+    Dictionary_t* dict = NULL;
+    size_t dicts_count = 0;
+
+    load_dictionaries("dicts/fr.dict", &dict, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(&dict);
 
-    CU_ASSERT_EQUAL(1, word_in_dictionary("bonjour", &dict));
-    CU_ASSERT_EQUAL(0, word_in_dictionary("mmzjd", &dict));
+    CU_ASSERT_EQUAL(1, word_in_dictionary("bonjour", dict));
+    CU_ASSERT_EQUAL(0, word_in_dictionary("mmzjd", dict));
 
-    CU_ASSERT_EQUAL(-1, word_in_dictionary(NULL, &dict)); 
+    CU_ASSERT_EQUAL(-1, word_in_dictionary(NULL, dict)); 
     CU_ASSERT_EQUAL(-1, word_in_dictionary("bonjour", NULL));
 }
 
@@ -62,7 +42,7 @@ void test_find_candidate_dict_for_line(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
-    load_dictionaries("dummy", &dicts, &dicts_count);
+    load_dictionaries("all", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
     Dictionary_t* noFile = find_candidate_dict_for_line(NULL, dicts, dicts_count);
@@ -81,6 +61,7 @@ void test_find_candidate_dict_for_line(void) {
     CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineEn);
 
     CU_ASSERT_STRING_EQUAL(candidateDictForLineFr->lang, "fr");
+    printf("\n hello %s \n",candidateDictForLineFr->lang);
     CU_ASSERT_STRING_EQUAL(candidateDictForLineEn->lang, "en");
 }
 
@@ -88,7 +69,7 @@ void test_wrong_words_count_and_indexes_in_line(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
-    load_dictionaries("dummy", &dicts, &dicts_count);
+    load_dictionaries("all", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
     // ─────────────── TEST 1 ───────────────
@@ -226,7 +207,7 @@ void test_scan_line_for_errors(void) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
-    load_dictionaries("dummy", &dicts, &dicts_count);
+    load_dictionaries("all", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
     char* line_test = "manger une,pommeee"; // "pommeee" n'est pas dans le dictionnaire test
@@ -255,12 +236,12 @@ void test_scan_line_for_errors(void) {
 }
 
 void test_scan_file_for_errors(void) {
-    char* inputPath = "input_10l.txt";
+    char* inputPath = "inputs/input_10l.txt";
 
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
-    load_dictionaries("dummy", &dicts, &dicts_count);
+    load_dictionaries("all", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
     file_t* no_file = scan_file_for_errors(NULL, dicts, dicts_count);

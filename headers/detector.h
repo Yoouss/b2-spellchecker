@@ -15,7 +15,6 @@
  * @wrong_words_indexes : tableau des indexes (on commence à compter à 0) des mauvais mots dans la ligne
  * @wrong_words_count   : nombre de mauvais mots dans la ligne (= la taille de wrong_words_indexes)
  */
-
 typedef struct line {
     uint32_t* wrong_words_indexes;
     uint32_t wrong_words_count;
@@ -28,7 +27,6 @@ typedef struct line {
  * @incorrect_lines_indexes : tableau des indexes (on commence à compter à 0) des lignes contenant des erreurs dans le fichier
  * @incorrect_lines_count   : nombre de lignes contenant des erreurs (= la taille de incorrect_lines et incorrect_lines_indexes)
  */
-
 typedef struct file {
     line_t* incorrect_lines;
     size_t* incorrect_lines_indexes;
