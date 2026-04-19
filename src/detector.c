@@ -2,6 +2,7 @@
 #include <dict.h>
 #include <input.h>
 #include <io.h>
+#include <io_multi.h>
 #include "common.h"
 #include "detector.h"
 #include <string.h>
@@ -167,7 +168,7 @@ file_t* scan_file_for_errors(char* filename, Dictionary_t* dicts, size_t diction
     uint32_t* lines_sizes = NULL;
     size_t line_count = 0;
 
-    read_input_file(filename, &lines, &lines_sizes, &line_count);
+    read_input_file_multi(filename, &lines, &lines_sizes, &line_count);
     if (lines == NULL || lines_sizes == NULL || line_count == 0) return NULL;
     free(lines_sizes);
 
