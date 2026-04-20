@@ -179,7 +179,11 @@ Le `Makefile` génère un exécutable `spellchecker`:
 - `--dicts <dictionary_path>` spécifie le dossier dans lequel sont rangés les dictionnaires
 - `--input <input_path>` spécifie le fichier contenant les lignes à corriger. - `--output_path <output_path>` spécifie le nom des fichiers de sortie (sans extension !)[^1]. S'il n'est pas spécifié, le terminal sera utilisé par défaut
 - `--mode <mode>` spécifie le mode de fonctionnement du programme. S'il n'est pas spécifié, le mode `detection` sera utilisé par défaut
-- `--threads <number>` spécifie le nombre de threads à utiliser
+- `--threads <number>` spécifie le nombre de threads à utiliser. C'est le nombre de threads **actifs** (qui travaillent) que votre programme doit utiliser. Deux approches sont possibles :
+  - Créer `N` threads avec `pthread_create` et laisser le thread principal attendre avec `pthread_join` (`N+1` threads au total, mais seuls `N` travaillent).
+  - Créer `N-1` threads avec `pthread_create` et utiliser le thread principal comme worker également (`N` threads au total, tous travaillent).
+
+  Les deux approches sont acceptées. L'important est que le nombre de threads **actifs** corresponde à la valeur de `--threads`. Notez que lors du benchmarking pour le championnat, votre programme est exécuté dans un conteneur limité à exactement `N` cœurs. Essayer d'avoir plus de threads actifs que demandé ne vous apportera donc aucun avantage et pourrait même dégrader vos performances.
 - `--verbose` permet d'afficher plus de détails sur ce que fait le programme en temps réel (mode verbeux)
 
 Lorsque des crochets sont présents dans une ligne de commande, comme `[--mode <mode>]` par exemple, le contenu entre ceux-ci est optionnel. Le programme fonctionnera sans problème s'ils ne sont pas spécifiés. Les chevrons, comme `<input_path>` indiquent l'endroit où écrire la valeur que prend l'argument. Les crochets, comme les chevrons, ne doivent pas être inclus dans la ligne de commande.
