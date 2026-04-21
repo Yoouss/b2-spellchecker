@@ -191,9 +191,9 @@ char* get_word_correction(char* wrong_word, Dictionary_t* dict) {
 
     int number_of_candidates = 0;
     char** candidate_words = get_candidate_words(wrong_word, dict, &number_of_candidates); 
-    if (candidate_words == NULL) return NULL;
-
-    if (number_of_candidates == 0) { 
+    
+    // Ne devrait pas arriver en théorie mais c'est possible malheureusement...
+    if (number_of_candidates == 0 || candidate_words == NULL) { 
         free(candidate_words);
         return wrong_word;
     }
