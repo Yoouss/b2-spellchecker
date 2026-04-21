@@ -1,11 +1,10 @@
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include "common.h"
-#include "corrector.h"
 #include <ctype.h>
+
+#include <corrector.h>
 
 int count_number_of_shared_trigrammes(char* word1, char* word2) {
     int number_of_shared_trigrammes = 0;

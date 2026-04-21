@@ -1,9 +1,8 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include <io.h>
+
+#include <detector.h>
 #include <file_handler.h>
-#include "common.h"
-#include "detector.h"
 
 static void free_line_detection(line_t* line_detection) {
     if (line_detection == NULL) return;

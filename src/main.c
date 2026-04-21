@@ -1,15 +1,15 @@
 #include <stdio.h>
-#include "common.h"
-#include "pretty_print.h"
 #include <stdlib.h>
 #include <string.h>
-#include <io.h>
 #include <getopt.h>
-#include "detector.h"
-#include "corrector.h"
+
+#include <common.h>
+#include <corrector.h>
+#include <detector_multi.h>
+#include <detector.h>
 #include <file_handler.h>
-#include "file_handler_multi.h"
-#include "detector_multi.h"
+#include <io.h>
+#include <pretty_print.h>
 
 int num_threads;
 

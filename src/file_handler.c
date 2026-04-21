@@ -9,7 +9,6 @@
 #include <dirent.h>
 #include <pthread.h>
 
-#include <common.h>
 #include <file_handler.h>
 
 void free_lines(char** lines, size_t line_count) {

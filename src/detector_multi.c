@@ -1,14 +1,12 @@
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include "common.h"
-#include "detector.h"
-#include "detector_multi.h"
 #include <ctype.h>
 #include <pthread.h>
 
+#include <detector_multi.h>
+#include <detector.h>
 
 typedef struct {
     char* line;

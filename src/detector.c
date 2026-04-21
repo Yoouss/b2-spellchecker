@@ -1,12 +1,9 @@
 #include <stdio.h>
-#include <dict.h>
-#include <input.h>
-#include <io.h>
-#include <file_handler.h>
-#include <file_handler_multi.h>
-#include "common.h"
-#include "detector.h"
 #include <string.h>
+
+#include <detector_multi.h>
+#include <detector.h>
+#include <file_handler.h>
 
 int word_in_dictionary(char* target_word, Dictionary_t* dict) {
     if (target_word == NULL || dict == NULL) return -1;
