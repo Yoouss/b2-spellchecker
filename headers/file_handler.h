@@ -37,6 +37,11 @@ typedef struct read_input_data {
  * 
  * @param lines le tableau de lignes à libérer
  * @param line_count le nombre de lignes à libérer
+ * 
+ * @note   complexité temporelle : O(n)
+ *         complexité spaciale : O(1)
+ * 
+ *         n = le nombre de lignes à libérer
  */
 void free_lines(char** lines, size_t line_count);
 
@@ -48,6 +53,9 @@ void free_lines(char** lines, size_t line_count);
  * @return un pointeur vers la zone mémoire contenant le fichier, ou NULL soit en cas d'erreur, soit si le fichier est vide
  * 
  * @note le pointeur retourné doit être libéré plus tard avec munmap()
+ * 
+ * @note   complexité temporelle : O(1)
+ *         complexité spaciale : O(1)
  */
 char* map_file(const char* file_path, size_t* file_size);
 
@@ -57,6 +65,11 @@ char* map_file(const char* file_path, size_t* file_size);
  * @param mapped_file un pointeur vers le fichier mappé en mémoire
  * @param file_size la taille du fichier 
  * @param line_count un pointeur où sera stocké le nombre de lignes du fichier
+ * 
+ * @note   complexité temporelle : O(m)
+ *         complexité spaciale : O(1)
+ *
+ *         m = le nombre de caractères du fichier (file_size)
  */
 void set_line_count(const char* mapped_file, size_t file_size, size_t* line_count);
 
@@ -69,6 +82,12 @@ void set_line_count(const char* mapped_file, size_t file_size, size_t* line_coun
  * @param line_count le nombre de lignes du fichier
  * 
  * @return -1 en cas d'erreur, 0 sinon (en modifiant le contenu de lines_sizes)
+ * 
+ * @note   complexité temporelle : O(m)
+ *         complexité spaciale : O(n)
+ *
+ *         m = le nombre de caractères du fichier
+ *         n = le nombre de lignes du fichier 
  */
 int set_lines_sizes(const char* mapped_file, size_t file_size, uint32_t** lines_sizes, size_t line_count);
 
@@ -80,6 +99,12 @@ int set_lines_sizes(const char* mapped_file, size_t file_size, uint32_t** lines_
  * @param line_count le nombre de lignes d'un fichier (= taille de lines et lines_sizes)
  * 
  * @return -1 en cas d'erreur, 0 sinon (en modifiant le contenu de lines)
+ * 
+ * @note   complexité temporelle : O(n)
+ *         complexité spaciale : O(m)
+ * 
+ *         m = le nombre de caractères du fichier
+ *         n = le nombre de lignes du fichier 
  */
 int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count);
 
@@ -96,6 +121,11 @@ int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count);
  * 
  * @note chunk = file_size / num_threads (en mono-threadée, num_threads doit être forcé à 1)
  *       la taille de read_input_data = num_threads
+ * 
+ * @note   complexité temporelle : O(t)
+ *         complexité spaciale : O(1)
+ *
+ *         t = le nombre de threads 
  */
 void set_read_input_data(read_input_data_t* read_input_data, char** lines, uint32_t* lines_sizes, 
                          size_t line_count, char* mapped_file, size_t file_size, size_t chunk);
@@ -106,6 +136,11 @@ void set_read_input_data(read_input_data_t* read_input_data, char** lines, uint3
  * @param start_line_index un pointeur où sera stocké l'index de la ligne de départ
  * @param file_offset un pointeur où sera stocké l'index de départ dans start_line_index
  * @param read_input_data un pointeur vers une structure read_input_data_t
+ * 
+ * @note   complexité temporelle : O(n)
+ *         complexité spaciale : O(1)
+ *
+ *         n = le nombre de lignes du fichier 
  */
 void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file_offset, read_input_data_t* read_input_data);
 
@@ -114,13 +149,23 @@ void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file
  * 
  * @param read_input_data un pointeur vers une structure read_input_data_t 
  * où est notamment renseigné l'interval de départ (start_index) et d'arrivée (end_index)
+ * 
+ * @note   complexité temporelle : O(c)
+ *         complexité spaciale : O(1)
+ *
+ *         c = le nombre de caractères à traiter (end_index - start_index)
  */
 void read_chunk_of_input_file(read_input_data_t* read_input_data);
 
 /**
  * @brief fonction helper de read_input_file qui s'occupe d'une partie équitable du travail de read_input_file en fonctions du nombre de threads entrées par l'utilisateur. Le travail efféctué par une thread est égale à la taille du fichier divisé par le nombre de threads
  * 
- * @param read_input_data un pointeur vers une structure read_input_data_t 
+ * @param args un pointeur void* vers une structure read_input_data_t 
+ * 
+ * @note   complexité temporelle : O(c)
+ *         complexité spaciale : O(1)
+ *
+ *         c = le nombre de caractères à traiter (end_index - start_index)
  */
 void* read_input_file_thread(void* args);
 
@@ -135,6 +180,12 @@ void* read_input_file_thread(void* args);
  * @return -1 en cas d'erreur, 0 en cas de succès
  * 
  * @note le traitement est mono-threadé si num_threads = 1, sinon il est multi-threadé
+ * 
+ * @note   complexité temporelle : O(m)
+ *         complexité spaciale : O(m + n)
+ *
+ *         m = le nombre de caractères du fichier (file_size)
+ *         n = le nombre de lignes du fichier
  */
 int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count);
 

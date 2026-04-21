@@ -126,6 +126,7 @@ static void free_file_detection(file_t* file_detection) {
 // TODO : créer des fonctions pour free les grosses structures tel que dicts, ect...
 int main(int argc, char const *argv[]) {
     CommandLineArgs_t* args = parse_args(argc, argv);
+
     num_threads = args->threads > 1 ? args->threads : 1;
 
     printf("Dictionary Path: %s\n", strlen(args->dictionnaries_path) > 0 ? args->dictionnaries_path : "Not Provided");
@@ -146,10 +147,17 @@ int main(int argc, char const *argv[]) {
     if (strlen(args->dictionnaries_path) > 0) {
         load_dictionaries(args->dictionnaries_path, &dicts, &dicts_count);
     }
+    else {
+        perror("Veillez spécifier le/les dictionnaires à utiliser");
+        return -1;
+    }
 
-    // utilisation de THREADS
     if (args->input_path) {
         read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
+    }
+    else {
+        perror("Veillez spécifier le fichier d'entrée");
+        return -1;
     }
 
     file_t* file_detection = scan_file_for_errors(args->input_path, dicts, dicts_count);
