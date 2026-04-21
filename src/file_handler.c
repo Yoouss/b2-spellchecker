@@ -1,17 +1,16 @@
 #include <stdio.h>
-#include "common.h"
-#include <io.h>
-#include <file_handler.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 #include <pthread.h>
+
+#include <common.h>
+#include <file_handler.h>
 
 void free_lines(char** lines, size_t line_count) {
     for (size_t i = 0; i < line_count; i++) {
@@ -20,8 +19,8 @@ void free_lines(char** lines, size_t line_count) {
     free(lines);
 }
 
-char* map_file(const char* path, size_t* file_size) {
-    int file_descriptor = open(path, O_RDONLY);
+char* map_file(const char* file_path, size_t* file_size) {
+    int file_descriptor = open(file_path, O_RDONLY);
     if (file_descriptor == -1) {
         perror("Erreur lors de l'ouverture du fichier");
         return NULL;
@@ -41,32 +40,31 @@ char* map_file(const char* path, size_t* file_size) {
         return NULL; 
     }
     
-    char *file_map = mmap(NULL, *file_size, PROT_READ, MAP_PRIVATE, file_descriptor, 0);
-
+    char *mapped_file = mmap(NULL, *file_size, PROT_READ, MAP_PRIVATE, file_descriptor, 0);
     close(file_descriptor);
 
-    if (file_map == MAP_FAILED) {
+    if (mapped_file == MAP_FAILED) {
         perror("Erreur mmap");
         return NULL;
     }
 
-    return file_map;
+    return mapped_file;
 }
 
-void set_line_count(const char* map, size_t file_size, size_t* line_count) {
+void set_line_count(const char* mapped_file, size_t file_size, size_t* line_count) {
     // Précaution
     *line_count = 0;
 
     for (size_t i = 0; i < file_size; i++) {
-        if (map[i] == '\n') (*line_count)++;
+        if (mapped_file[i] == '\n') (*line_count)++;
     }
     
-    if (file_size > 0 && map[file_size - 1] != '\n') {
+    if (file_size > 0 && mapped_file[file_size - 1] != '\n') {
         (*line_count)++;
     }
 }
 
-int set_lines_sizes(const char* map, size_t file_size, uint32_t** lines_sizes, size_t line_count) {
+int set_lines_sizes(const char* mapped_file, size_t file_size, uint32_t** lines_sizes, size_t line_count) {
     *lines_sizes = malloc(line_count * sizeof(uint32_t));
     if (*lines_sizes == NULL) return -1;
 
@@ -74,7 +72,7 @@ int set_lines_sizes(const char* map, size_t file_size, uint32_t** lines_sizes, s
     size_t current_chars_count = 0;
 
     for (size_t i = 0; i < file_size; i++) {
-        if (map[i] == '\n') {
+        if (mapped_file[i] == '\n') {
             (*lines_sizes)[line_index] = current_chars_count;
 
             line_index++;
@@ -86,7 +84,7 @@ int set_lines_sizes(const char* map, size_t file_size, uint32_t** lines_sizes, s
     }
     
     // Cas spécial où la dernière ligne n'a pas de retour à la ligne à sa fin
-    if (file_size > 0 && map[file_size - 1] != '\n') {
+    if (file_size > 0 && mapped_file[file_size - 1] != '\n') {
         (*lines_sizes)[line_index] = current_chars_count;
     }
 
@@ -113,10 +111,24 @@ int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count) {
     return 0;
 }
 
-void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file_offset, read_input_data_t* data) {
-    uint32_t* lines_sizes = data->lines_sizes;
-    size_t line_count = data->line_count;
-    size_t start_index = data->start_index;
+void set_read_input_data(read_input_data_t* read_input_data, char** lines, uint32_t* lines_sizes, 
+                         size_t line_count, char* mapped_file, size_t file_size, size_t chunk) {      
+
+    for (size_t i = 0; i < num_threads; i++) {
+        read_input_data[i].lines = lines;
+        read_input_data[i].lines_sizes = lines_sizes;
+        read_input_data[i].line_count = line_count;
+
+        read_input_data[i].mapped_file = mapped_file;
+        read_input_data[i].start_index = i * chunk;
+        read_input_data[i].end_index = (i == num_threads - 1) ? file_size : (i + 1) * chunk;
+    }
+}
+
+void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file_offset, read_input_data_t* read_input_data) {
+    uint32_t* lines_sizes = read_input_data->lines_sizes;
+    size_t line_count = read_input_data->line_count;
+    size_t start_index = read_input_data->start_index;
 
     // Précaution
     *start_line_index = 0;
@@ -137,23 +149,23 @@ void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file
     }
 }
 
-void read_chunk_of_input_file(read_input_data_t* data) {
+void read_chunk_of_input_file(read_input_data_t* read_input_data) {
     size_t start_line_index = 0;
     size_t file_offset = 0;
-    set_start_line_index_and_file_offset(&start_line_index, &file_offset, data);
+    set_start_line_index_and_file_offset(&start_line_index, &file_offset, read_input_data);
 
-    size_t start_index = data->start_index;
+    size_t start_index = read_input_data->start_index;
     size_t write_offset = start_index - file_offset;
 
     size_t current_line = start_line_index;
     size_t current_index_in_line = write_offset;
 
-    char* file_map = data->file_map;
-    char** lines = data->lines;
-    size_t end_index = data->end_index;
+    char* mapped_file = read_input_data->mapped_file;
+    char** lines = read_input_data->lines;
+    size_t end_index = read_input_data->end_index;
 
     for (size_t i = start_index; i < end_index; i++) {
-        char c = file_map[i];
+        char c = mapped_file[i];
 
         if (c == '\n') {
             current_line++;
@@ -167,21 +179,28 @@ void read_chunk_of_input_file(read_input_data_t* data) {
     }
 }
 
+void* read_input_file_thread(void* args) {
+    read_input_data_t* read_input_data = (read_input_data_t *) args;
+    read_chunk_of_input_file(read_input_data);
+
+    pthread_exit(NULL);
+}
+
 int read_input_file(char* input_path, char*** lines, uint32_t** lines_sizes, size_t* line_count) {
     size_t file_size = 0;
-    char *file_map = map_file(input_path, &file_size);
-    if (!file_map) return -1;
+    char* mapped_file = map_file(input_path, &file_size);
+    if (mapped_file == NULL) return -1;
 
-    set_line_count(file_map, file_size, line_count);
+    set_line_count(mapped_file, file_size, line_count);
 
-    if (set_lines_sizes(file_map, file_size, lines_sizes, *line_count) == -1) {
-        munmap(file_map, file_size);
+    if (set_lines_sizes(mapped_file, file_size, lines_sizes, *line_count) == -1) {
+        munmap(mapped_file, file_size);
         return -1;
     }
 
     if (set_lines(lines, *lines_sizes, *line_count) == -1) {
         free(*lines_sizes);
-        munmap(file_map, file_size);
+        munmap(mapped_file, file_size);
         return -1;
     }
 
@@ -189,52 +208,42 @@ int read_input_file(char* input_path, char*** lines, uint32_t** lines_sizes, siz
     if (read_input_data == NULL) {
         free(*lines_sizes);
         free_lines(*lines, *line_count);
-        munmap(file_map, file_size);
+        munmap(mapped_file, file_size);
         return -1;
     }
 
-    if (num_threads > 1) {
+    size_t chunk = file_size / num_threads;
+    set_read_input_data(read_input_data, *lines, *lines_sizes, *line_count, mapped_file, file_size, chunk);
+
+    if (num_threads == 1) {
+        read_chunk_of_input_file(read_input_data);
+    }
+
+    else if (num_threads > 1) {
         pthread_t threads[num_threads];
-        size_t chunk = file_size / num_threads;
-
         for (size_t i = 0; i < num_threads; i++) {
-            read_input_data[i].lines = *lines;
-            read_input_data[i].lines_sizes = *lines_sizes;
-            read_input_data[i].line_count = *line_count;
-
-            read_input_data[i].file_map = file_map;
-            read_input_data[i].start_index = i * chunk;
-            read_input_data[i].end_index = (i == num_threads - 1) ? file_size : (i + 1) * chunk;
-
             pthread_create(&threads[i], NULL, read_input_file_thread, &read_input_data[i]);
         }
-        
+
         for (size_t i = 0; i < num_threads; i++) {
             pthread_join(threads[i], NULL);
         }
     }
 
+    // Précaution (num_threads est normalement bien configuré à être plus grand ou égal à 1 dans src/main.c)
     else {
-        read_input_data[0].lines = *lines;
-        read_input_data[0].lines_sizes = *lines_sizes;
-        read_input_data[0].line_count = *line_count;
-
-        read_input_data[0].file_map = file_map;
-        read_input_data[0].start_index = 0;
-        read_input_data[0].end_index = file_size;
-        read_chunk_of_input_file(read_input_data);
+        perror("Le nombre de threads ne peut pas être inférieur à 1 ! Si c'est le cas, il doit être forcé à 1 dans src/main.c !");
+        free(read_input_data);
+        free(*lines_sizes);
+        free_lines(*lines, *line_count);
+        munmap(mapped_file, file_size);
+        return -1;
     }
 
-    munmap(file_map, file_size);
+    free(read_input_data);
+    munmap(mapped_file, file_size);
     
     return 0;
-}
-
-void* read_input_file_thread(void* args) {
-    read_input_data_t* data = (read_input_data_t *) args;
-    read_chunk_of_input_file(data);
-
-    pthread_exit(NULL);
 }
 
 char* get_language(const char* filepath) {

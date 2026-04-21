@@ -7,12 +7,27 @@
 #ifndef FILE_HANDLER_H
 #define FILE_HANDLER_H
 
+/**
+ * Structure utilisée pour stocker plusieurs informations nécessaires à read_input_file 
+ * (mono ou multi-threadée) 
+ *
+ * @lines       : un tableau de char* représentant chaque ligne d'un fichier
+ * @lines_sizes : un tableau contenant le nombre de caractères pour chaque ligne d'un fichier
+ * @line_count  : le nombre de lignes d'un fichier (= taille de lines et lines_sizes)
+ * 
+ * @mapped_file : un pointeur vers la zone mémoire mmap contenant le fichier
+ * @start_index : l'index de départ (dans le fichier) 
+ * @end_index   : l'index de fin (dans le fichier)
+ * 
+ * @note start_index et end_index sont principalement utilisés pour séparer le travail entre plusieurs threads
+ *       en mono-threadée, start_index = 0 et end_index = la taille du fichier mappé
+ */
 typedef struct read_input_data {
     char** lines;
     uint32_t* lines_sizes;
     size_t line_count;
 
-    char* file_map;
+    char* mapped_file;
     size_t start_index;
     size_t end_index;
 } read_input_data_t;
@@ -69,26 +84,43 @@ int set_lines_sizes(const char* mapped_file, size_t file_size, uint32_t** lines_
 int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count);
 
 /**
+ * @brief fonction helper qui remplit un pointeur vers d'une structure read_input_data avec les informations nécessaires. Elle est utilisé pour organiser la proportion de travail dans un contexte multi-threadé, ou bien simplement indiquer les informations nécessaire pour un contexte mono-threadé
+ * 
+ * @param read_input_data un pointeur vers une ou plusieurs structure read_input_data_t
+ * @param lines le pointeur d'un tableau de string où sera alloué la mémoire nécessaire pour chaque ligne d'un fichier
+ * @param lines_sizes un tableau contenant le nombre de caractères de chaque ligne 
+ * @param line_count le nombre de lignes d'un fichier (= taille de lines et lines_sizes)
+ * @param mapped_file un pointeur vers le fichier mappé en mémoire
+ * @param file_size la taille du fichier 
+ * @param chunk le nombre de caractères minimum qui doit être traité pour chaque structure read_input_data
+ * 
+ * @note chunk = file_size / num_threads (en mono-threadée, num_threads doit être forcé à 1)
+ *       la taille de read_input_data = num_threads
+ */
+void set_read_input_data(read_input_data_t* read_input_data, char** lines, uint32_t* lines_sizes, 
+                         size_t line_count, char* mapped_file, size_t file_size, size_t chunk);
+
+/**
  * @brief fonction helper de read_chunk_of_input_file qui renseigne sur l'index de la ligne de départ et de l'index de départ dans cette ligne
  * 
  * @param start_line_index un pointeur où sera stocké l'index de la ligne de départ
  * @param file_offset un pointeur où sera stocké l'index de départ dans start_line_index
- * @param data un pointeur vers une structure read_input_data_t
+ * @param read_input_data un pointeur vers une structure read_input_data_t
  */
-void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file_offset, read_input_data_t* data);
+void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file_offset, read_input_data_t* read_input_data);
 
 /**
  * @brief fonction helper de read_input_file et read_input_file_thread qui fais le travail de read_input_file sur un interval renseigné en paramètre
  * 
- * @param data un pointeur vers une structure read_input_data_t 
+ * @param read_input_data un pointeur vers une structure read_input_data_t 
  * où est notamment renseigné l'interval de départ (start_index) et d'arrivée (end_index)
  */
-void read_chunk_of_input_file(read_input_data_t* data);
+void read_chunk_of_input_file(read_input_data_t* read_input_data);
 
 /**
  * @brief fonction helper de read_input_file qui s'occupe d'une partie équitable du travail de read_input_file en fonctions du nombre de threads entrées par l'utilisateur. Le travail efféctué par une thread est égale à la taille du fichier divisé par le nombre de threads
  * 
- * @param data un pointeur vers une structure read_input_data_t 
+ * @param read_input_data un pointeur vers une structure read_input_data_t 
  */
 void* read_input_file_thread(void* args);
 
@@ -102,7 +134,7 @@ void* read_input_file_thread(void* args);
  * 
  * @return -1 en cas d'erreur, 0 en cas de succès
  * 
- * @note le traitement est mono-threadée si num_threads = 1, sinon il est multi-threadée
+ * @note le traitement est mono-threadé si num_threads = 1, sinon il est multi-threadé
  */
 int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count);
 
