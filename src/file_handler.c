@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "common.h"
+#include <io.h>
 #include <file_handler.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -10,6 +11,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <pthread.h>
+
+void free_lines(char** lines, size_t line_count) {
+    for (size_t i = 0; i < line_count; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+}
 
 char* map_file(const char* path, size_t* file_size) {
     int file_descriptor = open(path, O_RDONLY);
@@ -44,80 +53,191 @@ char* map_file(const char* path, size_t* file_size) {
     return file_map;
 }
 
-size_t count_lines(const char* map, size_t size) {
-    size_t n = 0;
-    for (size_t i = 0; i < size; i++) {
-        if (map[i] == '\n') n++;
+void set_line_count(const char* map, size_t file_size, size_t* line_count) {
+    // Précaution
+    *line_count = 0;
+
+    for (size_t i = 0; i < file_size; i++) {
+        if (map[i] == '\n') (*line_count)++;
     }
     
-    if (size > 0 && map[size - 1] != '\n') {
-        n++;
+    if (file_size > 0 && map[file_size - 1] != '\n') {
+        (*line_count)++;
     }
-    return n;
 }
 
-void clean_lines(char** lines, uint32_t* sizes, size_t count) {
-    if (lines) {
-        for (size_t i = 0; i < count; i++) {
-            free(lines[i]);
+int set_lines_sizes(const char* map, size_t file_size, uint32_t** lines_sizes, size_t line_count) {
+    *lines_sizes = malloc(line_count * sizeof(uint32_t));
+    if (*lines_sizes == NULL) return -1;
+
+    size_t line_index = 0;
+    size_t current_chars_count = 0;
+
+    for (size_t i = 0; i < file_size; i++) {
+        if (map[i] == '\n') {
+            (*lines_sizes)[line_index] = current_chars_count;
+
+            line_index++;
+            current_chars_count = 0;
+        } 
+        else {
+            current_chars_count++;
         }
-        free(lines);
     }
-    if (sizes) {
-        free(sizes);
+    
+    // Cas spécial où la dernière ligne n'a pas de retour à la ligne à sa fin
+    if (file_size > 0 && map[file_size - 1] != '\n') {
+        (*lines_sizes)[line_index] = current_chars_count;
+    }
+
+    return 0;
+}
+
+int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count) {
+    *lines = malloc(line_count * sizeof(char *));
+    if (*lines == NULL) return -1;
+
+    for (size_t i = 0; i < line_count; i++) {
+        size_t line_size = lines_sizes[i];
+
+        char* line = malloc((line_size + 1) * sizeof(char));
+        if (line == NULL) {
+            free_lines(*lines, i);
+            return -1;
+        }
+
+        line[line_size] = '\0';
+        (*lines)[i] = line;
+    }
+
+    return 0;
+}
+
+void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file_offset, read_input_data_t* data) {
+    uint32_t* lines_sizes = data->lines_sizes;
+    size_t line_count = data->line_count;
+    size_t start_index = data->start_index;
+
+    // Précaution
+    *start_line_index = 0;
+    *file_offset = 0;
+
+    while (*start_line_index < line_count) {
+        size_t line_end_index = *file_offset + lines_sizes[*start_line_index];
+        if (line_end_index >= start_index) break;
+
+        *file_offset += lines_sizes[*start_line_index];
+
+        // Ca nous aide à éviter le cas où la dernière ligne n'a pas de \n à sa fin
+        if (*start_line_index < line_count - 1) {
+            (*file_offset)++; 
+        }
+
+        (*start_line_index)++;
     }
 }
 
-int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count) {
+void read_chunk_of_input_file(read_input_data_t* data) {
+    size_t start_line_index = 0;
+    size_t file_offset = 0;
+    set_start_line_index_and_file_offset(&start_line_index, &file_offset, data);
 
+    size_t start_index = data->start_index;
+    size_t write_offset = start_index - file_offset;
+
+    size_t current_line = start_line_index;
+    size_t current_index_in_line = write_offset;
+
+    char* file_map = data->file_map;
+    char** lines = data->lines;
+    size_t end_index = data->end_index;
+
+    for (size_t i = start_index; i < end_index; i++) {
+        char c = file_map[i];
+
+        if (c == '\n') {
+            current_line++;
+            current_index_in_line = 0;
+        } 
+
+        else {
+            lines[current_line][current_index_in_line] = c;
+            current_index_in_line++;
+        }
+    }
+}
+
+int read_input_file(char* input_path, char*** lines, uint32_t** lines_sizes, size_t* line_count) {
     size_t file_size = 0;
     char *file_map = map_file(input_path, &file_size);
     if (!file_map) return -1;
 
-    size_t total_lines = count_lines(file_map, file_size);
+    set_line_count(file_map, file_size, line_count);
 
-    *lines = malloc((total_lines + 1) * sizeof(char *));
-    *line_sizes = malloc(total_lines * sizeof(uint32_t));
-
-    if (!*lines || !*line_sizes) {
-        clean_lines(*lines, *line_sizes, 0);
+    if (set_lines_sizes(file_map, file_size, lines_sizes, *line_count) == -1) {
         munmap(file_map, file_size);
         return -1;
     }
 
-    size_t current_line = 0;
-    size_t start = 0;
+    if (set_lines(lines, *lines_sizes, *line_count) == -1) {
+        free(*lines_sizes);
+        munmap(file_map, file_size);
+        return -1;
+    }
 
-    for (size_t i = 0; i < file_size; i++) {
-        if (i == file_size || file_map[i] == '\n') {
-            size_t length = i - start;
+    read_input_data_t* read_input_data = malloc(num_threads * sizeof(read_input_data_t));
+    if (read_input_data == NULL) {
+        free(*lines_sizes);
+        free_lines(*lines, *line_count);
+        munmap(file_map, file_size);
+        return -1;
+    }
 
-            char *line = malloc(length + 1);
-            if (!line) {
-                clean_lines(*lines, *line_sizes, current_line);
-                munmap(file_map, file_size);
-                return -1;
-            }
+    if (num_threads > 1) {
+        pthread_t threads[num_threads];
+        size_t chunk = file_size / num_threads;
 
-            for (size_t j = 0; j < length; j++) {
-                line[j] = file_map[start + j];
-            }
-            line[length] = '\0';
+        for (size_t i = 0; i < num_threads; i++) {
+            read_input_data[i].lines = *lines;
+            read_input_data[i].lines_sizes = *lines_sizes;
+            read_input_data[i].line_count = *line_count;
 
-            (*lines)[current_line] = line;
-            (*line_sizes)[current_line] = (uint32_t)length;
-            
-            current_line++;
-            start = i + 1;
+            read_input_data[i].file_map = file_map;
+            read_input_data[i].start_index = i * chunk;
+            read_input_data[i].end_index = (i == num_threads - 1) ? file_size : (i + 1) * chunk;
+
+            pthread_create(&threads[i], NULL, read_input_file_thread, &read_input_data[i]);
+        }
+        
+        for (size_t i = 0; i < num_threads; i++) {
+            pthread_join(threads[i], NULL);
         }
     }
-    (*lines)[current_line] = NULL;
-    *line_count = current_line;
+
+    else {
+        read_input_data[0].lines = *lines;
+        read_input_data[0].lines_sizes = *lines_sizes;
+        read_input_data[0].line_count = *line_count;
+
+        read_input_data[0].file_map = file_map;
+        read_input_data[0].start_index = 0;
+        read_input_data[0].end_index = file_size;
+        read_chunk_of_input_file(read_input_data);
+    }
+
     munmap(file_map, file_size);
+    
     return 0;
 }
 
-char* get_language(const char* filepath){
+void* read_input_file_thread(void* args) {
+    read_input_data_t* data = (read_input_data_t *) args;
+    read_chunk_of_input_file(data);
+
+    pthread_exit(NULL);
+}
+
+char* get_language(const char* filepath) {
     char *filename = strrchr(filepath, '/');
     
     if (filename == NULL) {

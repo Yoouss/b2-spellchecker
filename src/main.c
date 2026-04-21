@@ -149,7 +149,7 @@ int main(int argc, char const *argv[]) {
 
     // utilisation de THREADS
     if (args->input_path) {
-        read_input_file_multi(args->input_path, &lines, &lines_sizes, &line_count);
+        read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
     }
 
     file_t* file_detection = scan_file_for_errors(args->input_path, dicts, dicts_count);

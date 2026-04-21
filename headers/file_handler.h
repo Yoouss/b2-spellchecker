@@ -7,35 +7,104 @@
 #ifndef FILE_HANDLER_H
 #define FILE_HANDLER_H
 
-/**
- * @brief Projette un fichier en mémoire pour une lecture
- * * Utilisée par read_input_file pour obtenir un accès direct au contenu du fichier
- * 
- * @param path Le chemin vers le fichier à
- * @param file_size Pointeur pour stocker la taille totale du fichier
- * @return Un pointeur vers la zone mémoire
- */
-char* map_file(const char* path, size_t* file_size);
+typedef struct read_input_data {
+    char** lines;
+    uint32_t* lines_sizes;
+    size_t line_count;
+
+    char* file_map;
+    size_t start_index;
+    size_t end_index;
+} read_input_data_t;
 
 /**
- * @brief Compte le nombre de lignes présentes dans une zone mémoire
- * * Utilisée par read_input_file pour pré-allouer les tableaux de lignes
+ * @brief fonction qui libère la mémoire allouée pour un tableau des lignes d'un fichier (représentées par des char*)
  * 
- * @param map Pointeur vers le début de la zone mémoire
- * @param size Taille de la zone mémoire
- * @return Le nombre total de lignes
+ * @param lines le tableau de lignes à libérer
+ * @param line_count le nombre de lignes à libérer
  */
-size_t count_lines(const char* map, size_t size);
+void free_lines(char** lines, size_t line_count);
 
 /**
- * @brief libère la mémoire allouée pour un tableau de chaînes de caractères
- * * Utilisée par read_input_file pour pour liberer la mémoire en cas d'erreur ou de fin d'usage
+ * @brief fonction helper qui projette un fichier en mémoire
  * 
- * @param lines Le tableau de lignes à libérer
- * @param sizes le tableau des tailles correspondantes à libérer
- * @param count Le nombre de lignes à libérer
+ * @param file_path le chemin vers le fichier à mapper en mémoire
+ * @param file_size un pointeur où sera stocké la taille fichier
+ * @return un pointeur vers la zone mémoire contenant le fichier, ou NULL soit en cas d'erreur, soit si le fichier est vide
+ * 
+ * @note le pointeur retourné doit être libéré plus tard avec munmap()
  */
-void clean_lines(char** lines, uint32_t* sizes, size_t count);
+char* map_file(const char* file_path, size_t* file_size);
+
+/**
+ * @brief fonction helper qui compte le nombre de lignes présentes dans un fichier mappé en mémoire
+ * 
+ * @param mapped_file un pointeur vers le fichier mappé en mémoire
+ * @param file_size la taille du fichier 
+ * @param line_count un pointeur où sera stocké le nombre de lignes du fichier
+ */
+void set_line_count(const char* mapped_file, size_t file_size, size_t* line_count);
+
+/**
+ * @brief fonction helper qui récupère le nombre de charactères de chaque lignes 
+ * 
+ * @param mapped_file un pointeur vers le fichier mappé en mémoire
+ * @param file_size la taille du fichier 
+ * @param uint32_t le pointeur d'un tableau où sera stocké le nombre de charactères de chaque ligne 
+ * @param line_count le nombre de lignes du fichier
+ * 
+ * @return -1 en cas d'erreur, 0 sinon (en modifiant le contenu de lines_sizes)
+ */
+int set_lines_sizes(const char* mapped_file, size_t file_size, uint32_t** lines_sizes, size_t line_count);
+
+/**
+ * @brief fonction helper qui alloue la mémoire nécessaire pour chaque ligne d'un fichier
+ * 
+ * @param lines le pointeur d'un tableau de string où sera alloué la mémoire nécessaire pour chaque ligne d'un fichier
+ * @param lines_sizes un tableau contenant le nombre de caractères de chaque ligne 
+ * @param line_count le nombre de lignes d'un fichier (= taille de lines et lines_sizes)
+ * 
+ * @return -1 en cas d'erreur, 0 sinon (en modifiant le contenu de lines)
+ */
+int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count);
+
+/**
+ * @brief fonction helper de read_chunk_of_input_file qui renseigne sur l'index de la ligne de départ et de l'index de départ dans cette ligne
+ * 
+ * @param start_line_index un pointeur où sera stocké l'index de la ligne de départ
+ * @param file_offset un pointeur où sera stocké l'index de départ dans start_line_index
+ * @param data un pointeur vers une structure read_input_data_t
+ */
+void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file_offset, read_input_data_t* data);
+
+/**
+ * @brief fonction helper de read_input_file et read_input_file_thread qui fais le travail de read_input_file sur un interval renseigné en paramètre
+ * 
+ * @param data un pointeur vers une structure read_input_data_t 
+ * où est notamment renseigné l'interval de départ (start_index) et d'arrivée (end_index)
+ */
+void read_chunk_of_input_file(read_input_data_t* data);
+
+/**
+ * @brief fonction helper de read_input_file qui s'occupe d'une partie équitable du travail de read_input_file en fonctions du nombre de threads entrées par l'utilisateur. Le travail efféctué par une thread est égale à la taille du fichier divisé par le nombre de threads
+ * 
+ * @param data un pointeur vers une structure read_input_data_t 
+ */
+void* read_input_file_thread(void* args);
+
+/**
+ * @brief fonction à parallélisme configurable qui lie un fichier et stocke chaque ligne dans un tableau dynamiquement alloué
+ *
+ * @param input_path le chemin vers le fichier d'entrée
+ * @param lines un pointeur vers un char** pour stocker le tableau de lignes
+ * @param line_sizes un pointeur vers un tableau uint32_t pour stocker la taille de chaque lignes
+ * @param line_count un pointeru vers un size_t pour stocker le nombre de lignes lues 
+ * 
+ * @return -1 en cas d'erreur, 0 en cas de succès
+ * 
+ * @note le traitement est mono-threadée si num_threads = 1, sinon il est multi-threadée
+ */
+int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count);
 
 /**
  * @brief Extrait le nom de la langue à partir du nom du fichier dictionnaire
@@ -56,19 +125,6 @@ char* get_language(const char* filepath);
  * @return 0 en cas de succès, -1 en cas d'échec de lecture
  */
 int load_single_dictionary(Dictionary_t *dict, const char *filepath, uint32_t id);
-
-/**
- * @brief Read the input file and store each line in a dynamically allocated
- * array.
- *
- * @param input_path The path to the input file.
- * @param lines A pointer to a char** to hold the array of lines.
- * @param line_sizes A pointer to a uint32_t array to hold the sizes of each
- * line.
- * @param line_count A pointer to a size_t to hold the number of lines read.
- * @return int 0 on success, -1 on failure.
- */
-int read_input_file(char *input_path, char ***lines, uint32_t **line_sizes, size_t *line_count);
 
 /**
  * @brief Read the dictionary files from the specified path.
