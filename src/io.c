@@ -12,7 +12,12 @@
 #include <dirent.h>
 
 OutputStreams_t *open_outputs(const char *pathname) {
-    if (pathname == NULL) return NULL;
+    if (pathname == NULL || strlen(pathname) == 0) return NULL;
+
+    // TODO : mettre dans report.md qu'on peut pas mettre ./<output_path>
+    if (strrchr(pathname, '.') != NULL) { 
+        return NULL;
+    }
 
     OutputStreams_t* output_streams = malloc(sizeof(OutputStreams_t));
     if (output_streams == NULL) return NULL;
