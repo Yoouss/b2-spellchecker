@@ -1,7 +1,7 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include <io.h>
-#include "common.h"
+
+#include <file_handler.h>
 
 void test_read_input_file(void) {
     // TODO
