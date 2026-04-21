@@ -108,20 +108,6 @@ CommandLineArgs_t* parse_args(int argc, char const *argv[]) {
     return args;
 }
 
-// /!\ : viens des tests (copier-coller)
-// TODO : eviter ce duplicage de code (Younes s'en occupera)
-static void free_file_detection(file_t* file_detection) {
-    if (file_detection == NULL) return;
-
-    size_t incorrect_lines_count = file_detection->incorrect_lines_count;
-    for (size_t i = 0; i < incorrect_lines_count; i++) {
-        free(file_detection->incorrect_lines[i].wrong_words_indexes);
-    }
-
-    free(file_detection->incorrect_lines_indexes);
-    free(file_detection);
-}
-
 // BEAUCOUP DE FUITES DE MEMOIRE ICI
 // TODO : créer des fonctions pour free les grosses structures tel que dicts, ect...
 int main(int argc, char const *argv[]) {
@@ -139,10 +125,6 @@ int main(int argc, char const *argv[]) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
-    char** lines = NULL;
-    uint32_t* lines_sizes = NULL;
-    size_t line_count = 0;
-
     // utilisation de THREADS
     if (strlen(args->dictionnaries_path) > 0) {
         load_dictionaries(args->dictionnaries_path, &dicts, &dicts_count);
@@ -152,6 +134,10 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
 
+    char** lines = NULL;
+    uint32_t* lines_sizes = NULL;
+    size_t line_count = 0;
+
     if (args->input_path) {
         read_input_file(args->input_path, &lines, &lines_sizes, &line_count);
     }
@@ -160,51 +146,42 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
 
-    file_t* file_detection = scan_file_for_errors(args->input_path, dicts, dicts_count);
-    if (file_detection == NULL) {
-        free(lines_sizes);
-        free_args(args);
-        return -1;
-    }
-
-    line_t* incorrect_lines = file_detection->incorrect_lines;
-    size_t* incorrect_lines_indexes = file_detection->incorrect_lines_indexes;
-    size_t incorrect_lines_count = file_detection->incorrect_lines_count;
-
     printf("Correction des erreurs du fichier %s : \n\n\n", args->input_path);
 
-    for (size_t i = 0; i < incorrect_lines_count; i++) {
-        size_t line_index = incorrect_lines_indexes[i]; 
-        char* line = lines[line_index];
+    for (size_t i = 0; i < line_count; i++) {
+        char* current_line = lines[i];
+        line_t* line_detection = scan_line_for_errors(current_line, dicts, dicts_count);
+        if (line_detection == NULL) continue;
 
-        line_t* current_line_detection = &incorrect_lines[i];
-        uint32_t* wrong_words_indexes = current_line_detection->wrong_words_indexes;
-        uint32_t wrong_words_count = current_line_detection->wrong_words_count;
-
-        Dictionary_t* dict = find_candidate_dict_for_line_thread(line, dicts, dicts_count);
+        uint32_t* wrong_words_indexes = line_detection->wrong_words_indexes;
+        uint32_t wrong_words_count = line_detection->wrong_words_count;
 
         char** corrections = malloc(wrong_words_count * sizeof(char*));
         if (corrections == NULL) {
-            free_file_detection(file_detection);
+            free_line_detection(line_detection);
+            free_lines(lines, line_count);
             free(lines_sizes);
             free_args(args);
             return -1;
         }
 
-        char** wrong_words = get_wrong_words_in_line(line, wrong_words_indexes, wrong_words_count);
+        char** wrong_words = get_wrong_words_in_line(current_line, wrong_words_indexes, wrong_words_count);
+        Dictionary_t* used_dictionary = line_detection->used_dictionary;
 
-        // utilisation de THREADS (seulement si plus de 4 mauvais mots sur une ligne)
-        for (uint32_t j = 0; j < wrong_words_count; j++) {
-            corrections[j] = get_word_correction(wrong_words[j], dict);
+        // utilisation de THREADS (seulement si le nombre de mauvais mots >= 2 * num_threads)
+        for (size_t j = 0; j < wrong_words_count; j++) {
+            corrections[j] = get_word_correction(wrong_words[j], used_dictionary);
         }
 
-        pretty_print_correction(line, line_index+1, wrong_words_count, wrong_words_indexes, corrections);
+        size_t current_line_number = i + 1;
+        pretty_print_correction(current_line, current_line_number, wrong_words_count, wrong_words_indexes, corrections);
 
+        free_line_detection(line_detection);
         free(corrections);
         free(wrong_words);
     }
 
-    free_file_detection(file_detection);
+    free_lines(lines, line_count);
     free(lines_sizes);
     free_args(args);
 

@@ -4,25 +4,6 @@
 #include <detector.h>
 #include <file_handler.h>
 
-static void free_line_detection(line_t* line_detection) {
-    if (line_detection == NULL) return;
-
-    free(line_detection->wrong_words_indexes);
-    free(line_detection);
-}
-
-static void free_file_detection(file_t* file_detection) {
-    if (file_detection == NULL) return;
-
-    size_t incorrect_lines_count = file_detection->incorrect_lines_count;
-    for (size_t i = 0; i < incorrect_lines_count; i++) {
-        free(file_detection->incorrect_lines[i].wrong_words_indexes);
-    }
-
-    free(file_detection->incorrect_lines_indexes);
-    free(file_detection);
-}
-
 void test_word_in_dictionary(void) {
     Dictionary_t* dict = NULL;
     size_t dicts_count = 0;
@@ -44,24 +25,23 @@ void test_find_candidate_dict_for_line(void) {
     load_dictionaries("all", &dicts, &dicts_count);
     CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
 
-    Dictionary_t* noFile = find_candidate_dict_for_line(NULL, dicts, dicts_count);
-    CU_ASSERT_PTR_NULL_FATAL(noFile);
-    Dictionary_t* noDicts = find_candidate_dict_for_line("I am a line", NULL, dicts_count);
-    CU_ASSERT_PTR_NULL_FATAL(noDicts);
-    Dictionary_t* InvalidNumberOfDicts = find_candidate_dict_for_line("I am a line", dicts, 0);
-    CU_ASSERT_PTR_NULL_FATAL(InvalidNumberOfDicts);
+    Dictionary_t* no_file = find_candidate_dict_for_line(NULL, dicts, dicts_count);
+    CU_ASSERT_PTR_NULL_FATAL(no_file);
+    Dictionary_t* no_dicts = find_candidate_dict_for_line("I am a line", NULL, dicts_count);
+    CU_ASSERT_PTR_NULL_FATAL(no_dicts);
+    Dictionary_t* invalid_number_of_dicts = find_candidate_dict_for_line("I am a line", dicts, 0);
+    CU_ASSERT_PTR_NULL_FATAL(invalid_number_of_dicts);
     
-    char* lineFr = "je suis supper occupé et j'aime les boulettes";
-    Dictionary_t* candidateDictForLineFr = find_candidate_dict_for_line(lineFr, dicts, dicts_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineFr);
+    char* line_fr = "je suis supper occupé et j'aime les boulettes";
+    Dictionary_t* candidate_dict_for_line_fr = find_candidate_dict_for_line(line_fr, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(candidate_dict_for_line_fr);
 
-    char* lineEn = "I am veryy tired and sleepy";
-    Dictionary_t* candidateDictForLineEn = find_candidate_dict_for_line(lineEn, dicts, dicts_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(candidateDictForLineEn);
+    char* line_en = "I am veryy tired and sleepy";
+    Dictionary_t* candidate_dict_for_line_en = find_candidate_dict_for_line(line_en, dicts, dicts_count);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(candidate_dict_for_line_en);
 
-    CU_ASSERT_STRING_EQUAL(candidateDictForLineFr->lang, "fr");
-    printf("\n hello %s \n",candidateDictForLineFr->lang);
-    CU_ASSERT_STRING_EQUAL(candidateDictForLineEn->lang, "en");
+    CU_ASSERT_STRING_EQUAL(candidate_dict_for_line_fr->lang, "fr");
+    CU_ASSERT_STRING_EQUAL(candidate_dict_for_line_en->lang, "en");
 }
 
 void test_wrong_words_count_and_indexes_in_line(void) {
@@ -232,80 +212,4 @@ void test_scan_line_for_errors(void) {
     line_t* zero_dicts = scan_line_for_errors(line_test, dicts, 0);
     CU_ASSERT_PTR_NULL(zero_dicts);
     free_line_detection(zero_dicts);
-}
-
-void test_scan_file_for_errors(void) {
-    char* inputPath = "inputs/input_10l.txt";
-
-    Dictionary_t* dicts = NULL;
-    size_t dicts_count = 0;
-
-    load_dictionaries("all", &dicts, &dicts_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(dicts);
-
-    file_t* no_file = scan_file_for_errors(NULL, dicts, dicts_count);
-    CU_ASSERT_PTR_NULL(no_file);
-    free_file_detection(no_file);
-
-    file_t* no_dicts = scan_file_for_errors(inputPath, NULL, dicts_count);
-    CU_ASSERT_PTR_NULL(no_dicts);
-    free_file_detection(no_dicts);
-
-    file_t* zero_dicts = scan_file_for_errors(inputPath, dicts, 0);
-    CU_ASSERT_PTR_NULL(zero_dicts);
-    free_file_detection(zero_dicts);
-
-    file_t* file_detection = scan_file_for_errors(inputPath, dicts, dicts_count);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(file_detection);
-
-    line_t* incorrect_lines = file_detection->incorrect_lines;
-    size_t* incorrect_lines_indexes = file_detection->incorrect_lines_indexes;
-    size_t incorrect_lines_count = file_detection->incorrect_lines_count;
-
-    CU_ASSERT_EQUAL(incorrect_lines_count, 8);
-
-    for (size_t i = 0; i < incorrect_lines_count; i++) {
-        line_t* line = &incorrect_lines[i];
-        size_t line_index = incorrect_lines_indexes[i];
-
-        switch (line_index) {
-            case 0:
-                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
-                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 3);
-                break;
-            case 1:
-                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
-                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 10);
-                break;
-            case 2:
-                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
-                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 7);
-                break;
-            case 3:
-                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
-                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 8);
-                break;
-            case 4:
-                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
-                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 7);
-                break;
-            case 5:
-                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
-                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 3);
-                break;
-            case 8:
-                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
-                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 0);
-                break;
-            case 9:
-                CU_ASSERT_EQUAL(line->wrong_words_count, 1);
-                CU_ASSERT_EQUAL(line->wrong_words_indexes[0], 4);
-                break;
-            default:
-                CU_FAIL("Une ligne du fichier %s a été détéctée avec au moins une erreur alors qu'elle n'est pas sensée en avoir...");
-                break;
-        }
-    }
-
-    free_file_detection(file_detection);
 }
