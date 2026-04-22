@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <detector_multi.h>
 #include <detector.h>
 #include <file_handler.h>
 
