@@ -12,6 +12,9 @@ void test_open_outputs(void) {
     OutputStreams_t* empty_pathname = open_outputs("");
     CU_ASSERT_PTR_NULL(empty_pathname);
 
+    OutputStreams_t* wrong_pathname = open_outputs("fichier.txt");
+    CU_ASSERT_PTR_NULL(wrong_pathname);
+
     OutputStreams_t* res1 = open_outputs("test");
     CU_ASSERT_PTR_NOT_NULL_FATAL(res1);
 
