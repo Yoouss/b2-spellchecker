@@ -12,26 +12,27 @@
 /**
  * Structure représentant une (char*) ligne d'un fichier
  *
- * @wrong_words_indexes : tableau des indexes (on commence à compter à 0) des mauvais mots dans la ligne
- * @wrong_words_count   : nombre de mauvais mots dans la ligne (= la taille de wrong_words_indexes)
+ * @wrong_words_indexes : le tableau des indexes (on commence à compter à 0) des mauvais mots dans la ligne
+ * @wrong_words_count   : le nombre de mauvais mots dans la ligne (= la taille de wrong_words_indexes)
+ * @used_dictionary     : un pointeur vers le dictionnaire utilisé pour corriger la ligne
+ * @used_dict_id        : l'id du dictionnaire utilisé pour corriger la ligne
  */
 typedef struct line {
     uint32_t* wrong_words_indexes;
     uint32_t wrong_words_count;
+    Dictionary_t* used_dictionary;
+    uint32_t used_dict_id;
 } line_t;
 
 /**
- * Structure représentant un (char**) fichier texte
- *
- * @incorrect_lines         : tableau de line_t renseignant sur les indexes et nombres de mauvais mots d'une ligne i
- * @incorrect_lines_indexes : tableau des indexes (on commence à compter à 0) des lignes contenant des erreurs dans le fichier
- * @incorrect_lines_count   : nombre de lignes contenant des erreurs (= la taille de incorrect_lines et incorrect_lines_indexes)
+ * @brief fonction qui libère la mémoire allouée pour une structure line_t
+ * 
+ * @param line_detection un pointeur vers la structure line_t à libérer
+ * 
+ * @note   complexité temporelle : O(1)
+ *         complexité spaciale : O(1)
  */
-typedef struct file {
-    line_t* incorrect_lines;
-    size_t* incorrect_lines_indexes;
-    size_t incorrect_lines_count;
-} file_t;
+void free_line_detection(line_t* line_detection);
 
 /**
  * @brief  fonction qui prend un mot et vérifie si le mot est dans le dictionnaire en recherche binaire : 
@@ -134,25 +135,5 @@ char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes, uint32
  *         n = nombre de mots dans le dictionnaire
  */
 line_t* scan_line_for_errors(char* line, Dictionary_t* dictionaries, size_t dictionaries_count);
-
-/**
- * @brief  fonction qui prend le chemin vers un fichier.txt et informe sur la présence de lignes erronées, leur nombre, 
- *         leurs index dans le fichier et, pour chaque ligne érronée, leurs erreurs et leur index 
- *
- * @param  filename le nom d'un fichier (format txt) dans le dossier inputs
- * @param  dictionaries un pointeur vers des dictionaire de type Dictionary_t
- * @param  dictionaries_count la taille de dictionaries
- * @return un pointer vers une structure file_t ou NULL si aucune erreur est detectée ou en cas d'erreur
- * 
- * @note complexité temporelle : O(k (l + m log n))
- *       complexité spaciale : O(m + j)
- * 
- *       j = nombre de mauvais mots du fichier
- *       k = nombre de dictionnaires
- *       l = nombre de charactères dans le fichier
- *       m = nombre de mots dans le fichier
- *       n = nombre de mots dans le dictionnaire
- */
-file_t* scan_file_for_errors(char* filename, Dictionary_t* dictionaries, size_t dictionaries_count);
 
 #endif

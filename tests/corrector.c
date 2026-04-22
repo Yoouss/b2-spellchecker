@@ -6,9 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "common.h" 
-#include "corrector.h"
-#include "dict.h"
+#include <corrector.h>
 
 void test_get_candidate_words_manual(void) {
     Dictionary_t dict;

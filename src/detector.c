@@ -1,11 +1,15 @@
 #include <stdio.h>
-#include <dict.h>
-#include <input.h>
-#include <io.h>
-#include <file_handler.h>
-#include "common.h"
-#include "detector.h"
 #include <string.h>
+
+#include <detector.h>
+#include <file_handler.h>
+
+void free_line_detection(line_t* line_detection) {
+    if (line_detection == NULL) return;
+
+    free(line_detection->wrong_words_indexes);
+    free(line_detection);
+}
 
 int word_in_dictionary(char* target_word, Dictionary_t* dict) {
     if (target_word == NULL || dict == NULL) return -1;
@@ -28,7 +32,6 @@ int word_in_dictionary(char* target_word, Dictionary_t* dict) {
 
     return 0;
 }
-
 
 Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dicts, size_t dictionaries_count) {
     if (line == NULL || dicts == NULL || dictionaries_count == 0) return NULL;
@@ -148,72 +151,16 @@ line_t* scan_line_for_errors(char* line, Dictionary_t* dicts, size_t dictionarie
     uint32_t* wrong_words_indexes = get_wrong_words_indexes_in_line(line, wrong_words_count, candidate_dictionary);
     if (wrong_words_indexes == NULL) return NULL;
 
-    line_t* file_detection = malloc(sizeof(line_t));
-    if (file_detection == NULL) {
+    line_t* line_detection = malloc(sizeof(line_t));
+    if (line_detection == NULL) {
         free(wrong_words_indexes);
         return NULL;
     }
 
-    file_detection->wrong_words_indexes = wrong_words_indexes;
-    file_detection->wrong_words_count = wrong_words_count;
+    line_detection->wrong_words_indexes = wrong_words_indexes;
+    line_detection->wrong_words_count = wrong_words_count;
+    line_detection->used_dictionary = candidate_dictionary;
+    line_detection->used_dict_id = candidate_dictionary->id;
 
-    return file_detection;
-}
-
-
-file_t* scan_file_for_errors(char* filename, Dictionary_t* dicts, size_t dictionaries_count){
-    if (filename == NULL || dicts == NULL || dictionaries_count == 0) return NULL;
-
-    char** lines = NULL;
-    uint32_t* lines_sizes = NULL;
-    size_t line_count = 0;
-
-    read_input_file(filename, &lines, &lines_sizes, &line_count);
-    if (lines == NULL || lines_sizes == NULL || line_count == 0) return NULL;
-    free(lines_sizes);
-
-    file_t* file_detection = malloc(sizeof(file_t));
-    if (file_detection == NULL) return NULL;
-
-    // ─────────────── Etape 1 ───────────────
-    // Calculer le nombre de lignes incorrectes et allouées les variables de file_detection
-
-    size_t incorrect_lines_count = 0;
-    for (size_t i = 0; i < line_count; i++) {
-        line_t* line_detection = scan_line_for_errors(lines[i], dicts, dictionaries_count);
-        if (line_detection != NULL) incorrect_lines_count++;
-        free(line_detection);
-    }
-
-    file_detection->incorrect_lines_count = incorrect_lines_count;
-
-
-    file_detection->incorrect_lines = malloc(incorrect_lines_count * sizeof(line_t));
-    if (file_detection->incorrect_lines == NULL) {
-        free(file_detection);
-        return NULL;
-    }
-
-    file_detection->incorrect_lines_indexes = malloc(incorrect_lines_count * sizeof(size_t));
-    if (file_detection->incorrect_lines_indexes == NULL) {
-        free(file_detection->incorrect_lines);
-        free(file_detection);
-        return NULL;
-    }
-
-    // ─────────────── Etape 2 ───────────────
-    // Remplir file_detection
-
-    size_t index_in_array = 0;
-    for (size_t i = 0; i < line_count; i++) {
-        line_t* line_detection = scan_line_for_errors(lines[i], dicts, dictionaries_count);
-        if (line_detection != NULL) {
-            file_detection->incorrect_lines[index_in_array] = *line_detection;
-            file_detection->incorrect_lines_indexes[index_in_array] = i;
-            index_in_array++;
-        }
-        free(line_detection);
-    }
-
-    return file_detection;
+    return line_detection;
 }

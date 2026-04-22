@@ -32,4 +32,6 @@ typedef struct Dictionary {
     uint32_t id;
 } Dictionary_t;
 
+extern int num_threads;
+
 #endif // COMMON_H
