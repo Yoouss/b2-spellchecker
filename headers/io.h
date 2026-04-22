@@ -46,6 +46,7 @@ int write_detection(OutputStreams_t *output_stream, uint32_t line_number,
                     uint32_t dict_index, uint32_t word_count,
                     uint32_t *word_indices);
 
+int write_all_detection(OutputStreams_t *output_stream, Dictionary_t* dicts, size_t dicts_count, char** lines, size_t line_count);
 /**
  * @brief Write the result of a bad word correction to the file
  * <output_path>.fix following the described format in the README

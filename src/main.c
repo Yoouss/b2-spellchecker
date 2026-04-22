@@ -145,6 +145,11 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
 
+    OutputStreams_t* file_streams = open_outputs(args->output_path);
+
+    // Écriture de la détection dans un fichier .err :
+    write_all_detection(file_streams, dicts, dicts_count, lines, line_count);
+
     printf("Correction des erreurs du fichier %s : \n\n\n", args->input_path);
 
     for (size_t i = 0; i < line_count; i++) {
@@ -162,7 +167,7 @@ int main(int argc, char const *argv[]) {
             free(lines_sizes);
             free_args(args);
             return -1;
-        }
+        } 
 
         char** wrong_words = get_wrong_words_in_line(current_line, wrong_words_indexes, wrong_words_count);
         Dictionary_t* used_dictionary = line_detection->used_dictionary;
