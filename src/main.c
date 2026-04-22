@@ -168,9 +168,14 @@ int main(int argc, char const *argv[]) {
         char** wrong_words = get_wrong_words_in_line(current_line, wrong_words_indexes, wrong_words_count);
         Dictionary_t* used_dictionary = line_detection->used_dictionary;
 
-        // utilisation de THREADS (seulement si le nombre de mauvais mots >= 2 * num_threads)
-        for (size_t j = 0; j < wrong_words_count; j++) {
-            corrections[j] = get_word_correction(wrong_words[j], used_dictionary);
+        if (set_words_correction(wrong_words, &corrections, wrong_words_count, used_dictionary) == -1) {
+            free(wrong_words);
+            free(corrections);
+            free_line_detection(line_detection);
+            free_lines(lines, line_count);
+            free(lines_sizes);
+            free_args(args);
+            return -1;
         }
 
         size_t current_line_number = i + 1;
