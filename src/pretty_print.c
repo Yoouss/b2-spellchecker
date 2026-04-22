@@ -1,7 +1,8 @@
-#include "pretty_print.h"
-#include "common.h"
 #include <stdlib.h>
 #include <string.h>
+
+#include <common.h>
+#include <pretty_print.h>
 
 void print_iso8859_to_utf8(const char *input) {
   unsigned char c;
