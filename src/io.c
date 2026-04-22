@@ -64,28 +64,27 @@ int write_detection(OutputStreams_t *output_stream, uint32_t line_number,
                     uint32_t dict_index, uint32_t word_count, uint32_t *word_indices) {
 
     int detection_file_descriptor;
-
-    if (output_stream == NULL) detection_file_descriptor = 1;
-
-    else detection_file_descriptor = output_stream->detection;
+    if (output_stream == NULL) {
+        detection_file_descriptor = 1;
+    }
+    else {
+        detection_file_descriptor = output_stream->detection;
+    }
 
     uint32_t line_number_endian = htobe32(line_number);
-    uint32_t dict_index_endian = htobe32(dict_index);
-    uint32_t word_count_endian = htobe32(word_count);
-
     if (write(detection_file_descriptor, &line_number_endian, sizeof(uint32_t)) == -1) return -1;
 
+    uint32_t dict_index_endian = htobe32(dict_index);
     if (write(detection_file_descriptor, &dict_index_endian, sizeof(uint32_t)) == -1) return -1;
 
+    uint32_t word_count_endian = htobe32(word_count);
     if (write(detection_file_descriptor, &word_count_endian, sizeof(uint32_t)) == -1) return -1;
 
-    if (word_count > 0 && word_indices != NULL) {
-        for (int i = 0; i < word_count; i++) {
-            uint32_t word_indice_edian = htobe32(word_indices[i]);
-
-            if (write(detection_file_descriptor, &word_indice_edian, sizeof(uint32_t)) == -1) return -1;
-            
-        }
+    if (word_count == 0 || word_indices == NULL) return 0;
+    
+    for (int i = 0; i < word_count; i++) {
+        uint32_t word_indice_edian = htobe32(word_indices[i]);
+        if (write(detection_file_descriptor, &word_indice_edian, sizeof(uint32_t)) == -1) return -1;
     }
 
     return 0;
