@@ -109,7 +109,7 @@ int set_lines_sizes(const char* mapped_file, size_t file_size, uint32_t** lines_
 int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count);
 
 /**
- * @brief fonction helper qui remplit un pointeur vers d'une structure read_input_data avec les informations nécessaires. Elle est utilisé pour organiser la proportion de travail dans un contexte multi-threadé, ou bien simplement indiquer les informations nécessaire pour un contexte mono-threadé
+ * @brief fonction helper qui remplit un pointeur vers une structure read_input_data avec les informations nécessaires. Elle est utilisé pour organiser la proportion de travail dans un contexte multi-threadé, ou bien simplement indiquer les informations nécessaires pour un contexte mono-threadé
  * 
  * @param read_input_data un pointeur vers une ou plusieurs structure read_input_data_t
  * @param lines le pointeur d'un tableau de string où sera alloué la mémoire nécessaire pour chaque ligne d'un fichier
@@ -158,7 +158,7 @@ void set_start_line_index_and_file_offset(size_t* start_line_index, size_t* file
 void read_chunk_of_input_file(read_input_data_t* read_input_data);
 
 /**
- * @brief fonction helper de read_input_file qui s'occupe d'une partie équitable du travail de read_input_file en fonctions du nombre de threads entrées par l'utilisateur. Le travail efféctué par une thread est égale à la taille du fichier divisé par le nombre de threads
+ * @brief fonction helper de read_input_file qui s'occupe d'une partie équitable du travail de read_input_file en fonction du nombre de threads entrées par l'utilisateur. Le travail efféctué par une thread est égale à la taille du fichier divisé par le nombre de threads
  * 
  * @param args un pointeur void* vers une structure read_input_data_t 
  * 
@@ -175,7 +175,7 @@ void* read_input_file_thread(void* args);
  * @param input_path le chemin vers le fichier d'entrée
  * @param lines un pointeur vers un char** pour stocker le tableau de lignes
  * @param line_sizes un pointeur vers un tableau uint32_t pour stocker la taille de chaque lignes
- * @param line_count un pointeru vers un size_t pour stocker le nombre de lignes lues 
+ * @param line_count un pointeur vers un size_t pour stocker le nombre de lignes lues 
  * 
  * @return -1 en cas d'erreur, 0 en cas de succès
  * 
