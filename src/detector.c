@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <detector_multi.h>
 #include <detector.h>
 #include <file_handler.h>
+
+#include <pthread.h>
+
 
 void free_line_detection(line_t* line_detection) {
     if (line_detection == NULL) return;
@@ -34,7 +36,7 @@ int word_in_dictionary(char* target_word, Dictionary_t* dict) {
     return 0;
 }
 
-Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dicts, size_t dictionaries_count) {
+Dictionary_t* find_candidate_dict_for_line_simple(char* line, Dictionary_t* dicts, size_t dictionaries_count) {
     if (line == NULL || dicts == NULL || dictionaries_count == 0) return NULL;
 
     Dictionary_t* final_candidate = &dicts[0];
@@ -164,4 +166,98 @@ line_t* scan_line_for_errors(char* line, Dictionary_t* dicts, size_t dictionarie
     line_detection->used_dict_id = candidate_dictionary->id;
 
     return line_detection;
+}
+
+typedef struct {
+    char* line;
+    Dictionary_t* dicts;
+    size_t start;
+    size_t end;
+    Dictionary_t* best_dict_found; 
+    uint32_t min_errors_found;
+    int success; // Pour la gestion d'erreur
+} ThreadArgs_t;
+
+void* thread_find_best_in_chunk(void* arg) {
+    ThreadArgs_t* data = (ThreadArgs_t*)arg;
+
+    data->min_errors_found = UINT32_MAX;
+    data->best_dict_found = NULL;
+    data->success = 0;
+
+    for(size_t i = data->start;i<data->end;i++){
+        uint32_t current_errors = 0;
+
+        if (set_wrong_words_count_in_line(data->line, &current_errors, &data->dicts[i]) < 0) {
+            data->success = -1; 
+            return NULL;
+        }
+        if (current_errors < data->min_errors_found) {
+        data->min_errors_found = current_errors;
+        data->best_dict_found = &data->dicts[i];
+        }
+    }
+    return NULL;
+}
+
+
+Dictionary_t* find_candidate_dict_for_line_thread(char* line, Dictionary_t* dicts, size_t dictionaries_count) {
+    if (line == NULL || dicts == NULL || dictionaries_count == 0) return NULL;
+
+    int nbr_thread = (num_threads > (int)dictionaries_count) ? (int)dictionaries_count : num_threads;
+
+    pthread_t threads[nbr_thread];
+    ThreadArgs_t* args = malloc( nbr_thread * sizeof(ThreadArgs_t));
+    if (args == NULL) return NULL; // Sécu malloc
+
+    size_t current_start = 0;
+    size_t chunk = dictionaries_count / nbr_thread;
+    size_t rest_dico = dictionaries_count % nbr_thread;
+
+    for (int i = 0; i < nbr_thread; i++) {
+        size_t current_chunk = chunk + (i < rest_dico ? 1: 0);
+
+        args[i].line = line;
+        args[i].dicts = dicts; // On donne tout le tableau
+        args[i].start = current_start;
+        args[i].end = current_start + current_chunk;
+        args[i].success = 0;
+
+        pthread_create(&threads[i], NULL, thread_find_best_in_chunk, &args[i]);
+
+        current_start = args[i].end;
+    }
+
+        
+
+    Dictionary_t* final_candidate = NULL;
+    uint32_t min_errors = UINT32_MAX;
+
+    for (size_t i = 0; i < nbr_thread; i++) {
+        pthread_join(threads[i], NULL);
+
+        // Si le thread a réussi et qu'il a trouvé mieux que le record actuel
+        if (args[i].success == 0 && args[i].best_dict_found != NULL) { 
+            if (args[i].min_errors_found < min_errors) {               
+                min_errors = args[i].min_errors_found;
+                final_candidate = args[i].best_dict_found;
+        }
+    }
+    }
+
+
+    free(args);
+    return final_candidate;
+}
+
+
+Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dicts, size_t dictionaries_count) {
+    if (line == NULL || dicts == NULL || dictionaries_count == 0) return NULL;
+    if(num_threads == 1){
+       return find_candidate_dict_for_line_simple(line,dicts,dictionaries_count);
+    }
+    if(num_threads > 1){
+       return find_candidate_dict_for_line_thread(line,dicts,dictionaries_count);
+    }
+    return NULL;
 }

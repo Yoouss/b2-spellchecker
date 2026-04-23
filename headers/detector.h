@@ -136,4 +136,23 @@ char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes, uint32
  */
 line_t* scan_line_for_errors(char* line, Dictionary_t* dictionaries, size_t dictionaries_count);
 
+
+/**
+ * @brief cette fonction trouve le dictionnaire adéquat 
+ * 
+ * @param  line un tableau de mots qui contiennent des charactères
+ * @param  dicts un pointeur vers des dictionaire de type Dictionary_t
+ * @param  dictionaries_count la taille de dictionaries
+ * @return Dictionary_t* le dictionnaire candidat trouvé ou NULL en cas d'erreur
+ * @note   complexité temporelle : O(d * l * log m) en séquentiel
+ * complexité temporelle : O((d * l * log m) / t) en parallèle
+ * complexité spatiale : O(t) 
+ * * d = nb de dicos, l = nb de mots/ligne, m = mots/dico, t = nb de threads 
+ *
+ * 
+ */
+Dictionary_t* find_candidate_dict_for_line(char* line, Dictionary_t* dicts, size_t dictionaries_count) ;
+
+
 #endif
+

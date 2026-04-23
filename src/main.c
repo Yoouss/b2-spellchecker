@@ -2,10 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
-
 #include <common.h>
 #include <corrector.h>
-#include <detector_multi.h>
 #include <detector.h>
 #include <file_handler.h>
 #include <io.h>
