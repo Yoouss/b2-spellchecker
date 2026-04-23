@@ -4,6 +4,9 @@
 #include <unistd.h>
 #include <io.h>
 #include "common.h"
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 void test_open_outputs(void) {
     OutputStreams_t* no_pathname = open_outputs(NULL);
@@ -48,8 +51,40 @@ void test_open_outputs(void) {
 
 // NOTE : ne pas oublier d'utiliser remove() pour supprimer les fichiers créés (seulement pour les tests)
 void test_close_outputs(void) {
-    // TODO
-    CU_ASSERT(1 == 1);
+    int fd1 = open("test_err.tmp", O_CREAT | O_WRONLY, 0644);
+    int fd2 = open("test_fix.tmp", O_CREAT | O_WRONLY, 0644);
+    
+    OutputStreams_t *streams = malloc(sizeof(OutputStreams_t));
+    streams->detection = fd1;
+    streams->correction = fd2;
+
+    close_outputs(streams);
+
+    CU_ASSERT_EQUAL(fcntl(fd1, F_GETFD), -1);
+    CU_ASSERT_EQUAL(fcntl(fd2, F_GETFD), -1);
+
+    close_outputs(NULL);
+    CU_PASS("Succès");
+
+    OutputStreams_t *streams_fail = malloc(sizeof(OutputStreams_t));
+    streams_fail->detection = -1;
+    streams_fail->correction = -1;
+
+    close_outputs(streams_fail);
+    CU_PASS("Les descripteurs invalides ont été ignorés");
+
+    int fd_valide = open("test_valide_nonvalide.tmp", O_CREAT | O_WRONLY, 0644);
+    OutputStreams_t *streams_valide_nonvalide = malloc(sizeof(OutputStreams_t));
+    streams_valide_nonvalide->detection = fd_valide;
+    streams_valide_nonvalide->correction = -1;
+
+    close_outputs(streams_valide_nonvalide);
+    CU_ASSERT_EQUAL(fcntl(fd_valide, F_GETFD), -1);
+    CU_PASS("Le mélange fd valide / fd -1 est géré");
+
+    remove("test_err.tmp");
+    remove("test_fix.tmp");
+    remove("test_valide_nonvalide.tmp");
 }
 
 void test_write_detection(void) {

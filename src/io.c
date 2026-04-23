@@ -56,8 +56,15 @@ OutputStreams_t *open_outputs(const char *pathname) {
 }
 
 void close_outputs(OutputStreams_t *streams) {
-    // TODO
-    return;
+    if (streams == NULL) return;
+    
+    if (streams->detection >= 0) {
+        close(streams->detection);
+    }
+    if (streams->correction >= 0) {
+        close(streams->correction);
+    }
+    free(streams);
 }
 
 int write_detection(OutputStreams_t *output_stream, uint32_t line_number,
