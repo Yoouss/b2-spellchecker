@@ -1,8 +1,11 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
+#include <stdbool.h>
 
 // On désactive l'utilisation de threads pour les tests (ne pas supprimer cette variable !)
 int num_threads = 1;
+// Il ne s'agit pas de la verbose des tests mais de celle des programmes (laisser à false)
+bool verbose = false;
 
 void test_word_in_dictionary();
 void test_find_candidate_dict_for_line();
@@ -23,7 +26,7 @@ void test_write_correction();
 
 int main(void) {
     CU_initialize_registry();
-    CU_pSuite suite_detector = CU_add_suite("Détécteur d'erreurs S5", 0, 0);
+    CU_pSuite suite_detector = CU_add_suite("Détecteur d'erreurs S5", 0, 0);
     CU_add_test(suite_detector, "test_word_in_dictionary", test_word_in_dictionary);
     CU_add_test(suite_detector, "test_find_candidate_dict_for_line", test_find_candidate_dict_for_line);
     CU_add_test(suite_detector, "test_wrong_words_count_and_indexes_in_line", test_wrong_words_count_and_indexes_in_line);
@@ -38,7 +41,7 @@ int main(void) {
     CU_add_test(suite_file_handler, "test_read_input_file", test_read_input_file);
     CU_add_test(suite_file_handler, "test_load_dictionaries", test_load_dictionaries);
 
-    CU_pSuite suite_io = CU_add_suite("Détéction et Correction I/O S12", 0, 0);
+    CU_pSuite suite_io = CU_add_suite("Détection et correction I/O S12", 0, 0);
     CU_add_test(suite_io, "test_open_outputs", test_open_outputs);
     CU_add_test(suite_io, "test_close_outputs", test_close_outputs);
     CU_add_test(suite_io, "test_write_detection", test_write_detection);

@@ -46,13 +46,13 @@ int write_detection(OutputStreams_t *output_stream, uint32_t line_number,
                     uint32_t *word_indices);
 
 /**
- * @brief Écrit le résultat de la détection dans <output_path>.fix pour tout le fichier input.
+ * @brief Écrit le résultat de la détection dans <output_path>.err pour tout le fichier input.
  *
  * @param output_stream Un stream de fichier contenant les files decriptors des deux fichiers <output_path>.err et <output_path>.fix.
  * @param dicts Un pointeur vers des dictionaire de type Dictionary_t.
  * @param dicts_count Le nombre de dictionaire.
  * @param lines Un double pointeur sur des lignes du fichier contenant des mots. 
- * @param line_count Le nombre de ligne du fichier .
+ * @param line_count Le nombre de ligne du fichier.
  * @return 0 en cas de succèss, -1 en cas d'échec.
  */
 int write_all_detection(OutputStreams_t *output_stream, Dictionary_t* dicts, size_t dicts_count, char** lines, size_t line_count);
@@ -68,7 +68,18 @@ int write_all_detection(OutputStreams_t *output_stream, Dictionary_t* dicts, siz
  * @param corrections Un tableau des suggestions des corrections pour les mauvais mots.
  * @return 0 en cas de succèss, -1 en cas d'échec.
  */
-int write_correction(OutputStreams_t *output_streams, uint32_t word_count,
-                     char **corrections);
+int write_correction(OutputStreams_t *output_streams, uint32_t word_count, char **corrections);
+
+/**
+ * @brief Écrit le résultat de la détection dans <output_path>.err et de la correction dans <output_path>.fix pour tout le fichier input.
+ *
+ * @param output_stream Un stream de fichier contenant les files decriptors des deux fichiers <output_path>.err et <output_path>.fix.
+ * @param dicts Un pointeur vers des dictionaire de type Dictionary_t.
+ * @param dicts_count Le nombre de dictionaire.
+ * @param lines Un double pointeur sur des lignes du fichier contenant des mots. 
+ * @param line_count Le nombre de ligne du fichier.
+ * @return 0 en cas de succèss, -1 en cas d'échec.
+ */
+int write_all_detection_and_correction(OutputStreams_t *output_stream, Dictionary_t* dicts, size_t dicts_count, char** lines, size_t line_count);
 
 #endif
