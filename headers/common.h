@@ -33,5 +33,7 @@ typedef struct Dictionary {
 } Dictionary_t;
 
 extern int num_threads;
+extern bool verbose;
+extern char* mode;
 
 #endif // COMMON_H

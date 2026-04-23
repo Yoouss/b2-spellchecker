@@ -42,6 +42,19 @@ typedef struct words_correction_data {
 } words_correction_data_t;
 
 /**
+ * @brief fonction qui libère la mémoire allouée pour un tableau de mots (représentées par des char*)
+ * 
+ * @param array_of_words le tableau de mots à libérer
+ * @param array_length le nombre de mots à libérer
+ * 
+ * @note   complexité temporelle : O(n)
+ *         complexité spaciale : O(1)
+ * 
+ *         n = le nombre de mots à libérer
+ */
+void free_array_of_words(char** array_of_words, size_t array_length);
+
+/**
  * @brief  calcule le nombre de trigrammes (= mot de trois lettres) de word1 présents dans word2
  * *       fonction utilisée par get_candidate_words pour réduire le nombre de mots candidats du dictionnaire
  * 

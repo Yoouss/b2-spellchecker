@@ -11,6 +11,8 @@
 #include <pretty_print.h>
 
 int num_threads;
+bool verbose;
+char* mode;
 
 void free_args(CommandLineArgs_t* args) {
     if (args) {
@@ -113,6 +115,8 @@ int main(int argc, char const *argv[]) {
     CommandLineArgs_t* args = parse_args(argc, argv);
 
     num_threads = args->threads > 1 ? args->threads : 1;
+    verbose = args->verbose;
+    mode = args->mode ? args->mode : "detection";
 
     printf("Dictionary Path: %s\n", strlen(args->dictionnaries_path) > 0 ? args->dictionnaries_path : "Not Provided");
     printf("Input File: %s\n", args->input_path ? args->input_path : "Not Provided");
@@ -147,52 +151,37 @@ int main(int argc, char const *argv[]) {
 
     OutputStreams_t* file_streams = open_outputs(args->output_path);
 
-    // Écriture de la détection dans un fichier .err :
-    write_all_detection(file_streams, dicts, dicts_count, lines, line_count);
-
-    printf("Correction des erreurs du fichier %s : \n\n\n", args->input_path);
-
-    for (size_t i = 0; i < line_count; i++) {
-        char* current_line = lines[i];
-        line_t* line_detection = scan_line_for_errors(current_line, dicts, dicts_count);
-        if (line_detection == NULL) continue;
-
-        uint32_t* wrong_words_indexes = line_detection->wrong_words_indexes;
-        uint32_t wrong_words_count = line_detection->wrong_words_count;
-
-        char** corrections = malloc(wrong_words_count * sizeof(char*));
-        if (corrections == NULL) {
-            free_line_detection(line_detection);
-            free_lines(lines, line_count);
-            free(lines_sizes);
-            free_args(args);
-            return -1;
-        } 
-
-        char** wrong_words = get_wrong_words_in_line(current_line, wrong_words_indexes, wrong_words_count);
-        Dictionary_t* used_dictionary = line_detection->used_dictionary;
-
-        if (set_words_correction(wrong_words, &corrections, wrong_words_count, used_dictionary) == -1) {
-            free(wrong_words);
-            free(corrections);
-            free_line_detection(line_detection);
+    if (strcmp(mode, "detection") == 0) {
+        if (write_all_detection(file_streams, dicts, dicts_count, lines, line_count) == -1) {
+            perror("Échec du programme");
             free_lines(lines, line_count);
             free(lines_sizes);
             free_args(args);
             return -1;
         }
-
-        size_t current_line_number = i + 1;
-        pretty_print_correction(current_line, current_line_number, wrong_words_count, wrong_words_indexes, corrections);
-
-        free_line_detection(line_detection);
-        free(corrections);
-        free(wrong_words);
+    }
+    else if (strcmp(mode, "correction") == 0) {
+        if (write_all_detection_and_correction(file_streams, dicts, dicts_count, lines, line_count) == -1) {
+            perror("Échec du programme");
+            free_lines(lines, line_count);
+            free(lines_sizes);
+            free_args(args);
+            return -1;
+        }
+    }
+    else {
+        perror("Mode invalide : veuillez choisir soit detection ou correction");
+        free_lines(lines, line_count);
+        free(lines_sizes);
+        free_args(args);
+        return -1;
     }
 
     free_lines(lines, line_count);
     free(lines_sizes);
     free_args(args);
+
+    printf("\nFin du programme : succès \n");
 
     return 0;
 }
