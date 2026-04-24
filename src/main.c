@@ -118,12 +118,12 @@ int main(int argc, char const *argv[]) {
     verbose = args->verbose;
     mode = args->mode ? args->mode : "detection";
 
-    printf("Dictionary Path: %s\n", strlen(args->dictionnaries_path) > 0 ? args->dictionnaries_path : "Not Provided");
-    printf("Input File: %s\n", args->input_path ? args->input_path : "Not Provided");
-    printf("Output File: %s\n", args->output_path ? args->output_path : "Not Provided");
-    printf("Mode: %s\n", args->mode ? args->mode : "Not Provided");
-    printf("Verbose: %s\n", args->verbose ? "Enabled" : "Disabled");
-    printf("Threads: %u\n\n", num_threads);
+    fprintf(stderr, "Dictionary Path: %s\n", strlen(args->dictionnaries_path) > 0 ? args->dictionnaries_path : "Not Provided");
+    fprintf(stderr, "Input File: %s\n", args->input_path ? args->input_path : "Not Provided");
+    fprintf(stderr, "Output File: %s\n", args->output_path ? args->output_path : "Not Provided");
+    fprintf(stderr, "Mode: %s\n", args->mode ? args->mode : "Not Provided");
+    fprintf(stderr, "Verbose: %s\n", args->verbose ? "Enabled" : "Disabled");
+    fprintf(stderr, "Threads: %u\n\n", num_threads);
 
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
@@ -181,7 +181,7 @@ int main(int argc, char const *argv[]) {
     free(lines_sizes);
     free_args(args);
 
-    printf("\nFin du programme : succès \n");
+    fprintf(stderr, "\nFin du programme : succès \n");
 
     return 0;
 }

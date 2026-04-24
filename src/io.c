@@ -99,13 +99,13 @@ int write_all_detection(OutputStreams_t *output_stream, Dictionary_t* dicts, siz
         uint32_t used_dict_id = line_detection->used_dict_id;
         uint32_t* wrong_words_indexes = line_detection->wrong_words_indexes;
         
-        if (verbose) printf("\n Détection des erreurs pour la ligne %zu : ", i+1);
+        if (verbose) fprintf(stderr, "\nDétection des erreurs pour la ligne %zu : ", i+1);
         if (write_detection(output_stream, i, used_dict_id, wrong_words_count, wrong_words_indexes) == -1) {
             free_line_detection(line_detection);
-            if (verbose) printf("Échec : fin du programme \n");
+            if (verbose) fprintf(stderr, "Échec : fin du programme \n");
             return -1;
         }
-        if (verbose) printf("Succès \n");
+        if (verbose) fprintf(stderr, "Succès \n");
 
         free_line_detection(line_detection);
     }
@@ -131,13 +131,13 @@ int write_all_detection_and_correction(OutputStreams_t *output_stream, Dictionar
         uint32_t used_dict_id = line_detection->used_dict_id;
         uint32_t* wrong_words_indexes = line_detection->wrong_words_indexes;
 
-        if (verbose) printf("\n Détection des erreurs pour la ligne %zu : ", i+1);
+        if (verbose) fprintf(stderr, "\nDétection des erreurs pour la ligne %zu : ", i+1);
         if (write_detection(output_stream, i, used_dict_id, wrong_words_count, wrong_words_indexes) == -1) {
             free_line_detection(line_detection);
-            if (verbose) printf("Échec : fin du programme \n");
+            if (verbose) fprintf(stderr, "Échec : fin du programme \n");
             return -1;
         }
-        if (verbose) printf("Succès \n");
+        if (verbose) fprintf(stderr, "Succès \n");
 
         char** corrections = malloc(wrong_words_count * sizeof(char*));
         if (corrections == NULL) {
@@ -154,15 +154,15 @@ int write_all_detection_and_correction(OutputStreams_t *output_stream, Dictionar
             return -1;
         }
         
-        if (verbose) printf("\n Correction des erreurs pour la ligne %zu : ", i+1);
+        if (verbose) fprintf(stderr, "Correction des erreurs pour la ligne %zu : ", i+1);
         if (write_correction(output_stream, wrong_words_count, corrections) == -1) {
             free_line_detection(line_detection);
             free_array_of_words(corrections, wrong_words_count);
             free_array_of_words(wrong_words, wrong_words_count);
-            if (verbose) printf("Échec : fin du programme \n");
+            if (verbose) fprintf(stderr, "Échec : fin du programme \n");
             return -1;
         }
-        if (verbose) printf("Succès \n");
+        if (verbose) fprintf(stderr, "Succès \n");
 
         free_line_detection(line_detection);
         free_array_of_words(corrections, wrong_words_count);
