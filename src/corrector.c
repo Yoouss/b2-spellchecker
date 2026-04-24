@@ -248,7 +248,7 @@ int set_words_correction(char** wrong_words, char*** corrections, uint32_t wrong
     int active_threads = (wrong_words_count >= 2 * num_threads) ? num_threads : 1;
     set_words_correction_data(words_correction_data, active_threads, wrong_words, *corrections, dict, wrong_words_count);
 
-    if (wrong_words_count >= 2 * num_threads) {
+    if (active_threads > 1) {
         pthread_t threads[num_threads];
         for (size_t i = 0; i < num_threads; i++) {
             pthread_create(&threads[i], NULL, set_words_correction_thread, &words_correction_data[i]);
@@ -258,7 +258,7 @@ int set_words_correction(char** wrong_words, char*** corrections, uint32_t wrong
             pthread_join(threads[i], NULL);
         }
     }
-    else {
+    else if (active_threads == 1) {
         set_some_corrections(words_correction_data);
     }
 
