@@ -208,7 +208,7 @@ void set_words_correction_data(words_correction_data_t* words_correction_data, i
 void set_some_corrections(words_correction_data_t* words_correction_data);
 
 /**
- * @brief fonction helper de set_words_correction qui s'occupe d'une partie équitable du travail de set_words_correction en fonction du nombre de threads entrées par l'utilisateur. Le travail efféctué par une thread est égale au nombre de mauvais mots divisé par le nombre de threads
+ * @brief fonction helper de set_words_correction qui s'occupe d'une partie équitable du travail de set_words_correction en fonction du nombre de threads entrées par l'utilisateur. Le travail efféctué par une thread est égale au nombre de mauvais mots divisé par le nombre de threads actifs
  * 
  * @param args un pointeur void* vers une structure words_correction_data_t 
  * 
