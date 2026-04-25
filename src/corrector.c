@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <ctype.h>
+#include <pthread.h>
 
 #include <corrector.h>
 
@@ -203,4 +204,65 @@ char* get_word_correction(char* wrong_word, Dictionary_t* dict) {
     free(candidate_words);
 
     return word_correction;
+}
+
+void set_words_correction_data(words_correction_data_t* words_correction_data, int active_threads, char** wrong_words, 
+                               char** corrections, Dictionary_t* used_dictionary, size_t wrong_words_count) { 
+                 
+    size_t chunk = wrong_words_count / active_threads;
+
+    for (size_t i = 0; i < active_threads; i++) {
+        words_correction_data[i].wrong_words = wrong_words;
+        words_correction_data[i].corrections = corrections;
+        words_correction_data[i].used_dictionary = used_dictionary;
+
+        words_correction_data[i].start_index = i * chunk;
+        words_correction_data[i].end_index = (i == active_threads - 1) ? wrong_words_count : (i + 1) * chunk;
+    }
+}
+
+void set_some_corrections(words_correction_data_t* words_correction_data) {
+    char** wrong_words = words_correction_data->wrong_words;
+    char** corrections = words_correction_data->corrections;
+    Dictionary_t* used_dictionary = words_correction_data->used_dictionary;
+
+    size_t start_index = words_correction_data->start_index;
+    size_t end_index = words_correction_data->end_index;
+
+    for (size_t i = start_index; i < end_index; i++) {
+        corrections[i] = get_word_correction(wrong_words[i], used_dictionary);
+    }
+}
+
+void* set_words_correction_thread(void* args) {
+    words_correction_data_t* words_correction_data = (words_correction_data_t *) args;
+    set_some_corrections(words_correction_data);
+
+    pthread_exit(NULL);
+}
+
+int set_words_correction(char** wrong_words, char*** corrections, uint32_t wrong_words_count, Dictionary_t* dict) {
+    words_correction_data_t* words_correction_data = malloc(num_threads * sizeof(words_correction_data_t));
+    if (words_correction_data == NULL) return -1;
+
+    int active_threads = (wrong_words_count >= 2 * num_threads) ? num_threads : 1;
+    set_words_correction_data(words_correction_data, active_threads, wrong_words, *corrections, dict, wrong_words_count);
+
+    if (active_threads > 1) {
+        pthread_t threads[num_threads];
+        for (size_t i = 0; i < num_threads; i++) {
+            pthread_create(&threads[i], NULL, set_words_correction_thread, &words_correction_data[i]);
+        }
+
+        for (size_t i = 0; i < num_threads; i++) {
+            pthread_join(threads[i], NULL);
+        }
+    }
+    else if (active_threads == 1) {
+        set_some_corrections(words_correction_data);
+    }
+
+    free(words_correction_data);
+
+    return 0;
 }
