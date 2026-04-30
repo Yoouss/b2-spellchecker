@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <io.h>
-#include "common.h"
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -10,8 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <portable_endian.h>
+
+#include <common.h>
+#include <corrector.h>
 #include <detector.h>
+#include <io.h>
+#include <portable_endian.h>
 
 OutputStreams_t *open_outputs(const char *pathname) {
     if (pathname == NULL || strlen(pathname) == 0) return NULL;
@@ -70,13 +72,8 @@ void close_outputs(OutputStreams_t *streams) {
 int write_detection(OutputStreams_t *output_stream, uint32_t line_number,
                     uint32_t dict_index, uint32_t word_count, uint32_t *word_indices) {
 
-    int detection_file_descriptor;
-    if (output_stream == NULL) {
-        detection_file_descriptor = 1;
-    }
-    else {
-        detection_file_descriptor = output_stream->detection;
-    }
+    // NOTE : 1 pour écrire dans stdout
+    int detection_file_descriptor = (output_stream == NULL) ? 1 : output_stream->detection;
 
     uint32_t line_number_endian = htobe32(line_number);
     if (write(detection_file_descriptor, &line_number_endian, sizeof(uint32_t)) == -1) return -1;
@@ -108,11 +105,20 @@ int write_all_detection(OutputStreams_t *output_stream, Dictionary_t* dicts, siz
         uint32_t wrong_words_count = line_detection->wrong_words_count;
         uint32_t used_dict_id = line_detection->used_dict_id;
         uint32_t* wrong_words_indexes = line_detection->wrong_words_indexes;
+        
+        if (verbose) fprintf(stderr, "\nDétection des erreurs pour la ligne %zu : ", i+1);
+        if (write_detection(output_stream, i, used_dict_id, wrong_words_count, wrong_words_indexes) == -1) {
+            free_line_detection(line_detection);
+            if (verbose) fprintf(stderr, "Échec : fin du programme \n");
+            return -1;
+        }
+        if (verbose) fprintf(stderr, "Succès \n");
 
-        write_detection(output_stream, i, used_dict_id, wrong_words_count, wrong_words_indexes);
+        free_line_detection(line_detection);
     }
 
     return 0;
+
 }
 
 int write_correction(OutputStreams_t *output_streams, uint32_t word_count, char **corrections) {
@@ -140,6 +146,59 @@ int write_correction(OutputStreams_t *output_streams, uint32_t word_count, char 
             return -1;
         }
         
+    }
+
+    return 0;
+}
+
+int write_all_detection_and_correction(OutputStreams_t *output_stream, Dictionary_t* dicts, size_t dicts_count, char** lines, size_t line_count) {
+    if (dicts == NULL || dicts_count == 0 || lines == NULL || line_count == 0) return -1;
+
+    for (size_t i = 0; i < line_count; i++) {
+        char* current_line = lines[i];
+        line_t* line_detection = scan_line_for_errors(current_line, dicts, dicts_count);
+        if (line_detection == NULL) return -1;
+
+        uint32_t wrong_words_count = line_detection->wrong_words_count;
+        uint32_t used_dict_id = line_detection->used_dict_id;
+        uint32_t* wrong_words_indexes = line_detection->wrong_words_indexes;
+
+        if (verbose) fprintf(stderr, "\nDétection des erreurs pour la ligne %zu : ", i+1);
+        if (write_detection(output_stream, i, used_dict_id, wrong_words_count, wrong_words_indexes) == -1) {
+            free_line_detection(line_detection);
+            if (verbose) fprintf(stderr, "Échec : fin du programme \n");
+            return -1;
+        }
+        if (verbose) fprintf(stderr, "Succès \n");
+
+        char** corrections = malloc(wrong_words_count * sizeof(char*));
+        if (corrections == NULL) {
+            free_line_detection(line_detection);
+            return -1;
+        }
+
+        char** wrong_words = get_wrong_words_in_line(current_line, wrong_words_indexes, wrong_words_count);
+
+        Dictionary_t* used_dictionary = line_detection->used_dictionary;
+        if (set_words_correction(wrong_words, &corrections, wrong_words_count, used_dictionary) == -1) {
+            free_line_detection(line_detection);
+            free_array_of_words(wrong_words, wrong_words_count);
+            return -1;
+        }
+        
+        if (verbose) fprintf(stderr, "Correction des erreurs pour la ligne %zu : ", i+1);
+        if (write_correction(output_stream, wrong_words_count, corrections) == -1) {
+            free_line_detection(line_detection);
+            free_array_of_words(corrections, wrong_words_count);
+            free_array_of_words(wrong_words, wrong_words_count);
+            if (verbose) fprintf(stderr, "Échec : fin du programme \n");
+            return -1;
+        }
+        if (verbose) fprintf(stderr, "Succès \n");
+
+        free_line_detection(line_detection);
+        free_array_of_words(corrections, wrong_words_count);
+        free_array_of_words(wrong_words, wrong_words_count);
     }
 
     return 0;
