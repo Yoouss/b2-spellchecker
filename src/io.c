@@ -116,6 +116,31 @@ int write_all_detection(OutputStreams_t *output_stream, Dictionary_t* dicts, siz
 }
 
 int write_correction(OutputStreams_t *output_streams, uint32_t word_count, char **corrections) {
-    // TODO
+    if (word_count == 0 || corrections == NULL) {
+        return 0; 
+    }
+
+    int fd;
+    if (output_streams == NULL) {
+        fd = STDOUT_FILENO;
+    } else {
+        fd = output_streams->correction;
+    }
+
+    for (uint32_t i = 0; i < word_count; i++) {
+        uint32_t n = (uint32_t)strlen(corrections[i]);
+        
+        uint32_t n_be = htobe32(n);
+
+        if (write(fd, &n_be, sizeof(uint32_t)) == -1) {
+            return -1;
+        }
+
+        if (write(fd, corrections[i], n) == -1) {
+            return -1;
+        }
+        
+    }
+
     return 0;
 }

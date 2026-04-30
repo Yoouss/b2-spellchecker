@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <portable_endian.h>
 
 void test_open_outputs(void) {
     OutputStreams_t* no_pathname = open_outputs(NULL);
@@ -49,7 +50,6 @@ void test_open_outputs(void) {
     free(res2);
 }
 
-// NOTE : ne pas oublier d'utiliser remove() pour supprimer les fichiers créés (seulement pour les tests)
 void test_close_outputs(void) {
     int fd1 = open("test_err.tmp", O_CREAT | O_WRONLY, 0644);
     int fd2 = open("test_fix.tmp", O_CREAT | O_WRONLY, 0644);
@@ -111,8 +111,43 @@ void test_write_detection(void) {
     free(output_stream);
 }
 
-// NOTE : ne pas oublier d'utiliser remove() pour supprimer les fichiers créés (seulement pour les tests)
 void test_write_correction(void) {
-    // TODO
-    CU_ASSERT(1 == 1);
+    char *mots[] = {"c'est", "frite"};
+    uint32_t count = 2;
+    const char* filename = "test_write.fix";
+
+    CU_ASSERT_EQUAL(write_correction(NULL, count, mots), 0);
+
+    int fd = open(filename, O_CREAT | O_RDWR | O_TRUNC, 0644);
+    CU_ASSERT_TRUE_FATAL(fd >= 0);
+
+    OutputStreams_t streams;
+    streams.detection = -1;
+    streams.correction = fd;
+
+    int res = write_correction(&streams, count, mots);
+    CU_ASSERT_EQUAL(res, 0);
+
+    lseek(fd, 0, SEEK_SET);
+
+    uint32_t len1_read;
+    read(fd, &len1_read, sizeof(uint32_t));
+    CU_ASSERT_EQUAL(be32toh(len1_read), 5); 
+
+    char buf1[6] = {0};
+    read(fd, buf1, 5);
+    CU_ASSERT_STRING_EQUAL(buf1, "c'est");
+
+    uint32_t len2_read;
+    read(fd, &len2_read, sizeof(uint32_t));
+    CU_ASSERT_EQUAL(be32toh(len2_read), 5);
+
+    char buf2[6] = {0};
+    read(fd, buf2, 5);
+    CU_ASSERT_STRING_EQUAL(buf2, "frite");
+
+    CU_ASSERT_EQUAL(write_correction(&streams, 0, NULL), 0);
+    
+    close(fd);
+    remove(filename);
 }
