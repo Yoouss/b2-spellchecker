@@ -9,13 +9,27 @@
 #include <dirent.h>
 #include <pthread.h>
 
+#include <corrector.h>
 #include <file_handler.h>
 
 void free_lines(char** lines, size_t line_count) {
+    if (lines == NULL) return;
+
     for (size_t i = 0; i < line_count; i++) {
         free(lines[i]);
     }
     free(lines);
+}
+
+void free_dictionaries(Dictionary_t* dictionaries, size_t dictionaries_count) {
+    if (dictionaries == NULL) return;
+
+    for (size_t i = 0; i < dictionaries_count; i++) {
+        free_array_of_words(dictionaries[i].words, dictionaries[i].word_count);
+        free(dictionaries[i].lang);
+    }
+
+    free(dictionaries);
 }
 
 char* map_file(const char* file_path, size_t* file_size) {
@@ -298,6 +312,7 @@ int load_dictionaries(const char *path, Dictionary_t **dicts, size_t *dict_count
         DIR *d=opendir(actual_path);
         if (d == NULL) {
             perror("Erreur opendir");
+            free_dictionaries(*dicts, *dict_count);
             return -1;
         }
 
@@ -321,7 +336,7 @@ int load_dictionaries(const char *path, Dictionary_t **dicts, size_t *dict_count
 
             Dictionary_t *new_d = realloc(temp_dicts, (count + 1) * sizeof(Dictionary_t));
             if (new_d == NULL) {
-                free(temp_dicts);
+                free_dictionaries(temp_dicts, count);
                 closedir(d);
                 return -1;
             }
@@ -343,7 +358,7 @@ int load_dictionaries(const char *path, Dictionary_t **dicts, size_t *dict_count
         if (load_single_dictionary(&(*dicts)[0], actual_path, 0) == 0) {
             *dict_count = 1;
         } else {
-            free(*dicts);
+            free_dictionaries(*dicts, *dict_count);
             return -1;
         }
     }

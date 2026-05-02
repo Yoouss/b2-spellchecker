@@ -46,6 +46,20 @@ typedef struct read_input_data {
 void free_lines(char** lines, size_t line_count);
 
 /**
+ * @brief fonction qui libère la mémoire allouée pour un tableau de dictionnaires
+ *
+ * @param dictionaries le tableau de dictionnaires à libérer
+ * @param dictionaries_count le nombre de dictionnaire à libérer (= taille de dictionaries)
+ *
+ * @note   complexité temporelle : O(m*n)
+ *         complexité spaciale : O(1)
+ *
+ *         m = le nombre de dictionaires à libérer
+ *         n = le nombre maximal de mots à libérer
+ */
+void free_dictionaries(Dictionary_t* dictionaries, size_t dictionaries_count);
+
+/**
  * @brief fonction helper qui projette un fichier en mémoire
  * 
  * @param file_path le chemin vers le fichier à mapper en mémoire
