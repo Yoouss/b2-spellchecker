@@ -7,6 +7,15 @@
 
 #include <corrector.h>
 
+void free_array_of_words(char** array_of_words, size_t array_length) {
+    if (array_of_words == NULL) return;
+
+    for (size_t i = 0; i < array_length; i++) {
+        free(array_of_words[i]);
+    }
+    free(array_of_words);
+}
+
 int count_number_of_shared_trigrammes(char* word1, char* word2) {
     int number_of_shared_trigrammes = 0;
     int word1_size = strlen(word1);
@@ -195,7 +204,8 @@ char* get_word_correction(char* wrong_word, Dictionary_t* dict) {
     // Ne devrait pas arriver en théorie mais c'est possible malheureusement...
     if (number_of_candidates == 0 || candidate_words == NULL) { 
         free(candidate_words);
-        return wrong_word;
+        // Laisser strdup() pour pas free() deux fois le même char* avec free_corrections_or_wrong_words()
+        return strdup(wrong_word); 
     }
 
     int smallest_distance_word_index = get_index_of_smallest_distance_word(wrong_word, candidate_words, number_of_candidates);

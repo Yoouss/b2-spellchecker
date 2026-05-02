@@ -177,7 +177,8 @@ Le `Makefile` génère un exécutable `spellchecker`:
 ./spellchecker --dicts <dictionary_path> --input <input_path> [--output <output_path>] [--mode <mode>] [--threads <number>] [--verbose]
 ```
 - `--dicts <dictionary_path>` spécifie le dossier dans lequel sont rangés les dictionnaires
-- `--input <input_path>` spécifie le fichier contenant les lignes à corriger. - `--output_path <output_path>` spécifie le nom des fichiers de sortie (sans extension !)[^1]. S'il n'est pas spécifié, le terminal sera utilisé par défaut
+- `--input <input_path>` spécifie le fichier contenant les lignes à corriger.
+- `--output <output_path>` spécifie le nom des fichiers de sortie (sans extension !)[^1]. S'il n'est pas spécifié, le terminal sera utilisé par défaut
 - `--mode <mode>` spécifie le mode de fonctionnement du programme. S'il n'est pas spécifié, le mode `detection` sera utilisé par défaut
 - `--threads <number>` spécifie le nombre de threads à utiliser
 - `--verbose` permet d'afficher plus de détails sur ce que fait le programme en temps réel (mode verbeux)

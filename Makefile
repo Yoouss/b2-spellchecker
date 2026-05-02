@@ -14,7 +14,7 @@ TARGET=spellchecker
 TEST=test
 
 VALGRIND = valgrind --leak-check=full
-SPELLCHECKER_ARGS = --dicts dicts/ --input input_10l.txt
+SPELLCHECKER_ARGS = --dicts dicts --input inputs/input_10l.txt --mode correction
 
 # List path to sources
 SOURCES   = $(wildcard $(SRC_DIR)/*.c)
@@ -43,12 +43,20 @@ tests: $(TEST)
 	./$(TEST)
 
 valgrind-all : $(TARGET) $(TEST)
-	$(VALGRIND) ./$(TARGET) $(SPELLCHECKER_ARGS)
+	$(VALGRIND) ./$(TARGET) $(SPELLCHECKER_ARGS) > fichier_sortie
+	rm -f fichier_sortie
 	$(VALGRIND) ./$(TEST)
 
 valgrind : $(TARGET)
-	$(VALGRIND) ./$(TARGET) $(SPELLCHECKER_ARGS)
+	$(VALGRIND) ./$(TARGET) $(SPELLCHECKER_ARGS) > fichier_sortie
+	rm -f fichier_sortie
 
+# Valgrind va détécter des erreurs de free car dans tests/detector.c, test_get_wrong_words_in_line()
+# Il y a des tests qui vont avoir des indexes externe au tableau des mauvais mots,
+# Et donc on va essayer de free une adresse aléatoire dans la mémoire "à cause de" free_array_of_words()
+# La solution serait d'utiliser calloc au lieu de malloc dans get_wrong_words_in_line
+# Mais ça impacterait les performances comme la dit le professeur Bonaventure une fois
+# Niveau code il y a aucun bug si toutes les fonctions font bien leur travail
 valgrind-test : $(TEST)
 	$(VALGRIND) ./$(TEST)
 

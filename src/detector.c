@@ -223,11 +223,13 @@ line_t* scan_line_for_errors(char* line, Dictionary_t* dicts, size_t dictionarie
     
     uint32_t wrong_words_count = 0;
     if (set_wrong_words_count_in_line(line, &wrong_words_count, candidate_dictionary) < 0) return NULL;
-    if (wrong_words_count == 0) return NULL;
 
-    uint32_t* wrong_words_indexes = get_wrong_words_indexes_in_line(line, wrong_words_count, candidate_dictionary);
-    if (wrong_words_indexes == NULL) return NULL;
-
+    uint32_t* wrong_words_indexes = NULL;
+    if (wrong_words_count > 0) {
+        wrong_words_indexes = get_wrong_words_indexes_in_line(line, wrong_words_count, candidate_dictionary);
+        if (wrong_words_indexes == NULL) return NULL;  
+    }
+    
     line_t* line_detection = malloc(sizeof(line_t));
     if (line_detection == NULL) {
         free(wrong_words_indexes);
