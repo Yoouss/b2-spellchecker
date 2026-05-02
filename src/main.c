@@ -109,8 +109,6 @@ CommandLineArgs_t* parse_args(int argc, char const *argv[]) {
     return args;
 }
 
-// BEAUCOUP DE FUITES DE MEMOIRE ICI
-// TODO : créer des fonctions pour free les grosses structures tel que dicts, ect...
 int main(int argc, char const *argv[]) {
     CommandLineArgs_t* args = parse_args(argc, argv);
 
@@ -128,7 +126,6 @@ int main(int argc, char const *argv[]) {
     Dictionary_t* dicts = NULL;
     size_t dicts_count = 0;
 
-    // utilisation de THREADS
     if (strlen(args->dictionnaries_path) > 0) {
         load_dictionaries(args->dictionnaries_path, &dicts, &dicts_count);
     }
@@ -146,6 +143,7 @@ int main(int argc, char const *argv[]) {
     }
     else {
         perror("Veillez spécifier le fichier d'entrée");
+        free_dictionaries(dicts, dicts_count);
         return -1;
     }
 
@@ -154,6 +152,7 @@ int main(int argc, char const *argv[]) {
     if (strcmp(mode, "detection") == 0) {
         if (write_all_detection(file_streams, dicts, dicts_count, lines, line_count) == -1) {
             perror("Échec du programme");
+            free_dictionaries(dicts, dicts_count);
             free_lines(lines, line_count);
             free(lines_sizes);
             free_args(args);
@@ -163,6 +162,7 @@ int main(int argc, char const *argv[]) {
     else if (strcmp(mode, "correction") == 0) {
         if (write_all_detection_and_correction(file_streams, dicts, dicts_count, lines, line_count) == -1) {
             perror("Échec du programme");
+            free_dictionaries(dicts, dicts_count);
             free_lines(lines, line_count);
             free(lines_sizes);
             free_args(args);
@@ -171,12 +171,14 @@ int main(int argc, char const *argv[]) {
     }
     else {
         perror("Mode invalide : veuillez choisir soit detection ou correction");
+        free_dictionaries(dicts, dicts_count);
         free_lines(lines, line_count);
         free(lines_sizes);
         free_args(args);
         return -1;
     }
 
+    free_dictionaries(dicts, dicts_count);
     free_lines(lines, line_count);
     free(lines_sizes);
     free_args(args);
