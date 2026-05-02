@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <io.h>
 #include "common.h"
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <portable_endian.h>
 
 void test_open_outputs(void) {
     OutputStreams_t* no_pathname = open_outputs(NULL);
@@ -46,10 +50,41 @@ void test_open_outputs(void) {
     free(res2);
 }
 
-// NOTE : ne pas oublier d'utiliser remove() pour supprimer les fichiers créés (seulement pour les tests)
 void test_close_outputs(void) {
-    // TODO
-    CU_ASSERT(1 == 1);
+    int fd1 = open("test_err.tmp", O_CREAT | O_WRONLY, 0644);
+    int fd2 = open("test_fix.tmp", O_CREAT | O_WRONLY, 0644);
+    
+    OutputStreams_t *streams = malloc(sizeof(OutputStreams_t));
+    streams->detection = fd1;
+    streams->correction = fd2;
+
+    close_outputs(streams);
+
+    CU_ASSERT_EQUAL(fcntl(fd1, F_GETFD), -1);
+    CU_ASSERT_EQUAL(fcntl(fd2, F_GETFD), -1);
+
+    close_outputs(NULL);
+    CU_PASS("Succès");
+
+    OutputStreams_t *streams_fail = malloc(sizeof(OutputStreams_t));
+    streams_fail->detection = -1;
+    streams_fail->correction = -1;
+
+    close_outputs(streams_fail);
+    CU_PASS("Les descripteurs invalides ont été ignorés");
+
+    int fd_valide = open("test_valide_nonvalide.tmp", O_CREAT | O_WRONLY, 0644);
+    OutputStreams_t *streams_valide_nonvalide = malloc(sizeof(OutputStreams_t));
+    streams_valide_nonvalide->detection = fd_valide;
+    streams_valide_nonvalide->correction = -1;
+
+    close_outputs(streams_valide_nonvalide);
+    CU_ASSERT_EQUAL(fcntl(fd_valide, F_GETFD), -1);
+    CU_PASS("Le mélange fd valide / fd -1 est géré");
+
+    remove("test_err.tmp");
+    remove("test_fix.tmp");
+    remove("test_valide_nonvalide.tmp");
 }
 
 void test_write_detection(void) {
@@ -76,8 +111,43 @@ void test_write_detection(void) {
     free(output_stream);
 }
 
-// NOTE : ne pas oublier d'utiliser remove() pour supprimer les fichiers créés (seulement pour les tests)
 void test_write_correction(void) {
-    // TODO
-    CU_ASSERT(1 == 1);
+    char *mots[] = {"c'est", "frite"};
+    uint32_t count = 2;
+    const char* filename = "test_write.fix";
+
+    CU_ASSERT_EQUAL(write_correction(NULL, count, mots), 0);
+
+    int fd = open(filename, O_CREAT | O_RDWR | O_TRUNC, 0644);
+    CU_ASSERT_TRUE_FATAL(fd >= 0);
+
+    OutputStreams_t streams;
+    streams.detection = -1;
+    streams.correction = fd;
+
+    int res = write_correction(&streams, count, mots);
+    CU_ASSERT_EQUAL(res, 0);
+
+    lseek(fd, 0, SEEK_SET);
+
+    uint32_t len1_read;
+    read(fd, &len1_read, sizeof(uint32_t));
+    CU_ASSERT_EQUAL(be32toh(len1_read), 5); 
+
+    char buf1[6] = {0};
+    read(fd, buf1, 5);
+    CU_ASSERT_STRING_EQUAL(buf1, "c'est");
+
+    uint32_t len2_read;
+    read(fd, &len2_read, sizeof(uint32_t));
+    CU_ASSERT_EQUAL(be32toh(len2_read), 5);
+
+    char buf2[6] = {0};
+    read(fd, buf2, 5);
+    CU_ASSERT_STRING_EQUAL(buf2, "frite");
+
+    CU_ASSERT_EQUAL(write_correction(&streams, 0, NULL), 0);
+    
+    close(fd);
+    remove(filename);
 }
