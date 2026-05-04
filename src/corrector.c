@@ -24,20 +24,8 @@ int count_number_of_shared_trigrammes(char* word1, char* word2) {
     if (word1_size < 3 || word2_size < 3) return 0;
 
     for (int i = 0; i <= word1_size - 3; i++) {
-        char word1_current_trigramme[4];
-        word1_current_trigramme[0] = word1[i];
-        word1_current_trigramme[1] = word1[i + 1];
-        word1_current_trigramme[2] = word1[i + 2];
-        word1_current_trigramme[3] = '\0';
-
         for (int j = 0; j <= word2_size - 3; j++) {
-            char word2_current_trigramme[4];
-            word2_current_trigramme[0] = word2[j];
-            word2_current_trigramme[1] = word2[j + 1];
-            word2_current_trigramme[2] = word2[j + 2];
-            word2_current_trigramme[3] = '\0';
-
-            if (strcmp(word1_current_trigramme, word2_current_trigramme) == 0) {
+            if (word1[i] == word2[j] && word1[i+1] == word2[j+1] && word1[i+2] == word2[j+2]) {
                 number_of_shared_trigrammes++;
                 break;
             }
@@ -108,24 +96,6 @@ int get_min3(int a, int b, int c) {
     return min;
 }
 
-int** initialize_matrix(int n, int m) {
-    int** matrix = malloc((n + 1) * sizeof(int*));
-    if (matrix == NULL) return NULL;
-
-    for (int i = 0; i <= n; i++) {
-        matrix[i] = malloc((m + 1) * sizeof(int));
-        if (matrix[i] == NULL) {
-            for (int j = i - 1; j >= 0; j--) {
-                free(matrix[j]);
-            }
-            free(matrix);
-            return NULL;
-        }
-    }
-
-    return matrix;
-}
-
 int compute_levenshtein_distance(char* word1, char* word2) {
     int n = strlen(word1);
     int m = strlen(word2);
@@ -133,8 +103,7 @@ int compute_levenshtein_distance(char* word1, char* word2) {
     if (n == 0) return m;
     if (m == 0) return n; 
     
-    int** distances_matrix = initialize_matrix(n, m);
-    if (distances_matrix == NULL) return -1; 
+    int distances_matrix[n + 1][m + 1];
 
     for (int line = 0; line <= n; line++) {
         distances_matrix[line][0] = line;
@@ -146,53 +115,36 @@ int compute_levenshtein_distance(char* word1, char* word2) {
 
     for (int i = 1; i <= n; i++) {
         for (int j = 1; j <= m ; j++) {
-            int cost;
-
-            if (word1[i - 1] == word2[j - 1]) cost = 0;
-
-            else cost = 1;
+            int cost = (word1[i - 1] == word2[j - 1]) ? 0 : 1;
 
             int deletion = distances_matrix[i - 1][j] + 1;       
             int insertion = distances_matrix[i][j - 1] + 1;      
-            int substitution = distances_matrix[i - 1][j - 1] + cost; 
+            int substitution = distances_matrix[i - 1][j - 1] + cost;
 
             distances_matrix[i][j] = get_min3(deletion, insertion, substitution);
         }
     }
 
-    int distance = distances_matrix[n][m];
-
-    for (int i = 0; i <= n; i++) {
-        free(distances_matrix[i]);
-    }
-    free(distances_matrix);
-
-    return distance;
+    return distances_matrix[n][m];
 }
 
 int get_index_of_smallest_distance_word(char* wrong_word, char** candidates, int nb_candidates) {
     if (wrong_word == NULL || strlen(wrong_word) == 0 || candidates == NULL || nb_candidates <= 0) return -1;
 
-    Distance_t* smallest_distance = malloc(sizeof(Distance_t));
-    if (smallest_distance == NULL) return -1;
-
-    smallest_distance->index = 0;
-    smallest_distance->value = compute_levenshtein_distance(wrong_word, candidates[0]);
+    int smallest_distance_index = 0;
+    int smallest_distance_value = compute_levenshtein_distance(wrong_word, candidates[0]);
 
     for (int i = 1; i < nb_candidates; i++) {
         char* current_word = candidates[i];
         int current_distance = compute_levenshtein_distance(wrong_word, current_word);
 
-        if (smallest_distance->value > current_distance) {
-            smallest_distance->value = current_distance;
-            smallest_distance->index = i;
+        if (smallest_distance_value > current_distance) {
+            smallest_distance_value = current_distance;
+            smallest_distance_index = i;
         }
     }
 
-    int smallest_distance_word_index = smallest_distance->index;
-    free(smallest_distance);
-
-    return smallest_distance_word_index;
+    return smallest_distance_index;
 }
 
 char* get_word_correction(char* wrong_word, Dictionary_t* dict) {  

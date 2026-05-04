@@ -8,17 +8,6 @@
 #define CORRECTOR_H
 
 /**
- * structure représentant la distance de Levenshtein obtenue entre un mot et le mot mal orthographié
- *
- * @index : l'indexe du mot
- * @value : la valeur de la distance de Levenshtein calculée par compute_levenshtein_distance
- */
-typedef struct Distance {
-    int index;
-    int value;
-} Distance_t;
-
-/**
  * Structure utilisée pour stocker plusieurs informations nécessaires à set_words_correction 
  * (mono ou multi-threadée) 
  *
@@ -116,21 +105,6 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
  *         complexité spaciale : O(1)
  */
 int get_min3(int a, int b, int c);
-
-/**
- * @brief  alloue dynamiquement une matrice d'entiers en mémoire de dimensions n x m
- * 
- * @param  n le nombre de lignes
- * @param  m le nombre de colonnes
- * @return un double pointeur qui est une matrice n x m ou NULL en cas de problème d'allocation de mémoire
- * 
- * @note   complexité temporelle : O(n)
- *         complexité spaciale : O(m * n) 
- *  
- *         n = le nombre de lignes de la matrice
- *         m = le nombre de colonnes de la matrice
- */
-int** initialize_matrix(int n, int m);
 
 /**
  * @brief  calcule la distance d'édition de Levenshtein entre deux mots
