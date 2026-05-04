@@ -8,17 +8,6 @@
 #define CORRECTOR_H
 
 /**
- * structure représentant la distance de Levenshtein obtenue entre un mot et le mot mal orthographié
- *
- * @index : l'indexe du mot
- * @value : la valeur de la distance de Levenshtein calculée par compute_levenshtein_distance
- */
-typedef struct Distance {
-    int index;
-    int value;
-} Distance_t;
-
-/**
  * Structure utilisée pour stocker plusieurs informations nécessaires à set_words_correction 
  * (mono ou multi-threadée) 
  *
