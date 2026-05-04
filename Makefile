@@ -7,7 +7,7 @@ HEADERS_DIR=headers
 CC=clang
 
 CPPFLAGS=-Iinclude -Iheaders # /!\ Enlever -DDISABLE_IO pour utiliser votre implementation io.c
-CFLAGS=-Wall -Werror -g # Ajoutez -g pour Valgrind :)
+CFLAGS=-Wall -Werror -O3 # Ajoutez -g pour Valgrind :)
 LDLIBS=-lm
 
 TARGET=spellchecker

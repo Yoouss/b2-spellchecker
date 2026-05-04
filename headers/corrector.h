@@ -118,21 +118,6 @@ char** get_candidate_words(char* wrong_word, Dictionary_t* dict, int* result_cou
 int get_min3(int a, int b, int c);
 
 /**
- * @brief  alloue dynamiquement une matrice d'entiers en mémoire de dimensions n x m
- * 
- * @param  n le nombre de lignes
- * @param  m le nombre de colonnes
- * @return un double pointeur qui est une matrice n x m ou NULL en cas de problème d'allocation de mémoire
- * 
- * @note   complexité temporelle : O(n)
- *         complexité spaciale : O(m * n) 
- *  
- *         n = le nombre de lignes de la matrice
- *         m = le nombre de colonnes de la matrice
- */
-int** initialize_matrix(int n, int m);
-
-/**
  * @brief  calcule la distance d'édition de Levenshtein entre deux mots
  * *       mesure le nombre minimal d'opérations (insertion, suppression, substitution) pour passer de word1 à word2
  * 
