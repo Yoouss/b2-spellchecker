@@ -152,6 +152,7 @@ int main(int argc, char const *argv[]) {
     if (strcmp(mode, "detection") == 0) {
         if (write_all_detection(file_streams, dicts, dicts_count, lines, line_count) == -1) {
             perror("Échec du programme");
+            close_outputs(file_streams);
             free_dictionaries(dicts, dicts_count);
             free_lines(lines, line_count);
             free(lines_sizes);
@@ -162,6 +163,7 @@ int main(int argc, char const *argv[]) {
     else if (strcmp(mode, "correction") == 0) {
         if (write_all_detection_and_correction(file_streams, dicts, dicts_count, lines, line_count) == -1) {
             perror("Échec du programme");
+            close_outputs(file_streams);
             free_dictionaries(dicts, dicts_count);
             free_lines(lines, line_count);
             free(lines_sizes);
@@ -171,6 +173,7 @@ int main(int argc, char const *argv[]) {
     }
     else {
         perror("Mode invalide : veuillez choisir soit detection ou correction");
+        close_outputs(file_streams);
         free_dictionaries(dicts, dicts_count);
         free_lines(lines, line_count);
         free(lines_sizes);
