@@ -104,11 +104,9 @@ void test_write_detection(void) {
     int normal_case = write_detection(output_stream, 4, 0, 3, word_indices);
     CU_ASSERT_EQUAL(normal_case, 0);
 
-    close(output_stream->detection);
-    close(output_stream->correction);
+    close_outputs(output_stream);
     remove("chat.err");
     remove("chat.fix");
-    free(output_stream);
 }
 
 void test_write_correction(void) {
