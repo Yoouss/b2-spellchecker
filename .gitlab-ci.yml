@@ -1,0 +1,65 @@
+image: debian:bookworm-slim
+
+stages:
+  - build
+  - test
+
+variables:
+  DEBIAN_FRONTEND: noninteractive
+
+default:
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq clang make python3 python3-pip
+    - pip3 install --quiet psutil numpy --break-system-packages
+
+# ─────────────────────────────────────────────
+# Stage 1 : Compilation
+# ─────────────────────────────────────────────
+build:
+  stage: build
+  script:
+    - make
+  artifacts:
+    paths:
+      - spellchecker
+      - build/
+    expire_in: 1 day
+
+# ─────────────────────────────────────────────
+# Stage 2 : Tests 
+# ─────────────────────────────────────────────
+test:integration:
+  stage: test
+  script:
+    - cd tests
+    - |
+      python3 tester.py \
+        --project .. \
+        --mode detection \
+        --output results.csv \
+        --verbose
+
+    # Afficher le CSV
+    - cat results.csv
+
+    # Échouer si une erreur fatale est présente dans le CSV
+    - |
+      python3 - results.csv <<'EOF'
+      import csv, sys
+      FATAL = ("Make failed", "Non-executable", "Exceeded memory limit")
+      with open(sys.argv[1]) as f:
+          rows = list(csv.DictReader(f))
+      bad = [r for r in rows if any(k in r.get("comments","") for k in FATAL)]
+      if bad:
+          print("CI FAILED — erreurs fatales :")
+          for r in bad: print(" ", r.get("group","?"), r.get("mode","?"), "->", r.get("comments",""))
+          sys.exit(1)
+      print("OK — aucune erreur fatale.")
+      EOF
+
+  artifacts:
+    paths:
+      - tests/results.csv
+    expire_in: 7 days
+
