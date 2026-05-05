@@ -178,6 +178,8 @@ int main(int argc, char const *argv[]) {
         return -1;
     }
 
+    close_outputs(file_streams);
+
     free_dictionaries(dicts, dicts_count);
     free_lines(lines, line_count);
     free(lines_sizes);
