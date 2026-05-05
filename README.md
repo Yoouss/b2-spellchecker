@@ -180,7 +180,11 @@ Le `Makefile` génère un exécutable `spellchecker`:
 - `--input <input_path>` spécifie le fichier contenant les lignes à corriger.
 - `--output <output_path>` spécifie le nom des fichiers de sortie (sans extension !)[^1]. S'il n'est pas spécifié, le terminal sera utilisé par défaut
 - `--mode <mode>` spécifie le mode de fonctionnement du programme. S'il n'est pas spécifié, le mode `detection` sera utilisé par défaut
-- `--threads <number>` spécifie le nombre de threads à utiliser
+- `--threads <number>` spécifie le nombre de threads à utiliser. C'est le nombre de threads **actifs** (qui travaillent) que votre programme doit utiliser. Deux approches sont possibles :
+  - Créer `N` threads avec `pthread_create` et laisser le thread principal attendre avec `pthread_join` (`N+1` threads au total, mais seuls `N` travaillent).
+  - Créer `N-1` threads avec `pthread_create` et utiliser le thread principal comme worker également (`N` threads au total, tous travaillent).
+
+  Les deux approches sont acceptées. L'important est que le nombre de threads **actifs** corresponde à la valeur de `--threads`. Notez que lors du benchmarking pour le championnat, votre programme est exécuté dans un conteneur limité à exactement `N` cœurs. Essayer d'avoir plus de threads actifs que demandé ne vous apportera donc aucun avantage et pourrait même dégrader vos performances.
 - `--verbose` permet d'afficher plus de détails sur ce que fait le programme en temps réel (mode verbeux)
 
 Lorsque des crochets sont présents dans une ligne de commande, comme `[--mode <mode>]` par exemple, le contenu entre ceux-ci est optionnel. Le programme fonctionnera sans problème s'ils ne sont pas spécifiés. Les chevrons, comme `<input_path>` indiquent l'endroit où écrire la valeur que prend l'argument. Les crochets, comme les chevrons, ne doivent pas être inclus dans la ligne de commande.
@@ -217,7 +221,11 @@ Pour chaque ligne de l’entrée, le programme écrit un bloc structuré comme s
 - `nb`$\times$`uint32`: **(4 octets chacun)**: positions (`offsets`) des mots incorrects dans la ligne, commençant à 0. 
 
 > [!Note]
-L'`offset` des mots à écrire correspond bien à leur place dans la phrase, voir exemples ci-dessous.
+> L'`offset` des mots à écrire correspond bien à leur place dans la phrase, voir exemples ci-dessous.
+
+> [!Note]
+> L'ordre des lignes dans le fichier `<output_path>.err` peut être arbitraire, il ne doit pas spécialement être en ordre de `n` croissant.
+> Par contre, l'ordre dans le fichier `<output_path>.err` doit être le même que l'ordre dans le fichier `<output_path>.fix`.
 
 
 Si l'entrée à corriger comporte plusieurs lignes, les blocs sont écrits à la suite dans le fichier.
@@ -279,8 +287,8 @@ En mode correction, deux fichiers sont générés:
 2. `<output_path>.fix`: contient les corrections des mots fautifs, dans le même ordre que les offsets décrits dans `.err`. 
 
 Le fichier `<output_path>.fix` est une suite de blocs:
-- `uint32`: **(4 octets, big endian)**: longueur du mot corrigé `N` en octets ([ISO8859-1](https://fr.wikipedia.org/wiki/ISO/CEI_8859-1))
-- `N × char`: les caractères du mot corrigé
+- `uint32`: **(4 octets, big endian)**: longueur du mot corrigé `N+1` en octets (+1 pour le `NULL` char !) ([ISO8859-1](https://fr.wikipedia.org/wiki/ISO/CEI_8859-1))
+- `(N+1) × char`: les caractères du mot corrigé (y compris le `NULL` char !)
 
 #### Exemple 
 > Le mardi z'est friite au restaurant universitaire
@@ -304,12 +312,13 @@ corrections écrites dans l'ordre des offsets:
 \
 Bloc binaire attendu (`<output_path>.fix`):
 ```hex
-00 00 00 05    63 27 65 73    # 5 c'es
-74 00 00 00    05 66 72 69    # t 5 fri
-74 65 00 00    00 08 62 4C    # te 8 bâ
-74 69 6D 65    6E 74 00 00    # timent
-00 05 73 75    70 65 72 00    # 5 super
-00 00 04 6C    6F 69 6E       # 4 loin
+00 00 00 06    63 27 65 73    # 6 c'es
+74 00 00 00    00 06 66 72    # t␀ 6 fr
+69 74 65 00    00 00 00 09    # ite␀ 9
+62 E2 74 69    6D 65 6E 74    # bâtiment
+00 00 00 00    06 73 75 70    # ␀ 6 sup
+65 72 00 00    00 00 05 6C    # er␀ 5 l
+6F 69 6E 00                   # oin␀
 ```
 
 > [!WARNING] 
@@ -334,7 +343,7 @@ Nous exécuterons votre code avec la commande suivante:
 # E. Outils
 Durant ce projet vous apprendrez également à utiliser [<img height="16" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Git-logo.svg/250px-Git-logo.svg.png">](https://git-scm.com/book/fr/v2https://valgrind.org/docs/manual/QuickStart.html) ainsi que [Valgrind](https://valgrind.org/docs/manual/QuickStart.html) et [CppCheck](https://cppcheck.sourceforge.io/manual.pdf). 
 - [*Git*](https://forge.uclouvain.be/lepl15031/students/practical-sessions/2025-2026/-/blob/main/Git.md?ref_type=heads) est un système de gestion de versions de code. Il vous permet entre autres de garder l'historique de vos modifications et d'y revenir si besoin. Vous l'utiliserez activement tout au long de votre projet pour gérer votre dépôt de code. 
-- *Valgrind* vous permet de débuguer l'exécution de votre programme. Lorsque vous découvrirez les (si connus) `segfault`'s, ce programme vous permettra de détecter les potentielles sources du problème (pensez à compiler avec le flag `-g` 😉). Il vous permettra également d'analyser la consommation mémoire et de vérifier que vous libérez bien toute la mémoire que vous allouez. Pour l'utiliser, tapez `valgrind <command_line>`, par exemple `valgrind ./spellchecker --input path/to/input`. Lorsque vous utilisez *Valgrind* ou tout autre debugger dynamique, pensez à compiler avec l'option `-g` afin d'inclure des informations supplémentaires de déboggage dans la compilation.
+- *Valgrind* vous permet de débuguer l'exécution de votre programme. Lorsque vous découvrirez les (si connus) `segfault`'s, ce programme vous permettra de détecter les potentielles sources du problème (pensez à compiler avec le flag `-g` 😉 (notez que des vielles versions de `valgrind` ne supportent pas certaines output de `clang`, voir [`-gdwarf-4` au lieu de `-g` permet de régler cela](https://github.com/llvm/llvm-project/issues/56550#issuecomment-1185929368))). Il vous permettra également d'analyser la consommation mémoire et de vérifier que vous libérez bien toute la mémoire que vous allouez. Pour l'utiliser, tapez `valgrind <command_line>`, par exemple `valgrind ./spellchecker --input path/to/input`. Lorsque vous utilisez *Valgrind* ou tout autre debugger dynamique, pensez à compiler avec l'option `-g` afin d'inclure des informations supplémentaires de déboggage dans la compilation.
 - *Cppcheck* vous permet de vérifier statiquement que votre code C ne présente pas de problème *a priori*. Pour l'utiliser, il suffit d'utiliser `cppcheck path/to/file` ou `cppcheck path/to/dir/` pour analyser un fichier ou tous les fichiers d'un dossier. Le programme vous renverra les erreurs potentielles ainsi que le fichier et la ligne problématique.
 - Utilisation du flag `-fsanitize` pour aider à détecter les accès hors d'un tableau
 
