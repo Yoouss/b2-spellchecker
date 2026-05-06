@@ -33,19 +33,6 @@ typedef struct read_input_data {
 } read_input_data_t;
 
 /**
- * @brief fonction qui libère la mémoire allouée pour un tableau des lignes d'un fichier (représentées par des char*)
- * 
- * @param lines le tableau de lignes à libérer
- * @param line_count le nombre de lignes à libérer
- * 
- * @note   complexité temporelle : O(n)
- *         complexité spaciale : O(1)
- * 
- *         n = le nombre de lignes à libérer
- */
-void free_lines(char** lines, size_t line_count);
-
-/**
  * @brief fonction qui libère la mémoire allouée pour un tableau de dictionnaires
  *
  * @param dictionaries le tableau de dictionnaires à libérer

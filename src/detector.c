@@ -14,9 +14,11 @@ void free_line_detection(line_t* line_detection) {
 
 int word_in_dictionary(char* target_word, Dictionary_t* dict) {
     if (target_word == NULL || dict == NULL) return -1;
+    // Empêche un bug avec left = 1 et right = 0
+    if (dict->word_count == 0) return 1;
 
     char** words = dict->words;
-    int left = 0;
+    int left = 1;
     int right = dict->word_count - 1;
 
     while (left <= right) {
