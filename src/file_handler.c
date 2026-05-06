@@ -12,15 +12,6 @@
 #include <corrector.h>
 #include <file_handler.h>
 
-void free_lines(char** lines, size_t line_count) {
-    if (lines == NULL) return;
-
-    for (size_t i = 0; i < line_count; i++) {
-        free(lines[i]);
-    }
-    free(lines);
-}
-
 void free_dictionaries(Dictionary_t* dictionaries, size_t dictionaries_count) {
     if (dictionaries == NULL) return;
 
@@ -113,7 +104,7 @@ int set_lines(char*** lines, uint32_t* lines_sizes, size_t line_count) {
 
         char* line = malloc((line_size + 1) * sizeof(char));
         if (line == NULL) {
-            free_lines(*lines, i);
+            free_array_of_words(*lines, i);
             return -1;
         }
 
@@ -220,7 +211,7 @@ int read_input_file(char* input_path, char*** lines, uint32_t** lines_sizes, siz
     read_input_data_t* read_input_data = malloc(num_threads * sizeof(read_input_data_t));
     if (read_input_data == NULL) {
         free(*lines_sizes);
-        free_lines(*lines, *line_count);
+        free_array_of_words(*lines, *line_count);
         munmap(mapped_file, file_size);
         return -1;
     }
@@ -248,7 +239,7 @@ int read_input_file(char* input_path, char*** lines, uint32_t** lines_sizes, siz
         perror("Le nombre de threads ne peut pas être inférieur à 1 ! Si c'est le cas, il doit être forcé à 1 dans src/main.c !");
         free(read_input_data);
         free(*lines_sizes);
-        free_lines(*lines, *line_count);
+        free_array_of_words(*lines, *line_count);
         munmap(mapped_file, file_size);
         return -1;
     }

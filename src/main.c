@@ -154,7 +154,7 @@ int main(int argc, char const *argv[]) {
             perror("Échec du programme");
             close_outputs(file_streams);
             free_dictionaries(dicts, dicts_count);
-            free_lines(lines, line_count);
+            free_array_of_words(lines, line_count);
             free(lines_sizes);
             free_args(args);
             return -1;
@@ -165,7 +165,7 @@ int main(int argc, char const *argv[]) {
             perror("Échec du programme");
             close_outputs(file_streams);
             free_dictionaries(dicts, dicts_count);
-            free_lines(lines, line_count);
+            free_array_of_words(lines, line_count);
             free(lines_sizes);
             free_args(args);
             return -1;
@@ -175,7 +175,7 @@ int main(int argc, char const *argv[]) {
         perror("Mode invalide : veuillez choisir soit detection ou correction");
         close_outputs(file_streams);
         free_dictionaries(dicts, dicts_count);
-        free_lines(lines, line_count);
+        free_array_of_words(lines, line_count);
         free(lines_sizes);
         free_args(args);
         return -1;
@@ -184,7 +184,7 @@ int main(int argc, char const *argv[]) {
     close_outputs(file_streams);
 
     free_dictionaries(dicts, dicts_count);
-    free_lines(lines, line_count);
+    free_array_of_words(lines, line_count);
     free(lines_sizes);
     free_args(args);
 

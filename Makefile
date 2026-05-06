@@ -18,7 +18,7 @@ SPELLCHECKER_VALGRIND_ARGS = --dicts dicts --input inputs/input_10l.txt --mode c
 
 BENCHMARK_THREADS = 1 2 4 6
 SPELLCHECKER_BENCHMARK_DETECTION_ARGS = --dicts benchmark/dicts --input benchmark/inputs/input_20000l.txt --mode detection
-SPELLCHECKER_BENCHMARK_CORRECTION_ARGS = --dicts benchmark/dicts --input benchmark/inputs/input_100l.txt --mode correction
+SPELLCHECKER_BENCHMARK_CORRECTION_ARGS = --dicts benchmark/dicts --input benchmark/inputs/input_250l.txt --mode correction
 BENCHMARK_RESULT_OUTPUT = benchmark.csv
 
 # List path to sources
