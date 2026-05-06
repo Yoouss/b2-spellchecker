@@ -134,7 +134,7 @@ int write_correction(OutputStreams_t *output_streams, uint32_t word_count, char 
     }
 
     for (uint32_t i = 0; i < word_count; i++) {
-        uint32_t n = (uint32_t)strlen(corrections[i]);
+        uint32_t n = (uint32_t)strlen(corrections[i]) + 1;
         
         uint32_t n_be = htobe32(n);
 
