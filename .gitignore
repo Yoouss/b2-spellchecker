@@ -1,5 +1,9 @@
 build/
 spellchecker
+test
+benchmark.csv
+*.fix
+*.err
 vgcore.*
 .vscode/*
 .idea/*
