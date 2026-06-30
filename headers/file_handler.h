@@ -1,8 +1,6 @@
-#include "common.h"
+#include <common.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "dict.h"
-#include "input.h"
 
 #ifndef FILE_HANDLER_H
 #define FILE_HANDLER_H

@@ -1,8 +1,6 @@
 #include "common.h"
 #include <stdint.h>
 #include <stdio.h>
-#include "dict.h"
-#include "input.h"
 
 #ifndef CORRECTOR_H
 #define CORRECTOR_H

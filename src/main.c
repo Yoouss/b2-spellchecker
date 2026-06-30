@@ -109,6 +109,16 @@ CommandLineArgs_t* parse_args(int argc, char const *argv[]) {
     return args;
 }
 
+void free_all_ressources(CommandLineArgs_t* args, OutputStreams_t* file_streams,
+                         char** lines, uint32_t* lines_sizes, size_t line_count,
+                         Dictionary_t* dicts, size_t dicts_count) {
+    close_outputs(file_streams);
+    free_dictionaries(dicts, dicts_count);
+    free_array_of_words(lines, line_count);
+    free(lines_sizes);
+    free_args(args);
+}
+
 int main(int argc, char const *argv[]) {
     CommandLineArgs_t* args = parse_args(argc, argv);
 
@@ -131,7 +141,7 @@ int main(int argc, char const *argv[]) {
     }
     else {
         perror("Veillez spécifier le/les dictionnaires à utiliser");
-        return -1;
+        return EXIT_FAILURE;
     }
 
     char** lines = NULL;
@@ -144,7 +154,7 @@ int main(int argc, char const *argv[]) {
     else {
         perror("Veillez spécifier le fichier d'entrée");
         free_dictionaries(dicts, dicts_count);
-        return -1;
+        return EXIT_FAILURE;
     }
 
     OutputStreams_t* file_streams = open_outputs(args->output_path);
@@ -152,43 +162,24 @@ int main(int argc, char const *argv[]) {
     if (strcmp(mode, "detection") == 0) {
         if (write_all_detection(file_streams, dicts, dicts_count, lines, line_count) == -1) {
             perror("Échec du programme");
-            close_outputs(file_streams);
-            free_dictionaries(dicts, dicts_count);
-            free_array_of_words(lines, line_count);
-            free(lines_sizes);
-            free_args(args);
-            return -1;
+            free_all_ressources(args, file_streams, lines, lines_sizes, line_count, dicts, dicts_count);
+            return EXIT_FAILURE;
         }
     }
     else if (strcmp(mode, "correction") == 0) {
         if (write_all_detection_and_correction(file_streams, dicts, dicts_count, lines, line_count) == -1) {
             perror("Échec du programme");
-            close_outputs(file_streams);
-            free_dictionaries(dicts, dicts_count);
-            free_array_of_words(lines, line_count);
-            free(lines_sizes);
-            free_args(args);
-            return -1;
+            free_all_ressources(args, file_streams, lines, lines_sizes, line_count, dicts, dicts_count);
+            return EXIT_FAILURE;
         }
     }
     else {
         perror("Mode invalide : veuillez choisir soit detection ou correction");
-        close_outputs(file_streams);
-        free_dictionaries(dicts, dicts_count);
-        free_array_of_words(lines, line_count);
-        free(lines_sizes);
-        free_args(args);
-        return -1;
+        free_all_ressources(args, file_streams, lines, lines_sizes, line_count, dicts, dicts_count);
+        return EXIT_FAILURE;
     }
 
-    close_outputs(file_streams);
-
-    free_dictionaries(dicts, dicts_count);
-    free_array_of_words(lines, line_count);
-    free(lines_sizes);
-    free_args(args);
-
+    free_all_ressources(args, file_streams, lines, lines_sizes, line_count, dicts, dicts_count);
     fprintf(stderr, "\nFin du programme : succès \n");
-
-    return 0;
+    return EXIT_SUCCESS;
 }
