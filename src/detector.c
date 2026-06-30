@@ -142,11 +142,13 @@ int set_wrong_words_count_in_line(char* line, uint32_t* wrong_words_count, Dicti
     char *line_copy = strdup(line);
     if (line_copy == NULL) return -1;
 
-    char* word = strtok(line_copy, SEPARATORS);
+    char *rest_of_line_copy;
+
+    char* word = strtok_r(line_copy, SEPARATORS, &rest_of_line_copy);
     while (word != NULL){
         if (word_in_dictionary(word, dict) == 0) (*wrong_words_count)++;
 
-        word = strtok(NULL, SEPARATORS);
+        word = strtok_r(NULL, SEPARATORS, &rest_of_line_copy);
     }
 
     free(line_copy);
@@ -169,7 +171,9 @@ uint32_t* get_wrong_words_indexes_in_line(char* line, uint32_t wrong_words_count
         return NULL;
     }
 
-    char* word = strtok(line_copy, SEPARATORS);
+    char* rest_of_line_copy;
+
+    char* word = strtok_r(line_copy, SEPARATORS, &rest_of_line_copy);
     while (word != NULL) {
         if (word_in_dictionary(word, dict) == 0) {
             wrong_words_indexes[index_in_array] = index_in_line;
@@ -177,7 +181,7 @@ uint32_t* get_wrong_words_indexes_in_line(char* line, uint32_t wrong_words_count
         }   
 
         index_in_line++;
-        word = strtok(NULL, SEPARATORS);
+        word = strtok_r(NULL, SEPARATORS, &rest_of_line_copy);
     }
 
     free(line_copy);
@@ -197,7 +201,9 @@ char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes, uint32
         return NULL;
     }
 
-    char* word = strtok(line_copy, SEPARATORS);
+    char* rest_of_line_copy;
+
+    char* word = strtok_r(line_copy, SEPARATORS, &rest_of_line_copy);
     uint32_t index_in_bad_words = 0;
     uint32_t index_in_line = 0;
 
@@ -209,7 +215,7 @@ char** get_wrong_words_in_line(char* line, uint32_t* wrong_words_indexes, uint32
         }   
 
         index_in_line++;
-        word = strtok(NULL, SEPARATORS);
+        word = strtok_r(NULL, SEPARATORS, &rest_of_line_copy);
     }
 
     free(line_copy);

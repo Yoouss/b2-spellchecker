@@ -251,37 +251,38 @@ int read_input_file(char* input_path, char*** lines, uint32_t** lines_sizes, siz
 }
 
 char* get_language(const char* filepath) {
-    char *filename = strrchr(filepath, '/');
+    char* filename = strrchr(filepath, '/');
     
     if (filename == NULL) {
-        filename = (char *)filepath;
+        filename = (char *) filepath;
     } else {
+        // We jump one char after the '/'
         filename++;
     }
 
-    char *lang = strdup(filename);
+    char* language = strdup(filename);
 
-    char *extension = strstr(lang, ".dict");
+    char* extension = strstr(language, ".dict");
     if (extension != NULL) {
         *extension = '\0';
     }
-    return lang;
+    return language;
 }
 
 int load_single_dictionary(Dictionary_t *dict, const char *filepath, uint32_t id) {
 
-    uint32_t *temp_sizes = NULL;
-    size_t temp_count = 0;
+    uint32_t* tmp_sizes = NULL;
+    size_t tmp_count = 0;
 
-    if (read_input_file((char *)filepath, &dict->words, &temp_sizes, &temp_count) != 0) {
+    if (read_input_file((char *) filepath, &dict->words, &tmp_sizes, &tmp_count) != 0) {
         return -1;
     }
 
-    dict->word_count = (uint32_t)temp_count;
+    dict->word_count = (uint32_t) tmp_count;
     dict->lang = get_language(filepath);
-    dict ->id=id;
+    dict->id = id;
 
-    free(temp_sizes);
+    free(tmp_sizes);
     return 0;
 }
 
@@ -294,55 +295,56 @@ int load_dictionaries(const char *path, Dictionary_t **dicts, size_t *dict_count
         actual_path = "./small_dicts";
     }
 
-    struct stat st;
-    if (stat(actual_path, &st) == -1) {
+    struct stat file_stat;
+    if (stat(actual_path, &file_stat) == -1) {
         perror("Erreur stat");
         return -1;
     }
-    if (S_ISDIR(st.st_mode)) {
-        DIR *d=opendir(actual_path);
-        if (d == NULL) {
+    if (S_ISDIR(file_stat.st_mode)) {
+        DIR* directory = opendir(actual_path);
+        if (directory == NULL) {
             perror("Erreur opendir");
             free_dictionaries(*dicts, *dict_count);
             return -1;
         }
 
-        struct dirent *entry;
-        size_t count = 0;
-        Dictionary_t *temp_dicts = NULL;
+        struct dirent *directory_entry;
+        uint32_t tmp_dict_count = 0;
+        Dictionary_t *tmp_dicts = NULL;
 
-        while ((entry = readdir(d))!= NULL) {
+        while ((directory_entry = readdir(directory)) != NULL) {
 
-            if (entry->d_name[0] == '.') {
+            if (directory_entry->d_name[0] == '.') {
                 continue;
             }
 
             char full_path[1024];
-            snprintf(full_path, sizeof(full_path), "%s/%s", actual_path, entry->d_name);
+            snprintf(full_path, sizeof(full_path), "%s/%s", actual_path, directory_entry->d_name);
             
-            struct stat st;
-            if (stat(full_path, &st) == -1 || !S_ISREG(st.st_mode)) {
+            struct stat file_stat;
+            if (stat(full_path, &file_stat) == -1 || !S_ISREG(file_stat.st_mode)) {
                 continue;
             }
 
-            Dictionary_t *new_d = realloc(temp_dicts, (count + 1) * sizeof(Dictionary_t));
-            if (new_d == NULL) {
-                free_dictionaries(temp_dicts, count);
-                closedir(d);
+            Dictionary_t* new_dictionary = realloc(tmp_dicts, (tmp_dict_count + 1) * sizeof(Dictionary_t));
+            if (new_dictionary == NULL) {
+                free_dictionaries(tmp_dicts, tmp_dict_count);
+                closedir(directory);
                 return -1;
             }
-            temp_dicts = new_d;
+            tmp_dicts = new_dictionary;
 
-            if (load_single_dictionary(&temp_dicts[count], full_path, (uint32_t)count) == 0) {
-                count++;
+            if (load_single_dictionary(&tmp_dicts[tmp_dict_count], full_path, tmp_dict_count) == 0) {
+                tmp_dict_count++;
             }
         }
 
-        *dicts = temp_dicts;
-        *dict_count = count;
-        closedir(d);
+        *dicts = tmp_dicts;
+        *dict_count = tmp_dict_count;
+        closedir(directory);
     }
-    else if (S_ISREG(st.st_mode)) {
+
+    else if (S_ISREG(file_stat.st_mode)) {
         *dicts = malloc(sizeof(Dictionary_t));
         if (*dicts == NULL) return -1;
 
