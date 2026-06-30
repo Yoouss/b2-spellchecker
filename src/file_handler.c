@@ -291,9 +291,6 @@ int load_dictionaries(const char *path, Dictionary_t **dicts, size_t *dict_count
     if (strcmp(path, "all") == 0) {
         actual_path = "./dicts";
     }
-    if (strcmp(path, "all_small") == 0) {
-        actual_path = "./small_dicts";
-    }
 
     struct stat file_stat;
     if (stat(actual_path, &file_stat) == -1) {
