@@ -1,12 +1,11 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <io.h>
-#include "common.h"
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include <common.h>
+#include <io.h>
 #include <portable_endian.h>
 
 void test_open_outputs(void) {
@@ -110,42 +109,42 @@ void test_write_detection(void) {
 }
 
 void test_write_correction(void) {
-    char *mots[] = {"c'est", "frite"};
-    uint32_t count = 2;
+    char* words[] = {"c'est", "frite"};
+    uint32_t words_count = 2;
     const char* filename = "test_write.fix";
 
-    CU_ASSERT_EQUAL(write_correction(NULL, count, mots), 0);
+    CU_ASSERT_EQUAL(write_correction(NULL, words_count, words), 0);
 
-    int fd = open(filename, O_CREAT | O_RDWR | O_TRUNC, 0644);
-    CU_ASSERT_TRUE_FATAL(fd >= 0);
+    int file_descriptor = open(filename, O_CREAT | O_RDWR | O_TRUNC, 0644);
+    CU_ASSERT_TRUE_FATAL(file_descriptor >= 0);
 
     OutputStreams_t streams;
     streams.detection = -1;
-    streams.correction = fd;
+    streams.correction = file_descriptor;
 
-    int res = write_correction(&streams, count, mots);
-    CU_ASSERT_EQUAL(res, 0);
+    int status = write_correction(&streams, words_count, words);
+    CU_ASSERT_EQUAL(status, 0);
 
-    lseek(fd, 0, SEEK_SET);
+    lseek(file_descriptor, 0, SEEK_SET);
 
-    uint32_t len1_read;
-    read(fd, &len1_read, sizeof(uint32_t));
-    CU_ASSERT_EQUAL(be32toh(len1_read), 5); 
+    uint32_t word_length1;
+    read(file_descriptor, &word_length1, sizeof(uint32_t));
+    CU_ASSERT_EQUAL(be32toh(word_length1), 6); 
 
-    char buf1[6] = {0};
-    read(fd, buf1, 5);
-    CU_ASSERT_STRING_EQUAL(buf1, "c'est");
+    char word1[6] = {0};
+    read(file_descriptor, word1, 6);
+    CU_ASSERT_STRING_EQUAL(word1, "c'est");
 
-    uint32_t len2_read;
-    read(fd, &len2_read, sizeof(uint32_t));
-    CU_ASSERT_EQUAL(be32toh(len2_read), 5);
+    uint32_t word_length2;
+    read(file_descriptor, &word_length2, sizeof(uint32_t));
+    CU_ASSERT_EQUAL(be32toh(word_length2), 6);
 
-    char buf2[6] = {0};
-    read(fd, buf2, 5);
-    CU_ASSERT_STRING_EQUAL(buf2, "frite");
+    char word2[6] = {0};
+    read(file_descriptor, word2, 6);
+    CU_ASSERT_STRING_EQUAL(word2, "frite");
 
     CU_ASSERT_EQUAL(write_correction(&streams, 0, NULL), 0);
     
-    close(fd);
+    close(file_descriptor);
     remove(filename);
 }
