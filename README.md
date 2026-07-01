@@ -13,9 +13,9 @@ Our group members - **Group S1** :
 - **Maurice** - [SuperMorisl](https://github.com/SuperMorisl)
 
 > [!CAUTION]
-> If a link is broken, please refer to the [Contributors page](https://github.com/Yoouss/b2-spellchecker/graphs/contributors)
-> Don't be surprised with my stats, it's mostly because I've added the benchmarks files which are very heavy
-> My real stats are similar to those of Sofia - [SCY-Sofia](https://github.com/SCY-Sofia)
+> If a link is broken, please refer to the [Contributors page](https://github.com/Yoouss/b2-spellchecker/graphs/contributors) <br><br>
+> Please note that my GitHub contribution stats are misleading because I had to delete and re-upload heavy files (such as those in the benchmark folder) <br>
+> My actual stats are much closer to those of Sofia - [SCY-Sofia](https://github.com/SCY-Sofia)
 
 ## Documentation
 - [The architecture & modules](docs/architecture.md)
