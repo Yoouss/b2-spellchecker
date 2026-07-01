@@ -25,7 +25,7 @@ Our group members - **Group S1** :
 
 ## Installation
 
-### -> Requirements 
+### Requirements 
 
 <details>
 <summary><b>Debian based users</b> (WSL, Ubuntu, Mint, Pop_OS!, ...)</summary>
@@ -63,7 +63,7 @@ brew install gcc cmake cunit valgrind
 
 </details>
 
-### -> Cloning the repo
+### Cloning the repo
 
 - Via **https** :
 ```bash
