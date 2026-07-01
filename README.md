@@ -14,6 +14,8 @@ Our group members - **Group S1** :
 
 > [!CAUTION]
 > If a link is broken, please refer to the [Contributors page](https://github.com/Yoouss/b2-spellchecker/graphs/contributors)
+> Don't be surprised with my stats, it's mostly because I've added the benchmarks files which are very heavy
+> My real stats are similar to those of Sofia - [SCY-Sofia](https://github.com/SCY-Sofia)
 
 ## Documentation
 - [The architecture & modules](docs/architecture.md)
