@@ -1,6 +1,6 @@
 ## Architecture of the project
 
-This repo is organized in multiple modules, each of them having a header file and a test file
+This repo is **organized in multiple modules**, each of them **having a header file and a test file**
 
 ```tree
 .
@@ -35,14 +35,17 @@ This repo is organized in multiple modules, each of them having a header file an
 └── README.md
 ```
 
+You can find the **specifications of each functions in the `headers`** directory, **most of them also contains** informations about the **time and spacial complexity**
+
+
 ### The main modules 
 
-- `src/detector.c`: Detects and localizes errors using binary search to find the dictionary that minimises the errors count for each lines
+- `src/detector.c`: **Detects and localizes errors** using binary search to find the dictionary that minimises the errors count for each lines
 
-- `src/corrector.c`: Suggests corrections for found errors using Levenshtein distance and finding the closest candidates
+- `src/corrector.c`: **Suggests corrections for found errors** using Levenshtein distance and finding the closest candidates
 
-- `src/file_handler.c`: Loads the input file and the dictionaries
+- `src/file_handler.c`: **Loads the input file and the dictionaries**
 
-- `src/io.c`: Writes the binary outputs
+- `src/io.c`: **Writes the binary outputs**
 
-- `src/main.c`: Parses the arguments and uses the modules when needed
+- `src/main.c`: **Parses the arguments and uses the modules when needed**
