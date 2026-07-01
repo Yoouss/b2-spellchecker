@@ -1,6 +1,6 @@
 ## Architecture of the project
 
-This repo is organised in multiple modules, each of them having a header file and a test file
+This repo is organized in multiple modules, each of them having a header file and a test file
 
 ```tree
 .
@@ -37,9 +37,9 @@ This repo is organised in multiple modules, each of them having a header file an
 
 ### The main modules 
 
-- `src/detector.c`: Detects and localise errors using binary search to find the dictionary that minimises the errors count for each lines
+- `src/detector.c`: Detects and localizes errors using binary search to find the dictionary that minimises the errors count for each lines
 
-- `src/corrector.c`: Sugests corrections for founded errors using Levenshtein distance and finding the closest candidats
+- `src/corrector.c`: Suggests corrections for found errors using Levenshtein distance and finding the closest candidates
 
 - `src/file_handler.c`: Loads the input file and the dictionaries
 

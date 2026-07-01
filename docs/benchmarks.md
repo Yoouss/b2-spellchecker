@@ -1,6 +1,6 @@
 ## Benchmarks
 
-The `benchmark` directory contains dictionaries and inputs to mesure the performances of our program, which will be writen in a file `benchmark.csv`
+The `benchmark` directory contains dictionaries and inputs to measure the performances of our program, which will be written in a file `benchmark.csv`
 
 - **To generate the benchmarks of the detection mode**
 
@@ -14,7 +14,7 @@ make benchmark-detection
 make benchmark-correction
 ```
 
-### How do we mesure the performances ?
+### How do we measure the performances ?
 
 We use :
 
@@ -22,10 +22,10 @@ We use :
 - A 250 lines file for the correction
 - 6 dictionaries
 
-To mesure in 3 loops :
+To measure in 3 loops :
 
-- The cpu pourcentage
+- The cpu percentage
 - The used ram 
 - The time
 
-(Images comming soon)
+(Images coming soon)

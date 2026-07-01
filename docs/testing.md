@@ -16,7 +16,7 @@ make tests
 
 ## How to use Valgrind
 
-Valgrind is a usefull tool to check if there are memory leaks when we forgets to free allocated ressources
+Valgrind is a useful tool to check if there are memory leaks when we forget to free allocated resources
 
 - **To detect memory leaks in the main program `spellchecker`**
 
@@ -24,7 +24,7 @@ Valgrind is a usefull tool to check if there are memory leaks when we forgets to
 make valgrind
 ```
 
-- **To detect memory leaks in the test's files used in the binary file `test`**
+- **To detect memory leaks in the test files used in the binary file `test`**
 
 ```bash
 make valgrind-test
