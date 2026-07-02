@@ -14,7 +14,7 @@ Our group members - **Group S1** :
 
 > [!CAUTION]
 > If a link is broken, please refer to the [Contributors page](https://github.com/Yoouss/b2-spellchecker/graphs/contributors) <br><br>
-> Please note that my GitHub contribution stats are misleading because I had to delete and re-upload heavy files (such as those in the benchmark folder) <br>
+> Please note that my GitHub contribution stats (additions and deletions) are misleading because I had to delete and re-upload heavy files (such as those in the benchmark folder) <br>
 > My actual stats are much closer to those of Sofia - [SCY-Sofia](https://github.com/SCY-Sofia)
 
 ## Documentation
