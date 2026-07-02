@@ -14,6 +14,9 @@ or compile and execute in a single command :
 make tests
 ```
 
+> [!Caution]
+> If you notice some modules are poorly tested, it's mainly because the classmates in charge of testing them didn't do much <br>
+
 ## How to use Valgrind
 
 **Valgrind is a useful tool to check** if there are **memory leaks** when we forget to free allocated resources
